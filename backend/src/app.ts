@@ -1,0 +1,21 @@
+import express from 'express';
+import helmet from 'helmet';
+import cors from 'cors';
+import hpp from 'hpp';
+import cookieParser from 'cookie-parser';
+import { env } from './config/env';
+import routes from './routes';
+import { apiLimiter } from './middleware/rateLimit';
+import { errorHandler, notFound } from './middleware/error';
+
+export const app = express();
+app.set('trust proxy', 1);
+app.use(helmet());
+app.use(cors({ origin: env.CLIENT_URL, credentials: true }));
+app.use(express.json({ limit: '100kb' }));
+app.use(cookieParser());
+app.use(hpp());
+app.use('/api', apiLimiter, routes);
+app.get('/health', (_q, s) => s.json({ ok: true }));
+app.use(notFound);
+app.use(errorHandler);
