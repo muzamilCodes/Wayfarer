@@ -22,6 +22,7 @@ import { Empty } from '@/components/States';
 import { getDestination, getPackages } from '@/lib/api';
 import { inr } from '@/lib/format';
 import { JK_ALL_DISTRICTS, JKDistrictDestination } from '@/lib/jk-destinations-data';
+import TouristAttractionsList from '@/components/TouristAttractionsList';
 
 type Props = { params: { slug: string } };
 
@@ -191,12 +192,12 @@ export default async function DestinationPage({ params }: Props) {
               </p>
             </div>
 
-            {/* Tourist Attractions Section (ALL PLACES FROM THE GUIDE WITH PHOTOS) */}
+            {/* Tourist Attractions Section (Interactive Compact Cards + Master Details Modal) */}
             <div>
               <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2 border-b border-gray-200 pb-4 mb-6">
                 <div>
                   <span className="font-body text-xs font-bold uppercase tracking-wider text-[#3B71FE]">
-                    Comprehensive Guide to Attractions
+                    Comprehensive Master Database
                   </span>
                   <h2 className="font-display text-2xl sm:text-3xl font-extrabold text-gray-900 mt-1 flex items-center gap-2">
                     <MapPin className="text-rose-500" size={26} />
@@ -204,124 +205,15 @@ export default async function DestinationPage({ params }: Props) {
                   </h2>
                 </div>
                 <span className="font-body text-xs text-gray-500 font-medium">
-                  Verified Scenic, Historical &amp; Religious Sights
+                  Click any card to explore full 25+ verified facts, history &amp; logistics
                 </span>
               </div>
 
-              {/* Grid of Tourist Attractions */}
-              <div className="grid gap-6 sm:grid-cols-2">
-                {jkDistrict.touristPlaces.map((place) => (
-                  <div
-                    key={place.name}
-                    className="group flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm hover:shadow-xl hover:border-[#3B71FE]/40 transition-all duration-300"
-                  >
-                    {/* Attraction Image */}
-                    {place.image && (
-                      <div className="relative h-48 sm:h-52 w-full overflow-hidden bg-gray-100">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={place.image}
-                          alt={place.name}
-                          className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-108"
-                          loading="lazy"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent pointer-events-none" />
-                        <div className="absolute top-3 right-3 flex items-center gap-1.5">
-                          {place.pinCode && (
-                            <span className="rounded-full px-2 py-0.5 text-[10px] font-mono font-bold bg-black/50 text-white backdrop-blur-md border border-white/20 shadow-sm">
-                              PIN {place.pinCode}
-                            </span>
-                          )}
-                          <span
-                            className={`rounded-full px-2.5 py-1 text-[11px] font-bold border backdrop-blur-md shadow-sm ${
-                              badgeStyles[place.category] || 'bg-white/90 text-gray-800'
-                            }`}
-                          >
-                            {place.category}
-                          </span>
-                        </div>
-                        <span className="absolute bottom-2.5 left-3.5 text-xs font-semibold text-white/90 drop-shadow">
-                          {jkDistrict.district}
-                        </span>
-                      </div>
-                    )}
-
-                    {/* Attraction Details */}
-                    <div className="p-5 sm:p-6 flex-1 flex flex-col justify-between font-body">
-                      <div>
-                        {/* Meta Tags Bar (Tehsil, Type, PIN) */}
-                        <div className="flex flex-wrap items-center gap-1.5 mb-2.5">
-                          {place.tehsil && (
-                            <span className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md">
-                              <MapPin size={11} className="text-rose-500 shrink-0" />
-                              {place.tehsil}
-                            </span>
-                          )}
-                          {place.type && (
-                            <span className="inline-block text-[11px] font-medium text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100">
-                              {place.type}
-                            </span>
-                          )}
-                          {!place.image && place.pinCode && (
-                            <span className="text-[10.5px] font-mono font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">
-                              PIN {place.pinCode}
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Title */}
-                        <h3 className="font-display text-lg sm:text-xl font-extrabold text-slate-900 group-hover:text-[#3B71FE] transition-colors leading-snug flex items-baseline gap-2">
-                          <span>{place.name}</span>
-                        </h3>
-
-                        {/* Description */}
-                        <p className="mt-2 text-sm text-slate-600 leading-relaxed font-normal">
-                          {place.description}
-                        </p>
-
-                        {/* Speciality (Khasiyat) Highlight Box */}
-                        {place.speciality && (
-                          <div className="mt-3.5 rounded-2xl bg-amber-50/90 border border-amber-200/90 p-3.5 text-xs text-amber-950 shadow-sm">
-                            <span className="font-display font-bold text-amber-900 flex items-center gap-1.5 mb-1 text-[12px] uppercase tracking-wider">
-                              <Sparkles size={13} className="text-[#D9A441] shrink-0" />
-                              Speciality (Khasiyat):
-                            </span>
-                            <p className="text-amber-900/90 leading-relaxed font-medium">
-                              {place.speciality}
-                            </p>
-                          </div>
-                        )}
-
-                        {/* Famous For & Activities */}
-                        <div className="mt-3.5 pt-3 border-t border-slate-100 space-y-1.5 text-xs">
-                          {place.famousFor && (
-                            <div className="flex items-start gap-1.5 text-slate-600 leading-relaxed">
-                              <span className="font-bold text-slate-800 shrink-0">Famous For:</span>
-                              <span className="text-slate-600">{place.famousFor}</span>
-                            </div>
-                          )}
-                          {place.activities && (
-                            <div className="flex items-start gap-1.5 text-slate-600 leading-relaxed">
-                              <span className="font-bold text-slate-800 shrink-0">Activities:</span>
-                              <span className="text-slate-600">{place.activities}</span>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Best Time Pill */}
-                        {place.bestTime && (
-                          <div className="mt-3">
-                            <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-emerald-800 bg-emerald-50 border border-emerald-200/80 px-2.5 py-1 rounded-lg">
-                              <Calendar size={12} className="text-emerald-600 shrink-0" />
-                              <span><strong>Best Time:</strong> {place.bestTime}</span>
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              {/* Interactive Tourist Attractions List & Master Modal */}
+              <TouristAttractionsList
+                districtName={jkDistrict.district}
+                places={jkDistrict.touristPlaces}
+              />
             </div>
 
             {/* Travel Experiences & Badges */}
