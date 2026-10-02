@@ -51,6 +51,21 @@ declare module 'lucide-react' {
   export const MessageCircle: Icon;
   export const Tag: Icon;
   export const HeartHandshake: Icon;
+  export const Sliders: Icon;
+  export const SlidersHorizontal: Icon;
+  export const Grid: Icon;
+  export const List: Icon;
+  export const ChevronUp: Icon;
+  export const ChevronLeft: Icon;
+  export const ChevronRight: Icon;
+  export const RotateCcw: Icon;
+  export const Mountain: Icon;
+  export const Camera: Icon;
+  export const PhoneCall: Icon;
+  export const Facebook: Icon;
+  export const Instagram: Icon;
+  export const Twitter: Icon;
+  export const Youtube: Icon;
 
   const icons: { [key: string]: Icon };
   export default icons;

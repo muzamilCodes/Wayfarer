@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Search, Compass, MapPin } from 'lucide-react';
+import { Search, Compass, MapPin, Star, ArrowRight, Mountain, TreePine, Snowflake } from 'lucide-react';
 import { detectTier, Tier } from '@/lib/capability';
 
 const Scene = dynamic(() => import('./3d/Scene'), {
@@ -24,7 +24,7 @@ export default function Hero() {
 
   return (
     <section
-      className="relative isolate flex min-h-[90vh] items-start overflow-hidden text-snow"
+      className="relative isolate flex min-h-[92vh] items-start overflow-hidden text-white"
       style={{
         background: 'linear-gradient(180deg,#0A2733 0%,#0F3B4A 40%,#3D6F82 70%,#B7D3DC 100%)',
       }}
@@ -57,12 +57,16 @@ export default function Hero() {
           className="max-w-3xl"
         >
           <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-xs font-semibold backdrop-blur-md mb-6">
-            <Compass size={14} className="text-saffron" />
+            <Compass size={14} className="text-[#E85D04]" />
             <span>Kashmir, Ladakh & The Great Himalaya</span>
           </div>
 
           <h1 className="text-5xl font-bold leading-[1.05] tracking-tight md:text-7xl lg:text-8xl drop-shadow-md">
-            The Crown of the Himalaya.
+            The Crown of
+            <br />
+            <span className="bg-gradient-to-r from-white via-amber-200 to-[#E85D04] bg-clip-text text-transparent">
+              the Himalaya.
+            </span>
           </h1>
 
           <p className="mt-6 max-w-xl text-lg md:text-xl text-glacier leading-relaxed drop-shadow">
@@ -72,16 +76,32 @@ export default function Hero() {
           <div className="mt-8 flex flex-wrap gap-4">
             <Link
               href="/destinations"
-              className="btn btn-primary shadow-lg shadow-saffron/20 hover:scale-105 transition-transform"
+              className="rounded-full bg-[#E85D04] hover:bg-[#dc5400] text-white px-7 py-3.5 text-sm font-bold shadow-lg shadow-orange-500/25 hover:scale-105 transition-all active:scale-95"
             >
               Explore Destinations
             </Link>
             <Link
               href="/plan"
-              className="btn btn-ghost border-white/30 text-snow hover:bg-white/10 hover:border-white/60"
+              className="rounded-full border-2 border-white/30 text-white hover:bg-white/10 hover:border-white/60 px-7 py-3.5 text-sm font-semibold transition-all"
             >
               Custom Trip Planner
             </Link>
+          </div>
+
+          {/* Quick Stats */}
+          <div className="mt-10 flex flex-wrap gap-8">
+            <div className="flex items-center gap-2 text-sm text-glacier/80">
+              <Mountain size={16} className="text-[#E85D04]" />
+              <span><strong className="text-white">20</strong> Districts</span>
+            </div>
+            <div className="flex items-center gap-2 text-sm text-glacier/80">
+              <TreePine size={16} className="text-[#E85D04]" />
+              <span><strong className="text-white">150+</strong> Tourist Places</span>
+            </div>
+            <div className="flex items-center gap-2 text-sm text-glacier/80">
+              <Snowflake size={16} className="text-[#E85D04]" />
+              <span><strong className="text-white">365</strong> Days Open</span>
+            </div>
           </div>
         </motion.div>
 
@@ -98,9 +118,9 @@ export default function Hero() {
               e.preventDefault();
               router.push(`/destinations?q=${encodeURIComponent(q)}`);
             }}
-            className="flex items-center gap-3 rounded-3xl border border-white/30 bg-white/25 p-2.5 text-snow shadow-2xl backdrop-blur-xl transition-all focus-within:border-white/60 focus-within:bg-white/35"
+            className="flex items-center gap-3 rounded-full border border-white/30 bg-white/20 p-2.5 text-white shadow-2xl backdrop-blur-xl transition-all focus-within:border-white/60 focus-within:bg-white/30"
           >
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-lake/60 text-saffron shadow-sm">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#E85D04] text-white shadow-sm">
               <MapPin size={20} />
             </div>
             <label htmlFor="hero-q" className="sr-only">
@@ -111,9 +131,9 @@ export default function Hero() {
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="Search Gulmarg, Srinagar, Pahalgam, Ladakh…"
-              className="min-w-0 flex-1 bg-transparent px-2 py-2 text-sm text-snow placeholder:text-glacier/80 outline-none font-medium"
+              className="min-w-0 flex-1 bg-transparent px-2 py-2 text-sm text-white placeholder:text-glacier/80 outline-none font-medium"
             />
-            <button className="btn btn-primary px-6 py-2.5 text-xs font-bold uppercase tracking-wider">
+            <button className="rounded-full bg-[#E85D04] hover:bg-[#dc5400] px-6 py-2.5 text-xs font-bold uppercase tracking-wider text-white shadow-md transition-all hover:scale-105">
               Search
             </button>
           </form>

@@ -5,13 +5,50 @@
 @layer base {
   body { @apply bg-snow font-body text-ink antialiased; }
   h1, h2, h3 { @apply font-display tracking-tight; }
-  :focus-visible { outline: 2px solid #6B4FA0; outline-offset: 3px; }
+  :focus-visible { outline: 2px solid #E85D04; outline-offset: 3px; }
+  
+  /* Custom scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #0F3B4A30; border-radius: 999px; }
+  ::-webkit-scrollbar-thumb:hover { background: #0F3B4A60; }
+
+  /* Custom checkbox/radio styling */
+  input[type="checkbox"],
+  input[type="radio"] {
+    @apply cursor-pointer;
+  }
+
+  /* Range input styling */
+  input[type="range"] {
+    @apply appearance-none h-1.5 rounded-full bg-slate-200;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    @apply appearance-none w-4 h-4 rounded-full bg-[#E85D04] cursor-pointer shadow-md;
+  }
 }
+
 @layer components {
   .btn { @apply inline-flex items-center justify-center rounded-full px-6 py-3 text-sm font-semibold transition-colors; }
-  .btn-primary { @apply bg-saffron text-deep hover:bg-[#e6b453]; }
+  .btn-primary { @apply bg-[#E85D04] text-white hover:bg-[#dc5400]; }
   .btn-dark { @apply bg-lake text-snow hover:bg-deep; }
   .btn-ghost { @apply border border-current opacity-80 hover:bg-white/10; }
   .container-x { @apply mx-auto w-full max-w-6xl px-5; }
 }
+
+/* Smooth page transitions */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.5s ease-out both;
+}
+
+/* 3D Card perspective container */
+.perspective-container {
+  perspective: 1000px;
+}
+
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
