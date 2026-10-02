@@ -5,26 +5,58 @@ import Providers from './providers';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { SITE } from '@/lib/api';
+import SmoothScroll from '@/components/3d/SmoothScroll';
+import ScrollProgressBar from '@/components/3d/ScrollProgress';
+import CursorGlow from '@/components/3d/CursorGlow';
+import GlobalScene from '@/components/3d/GlobalScene';
 
-const display = Bricolage_Grotesque({ subsets: ['latin'], variable: '--font-display' });
-const body = Instrument_Sans({ subsets: ['latin'], variable: '--font-body' });
+const display = Bricolage_Grotesque({
+  subsets: ['latin'],
+  variable: '--font-display',
+});
+const body = Instrument_Sans({
+  subsets: ['latin'],
+  variable: '--font-body',
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE),
-  title: { default: 'Wayfarer | Kashmir, Ladakh & Himalayan tours', template: '%s | Wayfarer' },
-  description: 'Curated Kashmir, Ladakh and Himalayan tour packages with local guides, hotels and cabs.',
+  title: {
+    default: 'Wayfarer | Kashmir, Ladakh & Himalayan tours',
+    template: '%s | Wayfarer',
+  },
+  description:
+    'Curated Kashmir, Ladakh and Himalayan tour packages with local guides, hotels and cabs.',
   openGraph: { type: 'website', siteName: 'Wayfarer' },
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en" className={`${display.variable} ${body.variable}`}>
-      <body>
-        <Providers>
-          <Navbar />
-          <main>{children}</main>
-          <Footer />
-        </Providers>
+      <body className="relative overflow-x-hidden min-h-screen bg-snow font-body text-ink antialiased">
+        <SmoothScroll>
+          <Providers>
+            {/* Global Smooth Scroll Progress Bar */}
+            <ScrollProgressBar />
+
+            {/* Custom Atmospheric Desktop Cursor Glow */}
+            <CursorGlow />
+
+            {/* Persistent Ambient Aurora & Snow Scene */}
+            <GlobalScene />
+
+            {/* Main Application Layout */}
+            <div className="relative z-10 flex min-h-screen flex-col">
+              <Navbar />
+              <main className="flex-1">{children}</main>
+              <Footer />
+            </div>
+          </Providers>
+        </SmoothScroll>
       </body>
     </html>
   );

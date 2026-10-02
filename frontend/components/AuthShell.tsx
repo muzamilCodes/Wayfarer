@@ -1,33 +1,74 @@
 'use client';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
+import TiltCard3D from './3d/TiltCard3D';
 
-/** Split screen: animated parallax mountains on the left, the form on the right. */
-export default function AuthShell({ title, subtitle, children }: { title: string; subtitle: string; children: React.ReactNode }) {
-  const layer = (d: string, fill: string, dur: number, amp: number) => (
-    <motion.svg viewBox="0 0 600 240" preserveAspectRatio="none" className="absolute inset-x-0 bottom-0 h-1/2 w-[110%]"
-      animate={{ x: [0, amp, 0] }} transition={{ duration: dur, repeat: Infinity, ease: 'easeInOut' }} aria-hidden>
-      <path d={d} fill={fill} />
-    </motion.svg>
-  );
+const SnowGlobeScene = dynamic(() => import('./3d/SnowGlobeScene'), {
+  ssr: false,
+  loading: () => (
+    <div className="flex h-full w-full items-center justify-center">
+      <div className="h-10 w-10 animate-spin rounded-full border-4 border-white/20 border-t-white" />
+    </div>
+  ),
+});
+
+export default function AuthShell({
+  title,
+  subtitle,
+  children,
+}: {
+  title: string;
+  subtitle: string;
+  children: React.ReactNode;
+}) {
   return (
-    <div className="grid min-h-[calc(100vh-4rem)] lg:grid-cols-2">
-      <div className="relative hidden overflow-hidden text-snow lg:block" style={{ background: 'linear-gradient(180deg,#0F3B4A,#3D6F82 60%,#B7D3DC)' }}>
-        <motion.div className="absolute right-16 top-24 h-24 w-24 rounded-full bg-[#F6D28B]" animate={{ y: [0, -12, 0] }} transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }} />
-        {layer('M0 240V140l60-60 50 40 70-90 80 100 60-50 90 80 70-60 120 90v50z', '#9CC3CF', 14, -18)}
-        {layer('M0 240V170l80-70 60 50 90-80 90 90 70-40 110 80 100-60v100z', '#3D6F82', 10, 14)}
-        {layer('M0 240V190l100-60 80 60 100-70 100 80 90-50 130 60v30z', '#0F3B4A', 7, -10)}
-        <div className="relative p-12">
-          <Link href="/" className="font-display text-2xl font-bold">Wayfarer</Link>
-          <p className="mt-16 max-w-sm font-display text-4xl font-bold leading-tight">The valley is waiting. Your trips, in one place.</p>
+    <div className="relative grid min-h-[calc(100vh-4rem)] lg:grid-cols-2">
+      {/* Left: Calm 3D Himalayan Snow Globe Scene */}
+      <div className="relative hidden overflow-hidden bg-gradient-to-b from-deep via-lake to-[#1B4B5C] lg:flex lg:flex-col lg:justify-between p-12 text-snow">
+        <div className="relative z-10 flex items-center justify-between">
+          <Link href="/" className="font-display text-2xl font-bold tracking-tight text-snow">
+            Wayfarer
+          </Link>
+          <span className="rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-semibold backdrop-blur">
+            Kashmir & Ladakh Tours
+          </span>
         </div>
+
+        {/* 3D Canvas Container */}
+        <div className="relative my-auto h-[440px] w-full">
+          <SnowGlobeScene />
+        </div>
+
+        <div className="relative z-10">
+          <p className="max-w-md font-display text-3xl font-bold leading-tight">
+            The valley is calling. Your personalized Himalayan expeditions, all in one place.
+          </p>
+          <p className="mt-3 text-sm text-glacier">
+            Secure reservations • Curated local guides • 24/7 mountain assistance
+          </p>
+        </div>
+
+        {/* Soft background ambient aurora */}
+        <div className="absolute top-1/3 left-1/4 h-72 w-72 rounded-full bg-saffron/10 blur-3xl pointer-events-none" />
       </div>
+
+      {/* Right: Glassmorphism Auth Card with Subtle 3D Tilt */}
       <div className="flex items-center justify-center px-5 py-12">
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="w-full max-w-md">
-          <h1 className="text-3xl font-bold text-lake">{title}</h1>
-          <p className="mt-2 text-sm text-mist">{subtitle}</p>
-          <div className="mt-8">{children}</div>
-        </motion.div>
+        <div className="w-full max-w-md">
+          <TiltCard3D maxTilt={6} glare={false}>
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="rounded-3xl border border-lake/15 bg-white/80 p-8 shadow-xl backdrop-blur-xl sm:p-10"
+            >
+              <h1 className="text-3xl font-bold text-lake">{title}</h1>
+              <p className="mt-2 text-sm text-mist">{subtitle}</p>
+              <div className="mt-8">{children}</div>
+            </motion.div>
+          </TiltCard3D>
+        </div>
       </div>
     </div>
   );

@@ -8,10 +8,11 @@ type Purpose = 'verify' | 'reset' | 'login';
 const SUBJECT: Record<Purpose, string> = { verify: 'Verify your email', reset: 'Reset your password', login: 'Your login code' };
 const TTL = 10 * 60_000, COOLDOWN = 30_000;
 
-async function issueTokens(user: { id: string; role: any }) {
-  const payload = { sub: user.id, role: user.role };
+async function issueTokens(user: any) {
+  const userId = String(user.id || user._id);
+  const payload = { sub: userId, role: user.role };
   const refresh = signRefresh(payload);
-  await User.findByIdAndUpdate(user.id, { refreshTokenHash: sha256(refresh) });
+  await User.findByIdAndUpdate(userId, { refreshTokenHash: sha256(refresh) });
   return { accessToken: signAccess(payload), refreshToken: refresh };
 }
 
@@ -96,4 +97,6 @@ export const authService = {
     user.otpHash = undefined; user.otpExpires = undefined; user.refreshTokenHash = undefined;
     await user.save();
   },
+
+  issueTokens,
 };

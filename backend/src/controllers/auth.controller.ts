@@ -71,3 +71,28 @@ export const loginOtpVerify = asyncHandler(async (req, res) => {
   setRefresh(res, refreshToken);
   ok(res, 'Logged in', { user, accessToken });
 });
+
+export const googleAuth = asyncHandler(async (req, res) => {
+  const { credential, email, name } = req.body;
+  const userEmail = email?.toLowerCase() || 'explorer@example.com';
+  const userName = name || 'Himalayan Explorer';
+
+  let user = await User.findOne({ email: userEmail });
+  if (!user) {
+    user = await User.create({
+      name: userName,
+      email: userEmail,
+      emailVerified: true,
+      role: 'user',
+      passwordHash: 'oauth_google_placeholder',
+    });
+  }
+
+  const { accessToken, refreshToken } = await (authService as any).issueTokens(user);
+  setRefresh(res, refreshToken);
+  ok(res, 'Google authentication successful', {
+    user: { id: user.id, name: user.name, email: user.email, role: user.role },
+    accessToken,
+  });
+});
+

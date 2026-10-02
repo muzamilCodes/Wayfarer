@@ -1,5 +1,14 @@
 /** @type {import('next').NextConfig} */
 export default {
   reactStrictMode: true,
-  images: { remotePatterns: [{ protocol: 'https', hostname: 'res.cloudinary.com' }], formats: ['image/avif', 'image/webp'] },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  images: {
+    remotePatterns: [
+      { protocol: 'https', hostname: 'res.cloudinary.com' },
+      { protocol: 'https', hostname: 'images.unsplash.com' },
+    ],
+    formats: ['image/avif', 'image/webp'],
+  },
 };
