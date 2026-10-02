@@ -137,7 +137,18 @@ export default function Navbar() {
           <div className="pt-3 space-y-1">
             {links.map(([label, href]) => {
               const active = pathname === href || (href !== '/' && pathname.startsWith(href));
-              return <Link key={href} href={href} onClick={() => setOpen(false)} className={`block py-2 px-3 rounded-lg text-sm font-semibold ${active ? 'bg-orange-50 text-[#E85D04]' : 'text-gray-700 hover:bg-gray-50'}`}>{label}</Link>;
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  onClick={() => setOpen(false)}
+                  className={`block py-2.5 px-3.5 rounded-xl text-sm font-semibold transition ${
+                    active ? 'bg-blue-50 text-[#3B71FE]' : 'text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  {label}
+                </Link>
+              );
             })}
           </div>
           <div className="mt-3 border-t border-gray-100 pt-3 space-y-1">
@@ -145,16 +156,16 @@ export default function Navbar() {
               <>
                 <Link href="/account" onClick={() => setOpen(false)} className="flex items-center gap-2 py-2 px-3 text-sm font-semibold text-gray-700"><UserIcon size={16} /> Account</Link>
                 <Link href="/bookings" onClick={() => setOpen(false)} className="flex items-center gap-2 py-2 px-3 text-sm font-semibold text-gray-700"><Calendar size={16} /> Bookings</Link>
-                {user.role === 'admin' && <Link href="/admin" onClick={() => setOpen(false)} className="flex items-center gap-2 py-2 px-3 text-sm font-semibold text-[#E85D04]"><ShieldCheck size={16} /> Admin</Link>}
+                {user.role === 'admin' && <Link href="/admin" onClick={() => setOpen(false)} className="flex items-center gap-2 py-2 px-3 text-sm font-semibold text-[#FF5B00]"><ShieldCheck size={16} /> Admin</Link>}
                 <button onClick={() => { setOpen(false); handleLogout(); }} className="flex items-center gap-2 py-2 px-3 text-sm font-semibold text-red-500"><LogOut size={16} /> Log out</button>
               </>
             ) : (
-              <>
-                <Link href="/login" onClick={() => setOpen(false)} className="block py-2 px-3 text-sm font-semibold text-gray-700">Sign In</Link>
-                <Link href="/register" onClick={() => setOpen(false)} className="block py-2 px-3 text-sm font-semibold text-gray-700">Register</Link>
-              </>
+              <div className="grid grid-cols-2 gap-2 pb-2">
+                <Link href="/login" onClick={() => setOpen(false)} className="text-center rounded-xl border border-gray-200 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50">Sign In</Link>
+                <Link href="/register" onClick={() => setOpen(false)} className="text-center rounded-xl border border-gray-200 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50">Register</Link>
+              </div>
             )}
-            <Link href="/plan" onClick={() => setOpen(false)} className="block mt-2 text-center rounded-full bg-[#E85D04] text-white py-3 text-sm font-bold">Explore Tours</Link>
+            <Link href="/plan" onClick={() => setOpen(false)} className="block mt-2 text-center rounded-xl bg-[#FF5B00] text-white py-3 text-sm font-bold shadow-md shadow-orange-500/20">Explore Tours</Link>
           </div>
         </nav>
       )}

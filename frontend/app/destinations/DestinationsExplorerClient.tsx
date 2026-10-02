@@ -153,74 +153,78 @@ export default function DestinationsExplorerClient({
     <div className="min-h-screen bg-[#F5F5F5]">
 
       {/* ═══════════ HERO BANNER ═══════════ */}
-      <div className="relative overflow-hidden bg-[#1A1A2E]">
-        {/* Background image */}
+      <div className="relative overflow-hidden bg-[#0A192F]">
+        {/* Background image with high clarity and contrast */}
         <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url('https://images.unsplash.com/photo-1598091383021-15ddea10925d?auto=format&fit=crop&w=2000&q=85')` }}
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-1000 scale-105"
+          style={{
+            backgroundImage: `url('https://images.unsplash.com/photo-1598091383021-15ddea10925d?auto=format&fit=crop&w=2400&q=90')`,
+          }}
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#1A1A2E]/90 via-[#1A1A2E]/70 to-[#1A1A2E]/50" />
+        {/* Cinematic gradient overlay for maximum readability */}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/55 to-black/30" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
 
-        <div className="container-x relative z-10 pb-28 pt-8 md:pb-36 md:pt-10">
+        <div className="container-x relative z-10 pt-8 sm:pt-12 md:pt-16 pb-16 sm:pb-24 md:pb-32">
           {/* Breadcrumb */}
-          <nav className="flex items-center gap-1.5 text-[13px] text-white/60">
+          <nav className="flex items-center gap-1.5 text-xs sm:text-[13px] font-medium text-white/70">
             <Link href="/" className="hover:text-white transition-colors">Home</Link>
-            <span>›</span>
-            <span className="text-white">Destinations</span>
+            <span className="text-white/40">›</span>
+            <span className="text-white font-semibold">Destinations</span>
           </nav>
 
-          {/* Heading */}
+          {/* Heading & Subtitle */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="mt-6 max-w-2xl"
+            transition={{ duration: 0.5 }}
+            className="mt-4 sm:mt-6 max-w-3xl"
           >
-            <h1 className="text-[32px] sm:text-[42px] lg:text-[48px] font-extrabold text-white leading-[1.15] tracking-tight">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[54px] font-extrabold text-white leading-[1.12] tracking-tight drop-shadow-sm">
               Explore Beautiful Places<br />
-              in Jammu &amp; Kashmir
+              <span className="text-white">in Jammu &amp; Kashmir</span>
             </h1>
-            <p className="mt-4 text-[14px] sm:text-[15px] text-white/70 leading-relaxed max-w-xl">
+            <p className="mt-3 sm:mt-4 text-sm sm:text-base md:text-lg text-white/85 leading-relaxed max-w-xl font-normal drop-shadow-sm">
               Discover amazing places, unforgettable experiences and the best deals – all in one place.
             </p>
           </motion.div>
         </div>
 
         {/* ═══════════ FLOATING SEARCH BAR ═══════════ */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-          className="container-x relative z-20 -mb-14"
-          style={{ marginTop: '-56px' }}
-        >
-          <div className="rounded-full bg-white shadow-xl shadow-black/10 border border-gray-100 p-1.5 sm:p-2">
-            <div className="flex flex-col sm:flex-row items-center">
+        <div className="container-x relative z-20">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="rounded-2xl md:rounded-full bg-white shadow-[0_12px_45px_rgba(0,0,0,0.18)] border border-gray-100 p-2 sm:p-2.5 -mb-10 sm:-mb-12 md:-mb-14"
+          >
+            {/* Desktop: Horizontal Pill | Mobile: Clean Grid / Stack */}
+            <div className="flex flex-col md:flex-row items-stretch md:items-center divide-y md:divide-y-0 md:divide-x divide-gray-100">
 
               {/* Destination */}
-              <div className="flex-1 flex items-center gap-3 px-5 py-3 border-b sm:border-b-0 sm:border-r border-gray-200 w-full">
-                <MapPin size={20} className="text-[#3B71FE] shrink-0" />
-                <div className="flex-1">
-                  <div className="text-[11px] font-bold text-gray-900 tracking-tight">Destination</div>
+              <div className="flex-1 flex items-center gap-3 px-4 py-3 md:py-2.5">
+                <MapPin size={22} className="text-[#3B71FE] shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <div className="text-[10px] md:text-[11px] font-bold text-gray-900 tracking-tight">Destination</div>
                   <input
                     type="text"
                     value={searchTerm}
                     onChange={e => { setSearchTerm(e.target.value); setCurrentPage(1); }}
                     placeholder="Where are you going?"
-                    className="w-full text-[13px] font-normal text-gray-700 placeholder:text-gray-400 focus:outline-none bg-transparent mt-0.5"
+                    className="w-full text-[13px] md:text-[14px] font-normal text-gray-700 placeholder:text-gray-400 focus:outline-none bg-transparent"
                   />
                 </div>
               </div>
 
               {/* Region */}
-              <div className="flex-1 flex items-center gap-3 px-5 py-3 border-b sm:border-b-0 sm:border-r border-gray-200 w-full">
-                <Compass size={20} className="text-[#3B71FE] shrink-0" />
-                <div className="flex-1">
-                  <div className="text-[11px] font-bold text-gray-900 tracking-tight">Region</div>
+              <div className="flex-1 flex items-center gap-3 px-4 py-3 md:py-2.5">
+                <Compass size={22} className="text-[#3B71FE] shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <div className="text-[10px] md:text-[11px] font-bold text-gray-900 tracking-tight">Region</div>
                   <select
                     value={selectedDivision}
                     onChange={e => { setSelectedDivision(e.target.value); setCurrentPage(1); }}
-                    className="w-full text-[13px] font-normal text-gray-600 focus:outline-none bg-transparent cursor-pointer mt-0.5"
+                    className="w-full text-[13px] md:text-[14px] font-normal text-gray-700 focus:outline-none bg-transparent cursor-pointer"
                   >
                     <option value="All">All Regions</option>
                     <option value="Kashmir Valley">Kashmir Valley</option>
@@ -232,14 +236,14 @@ export default function DestinationsExplorerClient({
               </div>
 
               {/* Travel Type */}
-              <div className="flex-1 flex items-center gap-3 px-5 py-3 border-b sm:border-b-0 sm:border-r border-gray-200 w-full">
-                <Mountain size={20} className="text-[#3B71FE] shrink-0" />
-                <div className="flex-1">
-                  <div className="text-[11px] font-bold text-gray-900 tracking-tight">Travel Type</div>
+              <div className="flex-1 flex items-center gap-3 px-4 py-3 md:py-2.5">
+                <Mountain size={22} className="text-[#3B71FE] shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <div className="text-[10px] md:text-[11px] font-bold text-gray-900 tracking-tight">Travel Type</div>
                   <select
                     value={selectedTravelType}
                     onChange={e => { setSelectedTravelType(e.target.value); setCurrentPage(1); }}
-                    className="w-full text-[13px] font-normal text-gray-600 focus:outline-none bg-transparent cursor-pointer mt-0.5"
+                    className="w-full text-[13px] md:text-[14px] font-normal text-gray-700 focus:outline-none bg-transparent cursor-pointer"
                   >
                     <option value="All">All Types</option>
                     <option value="Nature & Alpine Lakes">Nature &amp; Lakes</option>
@@ -254,14 +258,14 @@ export default function DestinationsExplorerClient({
               </div>
 
               {/* Duration */}
-              <div className="flex-1 flex items-center gap-3 px-5 py-3 w-full">
-                <Clock size={20} className="text-[#3B71FE] shrink-0" />
-                <div className="flex-1">
-                  <div className="text-[11px] font-bold text-gray-900 tracking-tight">Duration</div>
+              <div className="flex-1 flex items-center gap-3 px-4 py-3 md:py-2.5">
+                <Clock size={22} className="text-[#3B71FE] shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <div className="text-[10px] md:text-[11px] font-bold text-gray-900 tracking-tight">Duration</div>
                   <select
                     value={selectedDuration}
                     onChange={e => { setSelectedDuration(e.target.value); setCurrentPage(1); }}
-                    className="w-full text-[13px] font-normal text-gray-600 focus:outline-none bg-transparent cursor-pointer mt-0.5"
+                    className="w-full text-[13px] md:text-[14px] font-normal text-gray-700 focus:outline-none bg-transparent cursor-pointer"
                   >
                     <option value="Any">Any Duration</option>
                     <option value="1-3">1 - 3 Days</option>
@@ -272,38 +276,213 @@ export default function DestinationsExplorerClient({
               </div>
 
               {/* Search Button */}
-              <button
-                onClick={() => setCurrentPage(1)}
-                className="shrink-0 flex items-center gap-2 rounded-xl sm:rounded-full bg-[#FF5B00] hover:bg-[#E04F00] text-white h-[46px] px-8 font-semibold text-[14px] shadow-md shadow-orange-500/20 transition-all hover:shadow-orange-500/30 active:scale-95 ml-1"
-              >
-                <Search size={16} />
-                <span className="inline">Search</span>
-              </button>
+              <div className="p-2 md:p-1 shrink-0">
+                <button
+                  onClick={() => setCurrentPage(1)}
+                  className="w-full md:w-auto flex items-center justify-center gap-2 rounded-xl md:rounded-full bg-[#FF5B00] hover:bg-[#E04F00] text-white h-[48px] px-8 font-bold text-[14px] shadow-lg shadow-orange-500/25 transition-all hover:shadow-orange-500/40 active:scale-95"
+                >
+                  <Search size={18} />
+                  <span>Search</span>
+                </button>
+              </div>
 
             </div>
-          </div>
-        </motion.div>
+          </motion.div>
+        </div>
       </div>
 
-      {/* Spacer for floating search bar */}
-      <div className="h-20" />
+      {/* Responsive Spacer so content never collides */}
+      <div className="h-16 sm:h-20 md:h-24" />
 
       {/* ═══════════ MAIN CONTENT ═══════════ */}
-      <div className="container-x py-8">
+      <div className="container-x py-4 sm:py-8">
 
-        {/* Mobile filter toggle */}
-        <div className="lg:hidden flex items-center justify-between mb-5 bg-white p-3 rounded-xl border border-gray-200">
-          <span className="text-xs font-bold text-gray-800">Showing {filtered.length} destinations</span>
-          <button onClick={() => setMobileFilterOpen(!mobileFilterOpen)} className="inline-flex items-center gap-1.5 rounded-lg bg-[#E85D04] text-white px-3 py-1.5 text-xs font-semibold">
-            <Sliders size={14} /> Filters
+        {/* Mobile Filter & Count Bar */}
+        <div className="lg:hidden flex items-center justify-between gap-3 mb-5 bg-white p-3.5 rounded-2xl border border-gray-200/80 shadow-sm">
+          <div>
+            <span className="text-xs text-gray-500 block">Found</span>
+            <span className="text-sm font-bold text-gray-900">{filtered.length} Destinations</span>
+          </div>
+          <button
+            onClick={() => setMobileFilterOpen(true)}
+            className="inline-flex items-center gap-2 rounded-xl bg-[#3B71FE] text-white px-4 py-2.5 text-xs font-bold shadow-md shadow-blue-500/20 active:scale-95 transition"
+          >
+            <Sliders size={15} />
+            <span>Filters</span>
+            {(selectedDistricts.length > 0 || selectedDivision !== 'All' || selectedTravelType !== 'All' || selectedDuration !== 'Any' || selectedRating > 0) && (
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white text-[#3B71FE] text-[10px] font-black">
+                !
+              </span>
+            )}
           </button>
         </div>
 
+        {/* ═══════════ MOBILE SLIDE-IN FILTER DRAWER ═══════════ */}
+        {mobileFilterOpen && (
+          <div className="fixed inset-0 z-50 lg:hidden flex justify-end">
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setMobileFilterOpen(false)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            />
+
+            {/* Slide-in Panel */}
+            <motion.div
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 250 }}
+              className="relative z-10 flex flex-col h-full w-full max-w-sm bg-white shadow-2xl"
+            >
+              {/* Drawer Header */}
+              <div className="flex items-center justify-between border-b border-gray-100 p-5">
+                <div className="flex items-center gap-2">
+                  <Sliders size={18} className="text-[#3B71FE]" />
+                  <h3 className="text-base font-bold text-gray-900">Filter Destinations</h3>
+                </div>
+                <button
+                  onClick={() => setMobileFilterOpen(false)}
+                  className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Scrollable Filters Body */}
+              <div className="flex-1 overflow-y-auto p-5 space-y-6">
+                {/* Reset button */}
+                <div className="flex justify-end">
+                  <button onClick={resetFilters} className="text-xs font-semibold text-[#3B71FE] hover:underline">
+                    Reset All Filters
+                  </button>
+                </div>
+
+                {/* Region */}
+                <div className="border-b border-gray-100 pb-5">
+                  <div className="font-bold text-sm text-gray-900 mb-3">Region &amp; District</div>
+                  <div className="max-h-56 overflow-y-auto space-y-2.5 pr-2">
+                    <label className="flex items-center justify-between cursor-pointer">
+                      <div className="flex items-center gap-2.5">
+                        <Checkbox checked={selectedDistricts.length === 0 && selectedDivision === 'All'} onChange={() => { setSelectedDistricts([]); setSelectedDivision('All'); setCurrentPage(1); }} />
+                        <span className="text-[13px] font-semibold text-gray-800">All Regions</span>
+                      </div>
+                      <span className="text-[11px] text-gray-400">{JK_ALL_DISTRICTS.length}</span>
+                    </label>
+                    {JK_ALL_DISTRICTS.map(d => (
+                      <label key={d.id} className="flex items-center justify-between cursor-pointer">
+                        <div className="flex items-center gap-2.5">
+                          <Checkbox checked={selectedDistricts.includes(d.district)} onChange={() => handleToggleDistrict(d.district)} />
+                          <span className="text-[13px] text-gray-700">{d.district}</span>
+                        </div>
+                        <span className="text-[11px] text-gray-400">{d.touristPlaces.length}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Budget */}
+                <div className="border-b border-gray-100 pb-5">
+                  <div className="font-bold text-sm text-gray-900 mb-3">Budget (Per Person)</div>
+                  <input
+                    type="range"
+                    min={5000}
+                    max={15000}
+                    step={500}
+                    value={maxBudget}
+                    onChange={e => { setMaxBudget(Number(e.target.value)); setCurrentPage(1); }}
+                    className="w-full accent-[#3B71FE] cursor-pointer"
+                  />
+                  <div className="flex justify-between mt-2 text-xs text-gray-500">
+                    <span>₹5,000</span>
+                    <span className="font-bold text-gray-900">₹{maxBudget.toLocaleString()}+</span>
+                  </div>
+                </div>
+
+                {/* Travel Type */}
+                <div className="border-b border-gray-100 pb-5">
+                  <div className="font-bold text-sm text-gray-900 mb-3">Travel Type</div>
+                  <div className="space-y-2.5">
+                    {travelTypes.map(t => (
+                      <label key={t.value} className="flex items-center justify-between cursor-pointer">
+                        <div className="flex items-center gap-2.5">
+                          <Radio checked={selectedTravelType === t.value} onChange={() => { setSelectedTravelType(t.value); setCurrentPage(1); }} />
+                          <span className="text-[13px] text-gray-700">{t.label}</span>
+                        </div>
+                        <span className="text-[11px] text-gray-400">{countType(t.value)}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Duration */}
+                <div className="border-b border-gray-100 pb-5">
+                  <div className="font-bold text-sm text-gray-900 mb-3">Duration</div>
+                  <div className="space-y-2.5">
+                    {durations.map(d => (
+                      <label key={d.value} className="flex items-center justify-between cursor-pointer">
+                        <div className="flex items-center gap-2.5">
+                          <Radio checked={selectedDuration === d.value} onChange={() => { setSelectedDuration(d.value); setCurrentPage(1); }} />
+                          <span className="text-[13px] text-gray-700">{d.label}</span>
+                        </div>
+                        <span className="text-[11px] text-gray-400">{countDur(d.value)}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Rating */}
+                <div>
+                  <div className="font-bold text-sm text-gray-900 mb-3">Rating</div>
+                  <div className="space-y-2.5">
+                    <label className="flex items-center gap-2.5 cursor-pointer">
+                      <Radio checked={selectedRating === 0} onChange={() => { setSelectedRating(0); setCurrentPage(1); }} />
+                      <span className="text-[13px] text-gray-700">All Ratings</span>
+                    </label>
+                    {ratingOpts.map(r => (
+                      <label key={r.stars} className="flex items-center justify-between cursor-pointer">
+                        <div className="flex items-center gap-2.5">
+                          <Radio checked={selectedRating === r.stars} onChange={() => { setSelectedRating(r.stars); setCurrentPage(1); }} />
+                          <div className="flex items-center gap-0.5">
+                            {Array.from({ length: 5 }).map((_, i) => (
+                              <Star key={i} size={13} className={i < Math.floor(r.stars) ? 'fill-amber-400 text-amber-400' : 'text-gray-300'} />
+                            ))}
+                            <span className="text-xs text-gray-600 ml-1">&amp; up</span>
+                          </div>
+                        </div>
+                        <span className="text-[11px] text-gray-400">{countRating(r.stars)}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Drawer Footer */}
+              <div className="border-t border-gray-100 p-4 bg-gray-50 flex items-center gap-3">
+                <button
+                  onClick={resetFilters}
+                  className="flex-1 rounded-xl border border-gray-300 bg-white py-3 text-xs font-bold text-gray-700 hover:bg-gray-100"
+                >
+                  Reset
+                </button>
+                <button
+                  onClick={() => setMobileFilterOpen(false)}
+                  className="flex-1 rounded-xl bg-[#3B71FE] py-3 text-xs font-bold text-white shadow-md shadow-blue-500/25"
+                >
+                  Show {filtered.length} Results
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr] xl:grid-cols-[260px_1fr] gap-8 items-start">
 
-          {/* ═══════════ SIDEBAR ═══════════ */}
-          <aside className={`${mobileFilterOpen ? 'block' : 'hidden lg:block'}`}>
-            <div className="sticky top-20 rounded-xl bg-white border border-gray-200 p-5">
+          {/* ═══════════ DESKTOP STICKY SIDEBAR ═══════════ */}
+          <aside className="hidden lg:block">
+            <div className="sticky top-20 rounded-2xl bg-white border border-gray-200/80 p-5 shadow-sm">
 
               {/* Header */}
               <div className="flex items-center justify-between pb-5 border-b border-gray-100">
