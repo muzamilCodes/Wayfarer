@@ -153,19 +153,21 @@ export default function DestinationsExplorerClient({
     <div className="min-h-screen bg-[#F5F5F5]">
 
       {/* ═══════════ HERO BANNER ═══════════ */}
-      <div className="relative overflow-hidden bg-[#0A192F]">
-        {/* Background image with high clarity and contrast */}
-        <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-1000 scale-105"
-          style={{
-            backgroundImage: `url('https://images.unsplash.com/photo-1598091383021-15ddea10925d?auto=format&fit=crop&w=2400&q=90')`,
-          }}
-        />
-        {/* Cinematic gradient overlay for maximum readability */}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/55 to-black/30" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
+      <div className="relative bg-[#0A192F]">
+        {/* Background image container with strict overflow-hidden */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-1000 scale-105"
+            style={{
+              backgroundImage: `url('https://images.unsplash.com/photo-1598091383021-15ddea10925d?auto=format&fit=crop&w=2400&q=90')`,
+            }}
+          />
+          {/* Cinematic gradient overlay for maximum readability */}
+          <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/55 to-black/30" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
+        </div>
 
-        <div className="container-x relative z-10 pt-8 sm:pt-12 md:pt-16 pb-16 sm:pb-24 md:pb-32">
+        <div className="container-x relative z-10 pt-8 sm:pt-12 md:pt-16 pb-16 sm:pb-24 md:pb-28">
           {/* Breadcrumb */}
           <nav className="flex items-center gap-1.5 text-xs sm:text-[13px] font-medium text-white/70">
             <Link href="/" className="hover:text-white transition-colors">Home</Link>
@@ -191,12 +193,12 @@ export default function DestinationsExplorerClient({
         </div>
 
         {/* ═══════════ FLOATING SEARCH BAR ═══════════ */}
-        <div className="container-x relative z-20">
+        <div className="container-x relative z-30 pb-4 md:pb-0 md:-mb-14">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="rounded-2xl md:rounded-full bg-white shadow-[0_12px_45px_rgba(0,0,0,0.18)] border border-gray-100 p-2 sm:p-2.5 -mb-10 sm:-mb-12 md:-mb-14"
+            className="rounded-2xl md:rounded-full bg-white shadow-[0_14px_50px_rgba(0,0,0,0.18)] border border-gray-100 p-2 sm:p-2.5"
           >
             {/* Desktop: Horizontal Pill | Mobile: Clean Grid / Stack */}
             <div className="flex flex-col md:flex-row items-stretch md:items-center divide-y md:divide-y-0 md:divide-x divide-gray-100">
@@ -276,10 +278,11 @@ export default function DestinationsExplorerClient({
               </div>
 
               {/* Search Button */}
-              <div className="p-2 md:p-1 shrink-0">
+              <div className="p-2 md:p-1 shrink-0 flex items-center justify-center">
                 <button
+                  type="button"
                   onClick={() => setCurrentPage(1)}
-                  className="w-full md:w-auto flex items-center justify-center gap-2 rounded-xl md:rounded-full bg-[#FF5B00] hover:bg-[#E04F00] text-white h-[48px] px-8 font-bold text-[14px] shadow-lg shadow-orange-500/25 transition-all hover:shadow-orange-500/40 active:scale-95"
+                  className="w-full md:w-auto flex items-center justify-center gap-2 rounded-xl md:rounded-full bg-[#FF5B00] hover:bg-[#E04F00] text-white h-[48px] px-8 font-bold text-[14px] shadow-lg shadow-orange-500/25 transition-all hover:shadow-orange-500/40 active:scale-95 cursor-pointer"
                 >
                   <Search size={18} />
                   <span>Search</span>
@@ -292,7 +295,7 @@ export default function DestinationsExplorerClient({
       </div>
 
       {/* Responsive Spacer so content never collides */}
-      <div className="h-16 sm:h-20 md:h-24" />
+      <div className="h-6 sm:h-10 md:h-20" />
 
       {/* ═══════════ MAIN CONTENT ═══════════ */}
       <div className="container-x py-4 sm:py-8">
