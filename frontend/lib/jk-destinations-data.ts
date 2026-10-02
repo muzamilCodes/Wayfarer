@@ -436,7 +436,7 @@ export const JK_ALL_DISTRICTS: JKDistrictDestination[] = [
     budgetTier: 'budget',
     bestSeason: 'May – October (Pleasant Summer Weather), Dec – Feb (Snow & Sledging)',
     altitude: '2,024 m (Patnitop)',
-    image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80',
+    image: 'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1200&q=80',
     shortDescription: 'Patnitop pine plateau, Skyview cable car, Krimchi Pandava temples, Sudh Mahadev, and Natha Top snow.',
     overview: 'Udhampur is famous for Patnitop hill station surrounded by towering deodar forests, panoramic views of the Chenab basin, and ancient 8th-century Krimchi terracotta stone temples.',
     touristPlaces: [
@@ -660,7 +660,7 @@ export const JK_ALL_DISTRICTS: JKDistrictDestination[] = [
     budgetTier: 'budget',
     bestSeason: 'October – April',
     altitude: '384 m (1,260 ft)',
-    image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80',
+    image: 'https://images.unsplash.com/photo-1518457607834-6e8d80c183c5?auto=format&fit=crop&w=1200&q=80',
     shortDescription: 'Mansar Lake & Wildlife Sanctuary, Samba Fort citadel, Purmandal "Chhota Kashi", and Utterbehni shrines.',
     overview: 'Samba is the land of brave Dogra warriors, renowned for its holy freshwater lakes, historic hill citadels, and Purmandal—known as "Chhota Kashi" where ancient stone temples line the mystical underground Devika river.',
     touristPlaces: [

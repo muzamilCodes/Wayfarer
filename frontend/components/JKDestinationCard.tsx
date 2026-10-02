@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
-import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Star, Heart, ArrowRight } from 'lucide-react';
 import { JKDistrictDestination } from '@/lib/jk-destinations-data';
 
@@ -21,33 +21,7 @@ export default function JKDestinationCard({
   onToggleFavorite,
   viewMode = 'grid',
 }: JKDestinationCardProps) {
-  const cardRef = useRef<HTMLDivElement>(null);
-  const [isHovered, setIsHovered] = useState(false);
   const [fav, setFav] = useState(isFavorite);
-
-  // 3D tilt
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
-  const springX = useSpring(x, { stiffness: 300, damping: 20 });
-  const springY = useSpring(y, { stiffness: 300, damping: 20 });
-  const rotateX = useTransform(springY, [-0.5, 0.5], [8, -8]);
-  const rotateY = useTransform(springX, [-0.5, 0.5], [-8, 8]);
-  const glareX = useTransform(springX, [-0.5, 0.5], ['0%', '100%']);
-  const glareY = useTransform(springY, [-0.5, 0.5], ['0%', '100%']);
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!cardRef.current || viewMode === 'list') return;
-    const rect = cardRef.current.getBoundingClientRect();
-    x.set((e.clientX - rect.left) / rect.width - 0.5);
-    y.set((e.clientY - rect.top) / rect.height - 0.5);
-  };
-
-  const handleMouseEnter = () => setIsHovered(true);
-  const handleMouseLeave = () => {
-    setIsHovered(false);
-    x.set(0);
-    y.set(0);
-  };
 
   const handleHeartClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -91,27 +65,14 @@ export default function JKDestinationCard({
     );
   }
 
-  /* ───────── GRID VIEW (Travivu-exact) ───────── */
+  /* ───────── GRID VIEW (Travivu-exact, Crystal Clear Hover) ───────── */
   return (
     <motion.div
-      ref={cardRef}
-      onMouseMove={handleMouseMove}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
       onClick={() => onExplore(district)}
-      style={{ rotateX, rotateY, transformStyle: 'preserve-3d' }}
       whileHover={{ y: -6 }}
-      transition={{ duration: 0.2 }}
-      className="group relative flex h-full flex-col overflow-hidden rounded-2xl bg-white border border-gray-100/90 hover:border-gray-200 hover:shadow-xl transition-all duration-300 cursor-pointer will-change-transform"
+      transition={{ duration: 0.25, ease: 'easeOut' }}
+      className="group relative flex h-full flex-col overflow-hidden rounded-2xl bg-white border border-gray-100/90 hover:border-gray-200 hover:shadow-[0_16px_36px_rgba(0,0,0,0.08)] transition-all duration-300 cursor-pointer"
     >
-      {/* 3D Glare */}
-      {isHovered && (
-        <motion.div
-          style={{ background: `radial-gradient(circle at ${glareX} ${glareY}, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0) 65%)` }}
-          className="pointer-events-none absolute inset-0 z-30 rounded-2xl"
-          aria-hidden
-        />
-      )}
 
       {/* Image Container */}
       <div className="relative aspect-[16/11] w-full overflow-hidden bg-gray-100">
@@ -138,8 +99,8 @@ export default function JKDestinationCard({
         </button>
       </div>
 
-      {/* Content - translateZ for 3D depth */}
-      <div style={{ transform: 'translateZ(14px)' }} className="flex flex-1 flex-col justify-between p-4 sm:p-5">
+      {/* Content */}
+      <div className="flex flex-1 flex-col justify-between p-4 sm:p-5">
         <div>
           {/* Row 1: Title (left) & Listings count (right) */}
           <div className="flex items-start justify-between gap-2">
