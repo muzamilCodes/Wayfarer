@@ -226,13 +226,20 @@ export default async function DestinationPage({ params }: Props) {
                           loading="lazy"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent pointer-events-none" />
-                        <span
-                          className={`absolute top-3 right-3 rounded-full px-2.5 py-1 text-[11px] font-bold border backdrop-blur-md shadow-sm ${
-                            badgeStyles[place.category] || 'bg-white/90 text-gray-800'
-                          }`}
-                        >
-                          {place.category}
-                        </span>
+                        <div className="absolute top-3 right-3 flex items-center gap-1.5">
+                          {place.pinCode && (
+                            <span className="rounded-full px-2 py-0.5 text-[10px] font-mono font-bold bg-black/50 text-white backdrop-blur-md border border-white/20 shadow-sm">
+                              PIN {place.pinCode}
+                            </span>
+                          )}
+                          <span
+                            className={`rounded-full px-2.5 py-1 text-[11px] font-bold border backdrop-blur-md shadow-sm ${
+                              badgeStyles[place.category] || 'bg-white/90 text-gray-800'
+                            }`}
+                          >
+                            {place.category}
+                          </span>
+                        </div>
                         <span className="absolute bottom-2.5 left-3.5 text-xs font-semibold text-white/90 drop-shadow">
                           {jkDistrict.district}
                         </span>
@@ -243,7 +250,12 @@ export default async function DestinationPage({ params }: Props) {
                     <div className="p-5 flex-1 flex flex-col justify-between">
                       <div>
                         {!place.image && (
-                          <div className="flex items-start justify-end mb-2">
+                          <div className="flex items-center justify-between mb-2">
+                            {place.pinCode ? (
+                              <span className="text-[10px] font-mono font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
+                                PIN {place.pinCode}
+                              </span>
+                            ) : <div />}
                             <span
                               className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold border ${
                                 badgeStyles[place.category] || 'bg-gray-100 text-gray-700'
@@ -260,6 +272,19 @@ export default async function DestinationPage({ params }: Props) {
                         <p className="mt-2 text-xs sm:text-sm text-gray-600 leading-relaxed">
                           {place.description}
                         </p>
+
+                        {/* Speciality (Khasiyat) Highlight Box */}
+                        {place.speciality && (
+                          <div className="mt-3.5 rounded-xl bg-amber-50/80 border border-amber-200/80 p-3 text-xs text-amber-950">
+                            <span className="font-bold text-amber-900 flex items-center gap-1.5 mb-1 text-[11.5px]">
+                              <Sparkles size={13} className="text-[#D9A441] shrink-0" />
+                              Speciality (Khasiyat):
+                            </span>
+                            <p className="text-amber-900/90 leading-relaxed font-medium">
+                              {place.speciality}
+                            </p>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
