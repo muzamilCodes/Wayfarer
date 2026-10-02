@@ -1,22 +1,429 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import Link from 'next/link';
+import Image from 'next/image';
+import {
+  MapPin,
+  Star,
+  Calendar,
+  Mountain,
+  Clock,
+  Compass,
+  PhoneCall,
+  ArrowLeft,
+  ArrowRight,
+  ShieldCheck,
+  Sparkles,
+  CheckCircle2,
+} from 'lucide-react';
 import Cover from '@/components/Cover';
 import PackageCard from '@/components/PackageCard';
 import { Empty } from '@/components/States';
 import { getDestination, getPackages } from '@/lib/api';
 import { inr } from '@/lib/format';
+import { JK_ALL_DISTRICTS, JKDistrictDestination } from '@/lib/jk-destinations-data';
 
 type Props = { params: { slug: string } };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const slug = decodeURIComponent(params.slug).toLowerCase();
+  const jkDistrict = JK_ALL_DISTRICTS.find(
+    (d) => d.id.toLowerCase() === slug || d.district.toLowerCase() === slug
+  );
+
+  if (jkDistrict) {
+    return {
+      title: `${jkDistrict.district} Tourism Guide & Attractions | Wayfarer`,
+      description: `${jkDistrict.tagline} - Explore ${jkDistrict.touristPlaces.length} top tourist places, attractions, best season, elevation, and tour packages in ${jkDistrict.district}, Jammu & Kashmir.`,
+      alternates: { canonical: `/destinations/${jkDistrict.id}` },
+    };
+  }
+
   const d = await getDestination(params.slug);
   return d ? { title: d.name, description: d.description, alternates: { canonical: `/destinations/${d.slug}` } } : {};
 }
 
 export default async function DestinationPage({ params }: Props) {
+  const slug = decodeURIComponent(params.slug).toLowerCase();
+  const jkDistrict = JK_ALL_DISTRICTS.find(
+    (d) => d.id.toLowerCase() === slug || d.district.toLowerCase() === slug
+  );
+
+  /* ─────────────────────────────────────────────────────────────
+     1. JK DISTRICT DEDICATED FULL PAGE (All Tourist Places & Photos)
+  ─────────────────────────────────────────────────────────────── */
+  if (jkDistrict) {
+    const relatedDistricts = JK_ALL_DISTRICTS
+      .filter((d) => d.id !== jkDistrict.id && d.division === jkDistrict.division)
+      .slice(0, 3);
+
+    const badgeStyles: Record<string, string> = {
+      'Must-Visit': 'bg-amber-100 text-amber-900 border-amber-200',
+      'Heritage': 'bg-indigo-100 text-indigo-900 border-indigo-200',
+      'Adventure': 'bg-sky-100 text-sky-900 border-sky-200',
+      'Spiritual': 'bg-emerald-100 text-emerald-900 border-emerald-200',
+      'Lake & Nature': 'bg-teal-100 text-teal-900 border-teal-200',
+      'Scenic View': 'bg-purple-100 text-purple-900 border-purple-200',
+      'Family & Leisure': 'bg-pink-100 text-pink-900 border-pink-200',
+      'Offbeat & Camping': 'bg-orange-100 text-orange-900 border-orange-200',
+    };
+
+    const whatsappUrl = `https://wa.me/919419000000?text=${encodeURIComponent(
+      `Hi Wayfarer! I want to plan a custom tour to ${jkDistrict.district}, Jammu & Kashmir.`
+    )}`;
+
+    return (
+      <div className="min-h-screen bg-slate-50/50 pb-20">
+        {/* Top Breadcrumb Bar */}
+        <div className="bg-white border-b border-gray-200">
+          <div className="container-x py-3 flex items-center justify-between text-xs sm:text-sm">
+            <div className="flex items-center gap-2 text-gray-500 overflow-x-auto whitespace-nowrap">
+              <Link href="/" className="hover:text-blue-600 transition-colors">Home</Link>
+              <span>/</span>
+              <Link href="/destinations" className="hover:text-blue-600 transition-colors">Destinations</Link>
+              <span>/</span>
+              <span className="font-semibold text-gray-900">{jkDistrict.district}</span>
+            </div>
+            <Link
+              href="/destinations"
+              className="inline-flex items-center gap-1.5 font-semibold text-blue-600 hover:text-blue-700 transition-colors shrink-0"
+            >
+              <ArrowLeft size={14} /> Back to all destinations
+            </Link>
+          </div>
+        </div>
+
+        {/* Hero Banner */}
+        <section className="relative h-[420px] sm:h-[480px] w-full overflow-hidden bg-slate-950">
+          {/* Background Image */}
+          <div
+            className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 scale-105"
+            style={{ backgroundImage: `url(${jkDistrict.image})` }}
+          />
+          {/* Gradient Overlays */}
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/50 to-black/30" />
+
+          {/* Hero Content */}
+          <div className="container-x absolute inset-0 flex flex-col justify-end pb-8 sm:pb-12 text-white">
+            <div className="flex flex-wrap items-center gap-2.5 mb-3">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-[#D9A441] px-3 py-1 text-xs font-bold text-slate-950 uppercase tracking-wider shadow-md">
+                <Sparkles size={13} /> {jkDistrict.division}
+              </span>
+              <span className="rounded-full bg-white/20 backdrop-blur-md px-3 py-1 text-xs font-medium text-white border border-white/25">
+                {jkDistrict.touristPlaces.length} Verified Attractions
+              </span>
+              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-3 py-1 text-xs font-semibold backdrop-blur-sm">
+                <Star size={13} className="fill-emerald-400 text-emerald-400" /> {jkDistrict.rating.toFixed(1)} ({jkDistrict.reviewsCount.toLocaleString()} reviews)
+              </span>
+            </div>
+
+            <h1 className="text-3xl sm:text-5xl md:text-6xl font-black tracking-tight text-white drop-shadow-md">
+              {jkDistrict.district}
+            </h1>
+            <p className="mt-2 text-sm sm:text-lg text-slate-200/90 font-medium max-w-3xl leading-relaxed">
+              {jkDistrict.tagline}
+            </p>
+          </div>
+        </section>
+
+        {/* Quick Stats Ribbon */}
+        <section className="border-b border-gray-200 bg-white shadow-sm">
+          <div className="container-x">
+            <div className="grid grid-cols-2 sm:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-gray-100 py-3 sm:py-4">
+              <div className="p-3 text-center sm:text-left flex items-center justify-center sm:justify-start gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-[#D9A441]">
+                  <Calendar size={20} />
+                </div>
+                <div>
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 block">Best Season</span>
+                  <span className="font-bold text-sm sm:text-base text-gray-900">{jkDistrict.bestSeason}</span>
+                </div>
+              </div>
+
+              <div className="p-3 text-center sm:text-left flex items-center justify-center sm:justify-start gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-[#3B71FE]">
+                  <Mountain size={20} />
+                </div>
+                <div>
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 block">Elevation</span>
+                  <span className="font-bold text-sm sm:text-base text-gray-900">{jkDistrict.altitude}</span>
+                </div>
+              </div>
+
+              <div className="p-3 text-center sm:text-left flex items-center justify-center sm:justify-start gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-purple-50 text-[#6B4FA0]">
+                  <Clock size={20} />
+                </div>
+                <div>
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 block">Ideal Stay</span>
+                  <span className="font-bold text-sm sm:text-base text-gray-900">{jkDistrict.duration}</span>
+                </div>
+              </div>
+
+              <div className="p-3 text-center sm:text-left flex items-center justify-center sm:justify-start gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
+                  <ShieldCheck size={20} />
+                </div>
+                <div>
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 block">Starting Package</span>
+                  <span className="font-bold text-sm sm:text-base text-emerald-700">From {inr(jkDistrict.startingPrice)}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Main Content Layout */}
+        <div className="container-x mt-10 grid gap-10 lg:grid-cols-[1fr_360px] items-start">
+          {/* Left Column: District Info & All Tourist Attractions */}
+          <div className="space-y-10">
+            {/* Overview Card */}
+            <div className="rounded-3xl border border-gray-200/80 bg-white p-6 sm:p-8 shadow-sm">
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center gap-2.5">
+                <Compass className="text-[#3B71FE]" size={24} />
+                About {jkDistrict.district}
+              </h2>
+              <p className="mt-4 text-sm sm:text-base text-gray-600 leading-relaxed">
+                {jkDistrict.overview}
+              </p>
+              <p className="mt-3 text-xs sm:text-sm text-gray-500 leading-relaxed">
+                {jkDistrict.shortDescription}
+              </p>
+            </div>
+
+            {/* Tourist Attractions Section (ALL PLACES FROM THE GUIDE WITH PHOTOS) */}
+            <div>
+              <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2 border-b border-gray-200 pb-4 mb-6">
+                <div>
+                  <span className="text-xs font-bold uppercase tracking-wider text-[#3B71FE]">
+                    Comprehensive Guide to Attractions
+                  </span>
+                  <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mt-1 flex items-center gap-2">
+                    <MapPin className="text-rose-500" size={26} />
+                    All Tourist Places in {jkDistrict.district} ({jkDistrict.touristPlaces.length} Spots)
+                  </h2>
+                </div>
+                <span className="text-xs text-gray-500 font-medium">
+                  Verified Scenic, Historical &amp; Religious Sights
+                </span>
+              </div>
+
+              {/* Grid of Tourist Attractions */}
+              <div className="grid gap-6 sm:grid-cols-2">
+                {jkDistrict.touristPlaces.map((place) => (
+                  <div
+                    key={place.name}
+                    className="group flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm hover:shadow-xl hover:border-[#3B71FE]/40 transition-all duration-300"
+                  >
+                    {/* Attraction Image */}
+                    {place.image && (
+                      <div className="relative h-48 sm:h-52 w-full overflow-hidden bg-gray-100">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={place.image}
+                          alt={place.name}
+                          className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-108"
+                          loading="lazy"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent pointer-events-none" />
+                        <span
+                          className={`absolute top-3 right-3 rounded-full px-2.5 py-1 text-[11px] font-bold border backdrop-blur-md shadow-sm ${
+                            badgeStyles[place.category] || 'bg-white/90 text-gray-800'
+                          }`}
+                        >
+                          {place.category}
+                        </span>
+                        <span className="absolute bottom-2.5 left-3.5 text-xs font-semibold text-white/90 drop-shadow">
+                          {jkDistrict.district}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Attraction Details */}
+                    <div className="p-5 flex-1 flex flex-col justify-between">
+                      <div>
+                        {!place.image && (
+                          <div className="flex items-start justify-end mb-2">
+                            <span
+                              className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold border ${
+                                badgeStyles[place.category] || 'bg-gray-100 text-gray-700'
+                              }`}
+                            >
+                              {place.category}
+                            </span>
+                          </div>
+                        )}
+                        <h3 className="text-base sm:text-lg font-bold text-gray-900 group-hover:text-[#3B71FE] transition-colors flex items-center gap-1.5">
+                          <MapPin size={15} className="text-[#D9A441] shrink-0" />
+                          {place.name}
+                        </h3>
+                        <p className="mt-2 text-xs sm:text-sm text-gray-600 leading-relaxed">
+                          {place.description}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Travel Experiences & Badges */}
+            <div className="rounded-3xl border border-gray-200/80 bg-white p-6 sm:p-8 shadow-sm">
+              <h3 className="text-base font-bold text-gray-900 mb-3">
+                Experience Types &amp; Themes
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {jkDistrict.travelTypes.map((type) => (
+                  <span
+                    key={type}
+                    className="rounded-xl bg-blue-50 border border-blue-100 px-3.5 py-1.5 text-xs font-semibold text-[#3B71FE]"
+                  >
+                    {type}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column: Sticky Booking & Support Card */}
+          <aside className="lg:sticky lg:top-24 space-y-6">
+            <div className="rounded-3xl border border-gray-200 bg-white p-6 shadow-lg">
+              <div className="border-b border-gray-100 pb-4">
+                <span className="inline-block rounded-full bg-blue-50 px-2.5 py-0.5 text-[11px] font-bold text-[#3B71FE] uppercase tracking-wider mb-2">
+                  All-Inclusive Guided Tour
+                </span>
+                <div className="text-xs text-gray-500">Starting Price</div>
+                <div className="mt-1 flex items-baseline gap-1.5">
+                  <span className="text-3xl font-extrabold text-gray-900">
+                    {inr(jkDistrict.startingPrice)}
+                  </span>
+                  <span className="text-xs text-gray-500">/ person (All-incl.)</span>
+                </div>
+              </div>
+
+              {/* Package Inclusions */}
+              <div className="py-4 space-y-2.5 text-xs sm:text-sm text-gray-600">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 size={16} className="text-emerald-500 shrink-0" />
+                  <span>Verified Chauffeur &amp; Private Cab</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 size={16} className="text-emerald-500 shrink-0" />
+                  <span>Curated Tour of all {jkDistrict.touristPlaces.length} attractions</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 size={16} className="text-emerald-500 shrink-0" />
+                  <span>3-Star / 4-Star Stay with Breakfast</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 size={16} className="text-emerald-500 shrink-0" />
+                  <span>24/7 Dedicated Local On-Ground Support</span>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="mt-4 space-y-2.5">
+                <a
+                  href={whatsappUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#25D366] px-4 py-3 text-sm font-bold text-white shadow-md hover:bg-[#20ba59] transition-colors"
+                >
+                  <PhoneCall size={16} /> Chat on WhatsApp
+                </a>
+                <Link
+                  href={`/plan?destination=${encodeURIComponent(jkDistrict.id)}`}
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#3B71FE] px-4 py-3 text-sm font-bold text-white shadow-md hover:bg-[#2857D5] transition-colors"
+                >
+                  Plan Custom Itinerary <ArrowRight size={16} />
+                </Link>
+              </div>
+
+              <p className="mt-4 text-center text-[11px] text-gray-400">
+                Instant confirmation • Free cancellation available
+              </p>
+            </div>
+
+            {/* Helpline Card */}
+            <div className="rounded-2xl border border-gray-100 bg-slate-900 p-5 text-white text-center">
+              <span className="text-xs text-slate-400 block mb-1">Need help choosing an itinerary?</span>
+              <p className="text-sm font-bold text-white">Call Wayfarer Experts</p>
+              <p className="mt-2 text-base font-extrabold text-[#D9A441]">+91 94190 00000</p>
+              <span className="text-[11px] text-slate-400 block mt-1">Available 9 AM – 9 PM daily</span>
+            </div>
+          </aside>
+        </div>
+
+        {/* Related Destinations Carousel */}
+        {relatedDistricts.length > 0 && (
+          <section className="container-x mt-16 pt-12 border-t border-gray-200">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <span className="text-xs font-bold uppercase tracking-wider text-[#3B71FE]">
+                  More to Discover
+                </span>
+                <h2 className="text-2xl font-extrabold text-gray-900 mt-1">
+                  Other Destinations in {jkDistrict.division}
+                </h2>
+              </div>
+              <Link
+                href="/destinations"
+                className="inline-flex items-center gap-1 text-sm font-bold text-blue-600 hover:text-blue-700"
+              >
+                View all <ArrowRight size={14} />
+              </Link>
+            </div>
+
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {relatedDistricts.map((rel) => (
+                <Link
+                  key={rel.id}
+                  href={`/destinations/${rel.id}`}
+                  className="group flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white hover:shadow-lg transition-all"
+                >
+                  <div className="relative aspect-[16/10] w-full overflow-hidden bg-gray-100">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={rel.image}
+                      alt={rel.district}
+                      className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <span className="absolute top-3 right-3 rounded-full bg-white/90 backdrop-blur-md px-2.5 py-0.5 text-[11px] font-bold text-gray-800 shadow-sm">
+                      {rel.touristPlaces.length} Attractions
+                    </span>
+                  </div>
+                  <div className="p-4 flex-1 flex flex-col justify-between">
+                    <div>
+                      <h4 className="font-bold text-base text-gray-900 group-hover:text-blue-600 transition-colors">
+                        {rel.district}
+                      </h4>
+                      <p className="mt-1 text-xs text-gray-500 line-clamp-2">
+                        {rel.shortDescription}
+                      </p>
+                    </div>
+                    <div className="mt-3 flex items-center justify-between border-t border-gray-100 pt-2 text-xs">
+                      <span className="font-semibold text-emerald-700">From {inr(rel.startingPrice)}</span>
+                      <span className="font-semibold text-blue-600 group-hover:underline inline-flex items-center gap-1">
+                        Explore <ArrowRight size={12} />
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
+      </div>
+    );
+  }
+
+  /* ─────────────────────────────────────────────────────────────
+     2. LEGACY / FALLBACK DESTINATION (MongoDB / External Backend)
+  ─────────────────────────────────────────────────────────────── */
   const d = await getDestination(params.slug);
   if (!d) notFound();
   const pk = await getPackages(`destination=${d.slug}&limit=12`);
+
   return (
     <>
       <section className="relative h-[50vh] min-h-[320px] overflow-hidden bg-lake text-snow">
@@ -38,8 +445,12 @@ export default async function DestinationPage({ params }: Props) {
       <section className="container-x pb-8">
         <h2 className="text-3xl font-bold text-lake">Tours in {d.name}</h2>
         <div className="mt-6">
-          {!pk || pk.items.length === 0 ? <Empty title={`No tours in ${d.name} yet`} hint="Check back soon or ask us for a custom plan." /> : (
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{pk.items.map((p) => <PackageCard key={p._id} p={p} />)}</div>
+          {!pk || pk.items.length === 0 ? (
+            <Empty title={`No tours in ${d.name} yet`} hint="Check back soon or ask us for a custom plan." />
+          ) : (
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {pk.items.map((p) => <PackageCard key={p._id} p={p} />)}
+            </div>
           )}
         </div>
       </section>

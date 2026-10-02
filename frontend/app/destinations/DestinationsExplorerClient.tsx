@@ -8,9 +8,8 @@ import {
   Star, Compass, Mountain
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { JK_ALL_DISTRICTS, JKDistrictDestination } from '@/lib/jk-destinations-data';
+import { JK_ALL_DISTRICTS } from '@/lib/jk-destinations-data';
 import JKDestinationCard from '@/components/JKDestinationCard';
-import District3DModal from '@/components/3d/District3DModal';
 
 export default function DestinationsExplorerClient({
   initialQuery = '',
@@ -30,7 +29,6 @@ export default function DestinationsExplorerClient({
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [openSections, setOpenSections] = useState({ region: true, budget: true, type: true, duration: true, rating: true });
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
-  const [activeDistrict, setActiveDistrict] = useState<JKDistrictDestination | null>(null);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 9;
@@ -694,7 +692,6 @@ export default function DestinationsExplorerClient({
                     >
                       <JKDestinationCard
                         district={d}
-                        onExplore={d => setActiveDistrict(d)}
                         isFavorite={favorites.includes(d.id)}
                         onToggleFavorite={id => setFavorites(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id])}
                         viewMode={viewMode}
@@ -752,13 +749,6 @@ export default function DestinationsExplorerClient({
           </main>
         </div>
       </div>
-
-      {/* 3D Modal */}
-      <District3DModal
-        district={activeDistrict}
-        onClose={() => setActiveDistrict(null)}
-        onBookClick={d => { window.location.href = `/plan?district=${encodeURIComponent(d.district)}`; }}
-      />
     </div>
   );
 }

@@ -2,13 +2,14 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Star, Heart, ArrowRight } from 'lucide-react';
 import { JKDistrictDestination } from '@/lib/jk-destinations-data';
 
 interface JKDestinationCardProps {
   district: JKDistrictDestination;
-  onExplore: (district: JKDistrictDestination) => void;
+  onExplore?: (district: JKDistrictDestination) => void;
   isFavorite?: boolean;
   onToggleFavorite?: (id: string) => void;
   viewMode?: 'grid' | 'list';
@@ -21,6 +22,7 @@ export default function JKDestinationCard({
   onToggleFavorite,
   viewMode = 'grid',
 }: JKDestinationCardProps) {
+  const router = useRouter();
   const [fav, setFav] = useState(isFavorite);
 
   const handleHeartClick = (e: React.MouseEvent) => {
@@ -29,11 +31,19 @@ export default function JKDestinationCard({
     if (onToggleFavorite) onToggleFavorite(district.id);
   };
 
+  const handleCardClick = () => {
+    if (onExplore) {
+      onExplore(district);
+    } else {
+      router.push(`/destinations/${district.id}`);
+    }
+  };
+
   /* ───────── LIST VIEW ───────── */
   if (viewMode === 'list') {
     return (
       <div
-        onClick={() => onExplore(district)}
+        onClick={handleCardClick}
         className="group relative flex flex-col sm:flex-row overflow-hidden rounded-xl bg-white border border-gray-200 hover:shadow-lg transition-all duration-300 cursor-pointer"
       >
         <div className="relative h-52 sm:h-auto sm:w-64 shrink-0 overflow-hidden">
@@ -83,7 +93,7 @@ export default function JKDestinationCard({
   /* ───────── GRID VIEW (Travivu-exact, Crystal Clear Hover) ───────── */
   return (
     <motion.div
-      onClick={() => onExplore(district)}
+      onClick={handleCardClick}
       whileHover={{ y: -6 }}
       transition={{ duration: 0.25, ease: 'easeOut' }}
       className="group relative flex h-full flex-col overflow-hidden rounded-2xl bg-white border border-gray-100/90 hover:border-gray-200 hover:shadow-[0_16px_36px_rgba(0,0,0,0.08)] transition-all duration-300 cursor-pointer"

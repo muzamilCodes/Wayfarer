@@ -2,13 +2,11 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { ArrowRight, Compass } from 'lucide-react';
-import { JK_ALL_DISTRICTS, JKDistrictDestination } from '@/lib/jk-destinations-data';
+import { ArrowRight } from 'lucide-react';
+import { JK_ALL_DISTRICTS } from '@/lib/jk-destinations-data';
 import JKDestinationCard from '@/components/JKDestinationCard';
-import District3DModal from '@/components/3d/District3DModal';
 
 export default function JKFeaturedSection() {
-  const [activeDistrict, setActiveDistrict] = useState<JKDistrictDestination | null>(null);
   const [favorites, setFavorites] = useState<string[]>([]);
 
   // Pick top 6 iconic districts for homepage showcase
@@ -25,7 +23,7 @@ export default function JKFeaturedSection() {
             Featured Destinations
           </h2>
           <p className="mt-1 text-sm text-gray-500">
-            Click any district to explore tourist places, 3D terrain &amp; full travel guide.
+            Click any district to explore all tourist places, attractions &amp; full travel guide.
           </p>
         </div>
         <Link
@@ -42,19 +40,11 @@ export default function JKFeaturedSection() {
           <JKDestinationCard
             key={district.id}
             district={district}
-            onExplore={d => setActiveDistrict(d)}
             isFavorite={favorites.includes(district.id)}
             onToggleFavorite={id => setFavorites(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id])}
           />
         ))}
       </div>
-
-      {/* 3D Modal */}
-      <District3DModal
-        district={activeDistrict}
-        onClose={() => setActiveDistrict(null)}
-        onBookClick={d => { window.location.href = `/plan?district=${encodeURIComponent(d.district)}`; }}
-      />
     </section>
   );
 }
