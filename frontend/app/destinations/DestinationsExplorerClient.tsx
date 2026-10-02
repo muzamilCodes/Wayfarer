@@ -2,28 +2,10 @@
 
 import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
-import { 
-  Search, 
-  MapPin, 
-  Calendar, 
-  Clock, 
-  Sliders, 
-  Grid, 
-  List, 
-  ChevronDown, 
-  ChevronUp, 
-  RotateCcw, 
-  ChevronLeft, 
-  ChevronRight, 
-  Sparkles, 
-  Send, 
-  Star,
-  Check,
-  Compass,
-  MessageCircle,
-  Plane,
-  Mountain
+import {
+  Search, MapPin, Calendar, Clock, Sliders, Grid, List,
+  ChevronDown, ChevronUp, RotateCcw, ChevronLeft, ChevronRight,
+  Star, Compass, Plane, Mountain
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { JK_ALL_DISTRICTS, JKDistrictDestination } from '@/lib/jk-destinations-data';
@@ -37,7 +19,6 @@ export default function DestinationsExplorerClient({
   initialQuery?: string;
   initialRegion?: string;
 }) {
-  // Search & Filter States
   const [searchTerm, setSearchTerm] = useState(initialQuery);
   const [selectedDivision, setSelectedDivision] = useState<string>(initialRegion);
   const [selectedDistricts, setSelectedDistricts] = useState<string[]>([]);
@@ -47,110 +28,40 @@ export default function DestinationsExplorerClient({
   const [maxBudget, setMaxBudget] = useState<number>(15000);
   const [sortBy, setSortBy] = useState<'popular' | 'rating' | 'price-asc' | 'price-desc' | 'name'>('popular');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-
-  // Accordion toggle states
-  const [openSections, setOpenSections] = useState({
-    region: true,
-    budget: true,
-    type: true,
-    duration: true,
-    rating: true,
-  });
-
-  // Mobile filter drawer
+  const [openSections, setOpenSections] = useState({ region: true, budget: true, type: true, duration: true, rating: true });
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
-
-  // Modal active district
   const [activeDistrict, setActiveDistrict] = useState<JKDistrictDestination | null>(null);
-
-  // Favorites state
   const [favorites, setFavorites] = useState<string[]>([]);
-
-  // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 9;
 
-  const toggleAccordion = (section: keyof typeof openSections) => {
-    setOpenSections((prev) => ({ ...prev, [section]: !prev[section] }));
-  };
+  const toggle = (s: keyof typeof openSections) => setOpenSections(p => ({ ...p, [s]: !p[s] }));
 
-  const handleToggleDistrict = (districtName: string) => {
+  const handleToggleDistrict = (name: string) => {
     setCurrentPage(1);
-    setSelectedDistricts((prev) =>
-      prev.includes(districtName)
-        ? prev.filter((d) => d !== districtName)
-        : [...prev, districtName]
-    );
+    setSelectedDistricts(p => p.includes(name) ? p.filter(d => d !== name) : [...p, name]);
   };
 
-  const handleResetFilters = () => {
-    setSearchTerm('');
-    setSelectedDivision('All');
-    setSelectedDistricts([]);
-    setSelectedTravelType('All');
-    setSelectedDuration('Any');
-    setSelectedRating(0);
-    setMaxBudget(15000);
-    setSortBy('popular');
-    setCurrentPage(1);
+  const resetFilters = () => {
+    setSearchTerm(''); setSelectedDivision('All'); setSelectedDistricts([]);
+    setSelectedTravelType('All'); setSelectedDuration('Any'); setSelectedRating(0);
+    setMaxBudget(15000); setSortBy('popular'); setCurrentPage(1);
   };
 
-  const handleToggleFavorite = (id: string) => {
-    setFavorites((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
-    );
-  };
-
-  // Filtered & Sorted destinations
-  const filteredDistricts = useMemo(() => {
-    return JK_ALL_DISTRICTS.filter((d) => {
-      // Search term: search by district name, division, tourist places, or description
+  const filtered = useMemo(() => {
+    return JK_ALL_DISTRICTS.filter(d => {
       if (searchTerm) {
-        const query = searchTerm.toLowerCase();
-        const matchName = d.district.toLowerCase().includes(query);
-        const matchTagline = d.tagline.toLowerCase().includes(query);
-        const matchDesc = d.shortDescription.toLowerCase().includes(query);
-        const matchPlaces = d.touristPlaces.some((p) =>
-          p.name.toLowerCase().includes(query) || p.description.toLowerCase().includes(query)
-        );
-        if (!matchName && !matchTagline && !matchDesc && !matchPlaces) return false;
+        const q = searchTerm.toLowerCase();
+        if (![d.district, d.tagline, d.shortDescription].some(s => s.toLowerCase().includes(q)) &&
+            !d.touristPlaces.some(p => p.name.toLowerCase().includes(q) || p.description.toLowerCase().includes(q)))
+          return false;
       }
-
-      // Division filter
-      if (selectedDivision !== 'All' && d.division !== selectedDivision) {
-        return false;
-      }
-
-      // Specific District checkbox filter
-      if (selectedDistricts.length > 0 && !selectedDistricts.includes(d.district)) {
-        return false;
-      }
-
-      // Travel Type filter
-      if (selectedTravelType !== 'All') {
-        const matchesType = d.travelTypes.some(
-          (t) => t.toLowerCase() === selectedTravelType.toLowerCase()
-        );
-        if (!matchesType) return false;
-      }
-
-      // Duration filter
-      if (selectedDuration !== 'Any') {
-        if (selectedDuration === '1-3' && d.durationCategory !== '1-3') return false;
-        if (selectedDuration === '4-7' && d.durationCategory !== '4-7') return false;
-        if (selectedDuration === '8-14' && d.durationCategory !== '8-14') return false;
-      }
-
-      // Rating filter
-      if (selectedRating > 0 && d.rating < selectedRating) {
-        return false;
-      }
-
-      // Budget filter
-      if (d.startingPrice > maxBudget) {
-        return false;
-      }
-
+      if (selectedDivision !== 'All' && d.division !== selectedDivision) return false;
+      if (selectedDistricts.length > 0 && !selectedDistricts.includes(d.district)) return false;
+      if (selectedTravelType !== 'All' && !d.travelTypes.some(t => t.toLowerCase() === selectedTravelType.toLowerCase())) return false;
+      if (selectedDuration !== 'Any' && d.durationCategory !== selectedDuration) return false;
+      if (selectedRating > 0 && d.rating < selectedRating) return false;
+      if (d.startingPrice > maxBudget) return false;
       return true;
     }).sort((a, b) => {
       if (sortBy === 'popular') return b.reviewsCount - a.reviewsCount;
@@ -160,198 +71,156 @@ export default function DestinationsExplorerClient({
       if (sortBy === 'name') return a.district.localeCompare(b.district);
       return 0;
     });
-  }, [
-    searchTerm,
-    selectedDivision,
-    selectedDistricts,
-    selectedTravelType,
-    selectedDuration,
-    selectedRating,
-    maxBudget,
-    sortBy,
-  ]);
+  }, [searchTerm, selectedDivision, selectedDistricts, selectedTravelType, selectedDuration, selectedRating, maxBudget, sortBy]);
 
-  // Paginated items
-  const totalPages = Math.ceil(filteredDistricts.length / itemsPerPage) || 1;
-  const paginatedDistricts = useMemo(() => {
-    const start = (currentPage - 1) * itemsPerPage;
-    return filteredDistricts.slice(start, start + itemsPerPage);
-  }, [filteredDistricts, currentPage, itemsPerPage]);
+  const totalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
+  const paginated = useMemo(() => {
+    const s = (currentPage - 1) * itemsPerPage;
+    return filtered.slice(s, s + itemsPerPage);
+  }, [filtered, currentPage]);
 
-  // Count active filters
-  const activeFilterCount = 
-    (selectedDivision !== 'All' ? 1 : 0) +
-    selectedDistricts.length +
-    (selectedTravelType !== 'All' ? 1 : 0) +
-    (selectedDuration !== 'Any' ? 1 : 0) +
-    (selectedRating > 0 ? 1 : 0) +
-    (maxBudget < 15000 ? 1 : 0);
-
-  // Travel types with counts
-  const travelTypeOptions = [
+  const travelTypes = [
     { label: 'All Types', value: 'All' },
-    { label: 'Nature & Alpine Lakes', value: 'Nature & Alpine Lakes' },
-    { label: 'Snow & Winter Sports', value: 'Snow & Winter Sports' },
-    { label: 'Sacred Pilgrimage & Temples', value: 'Sacred Pilgrimage & Temples' },
-    { label: 'Adventure & High Passes', value: 'Adventure & High Passes' },
-    { label: 'Honeymoon & Romance', value: 'Honeymoon & Romance' },
-    { label: 'Heritage & Mughal Architecture', value: 'Heritage & Mughal Architecture' },
-    { label: 'Family & Leisure', value: 'Family & Leisure' },
-    { label: 'Offbeat & Camping', value: 'Offbeat & Camping' },
+    { label: 'Nature & Lakes', value: 'Nature & Alpine Lakes' },
+    { label: 'Adventure', value: 'Adventure & High Passes' },
+    { label: 'Snow & Winter', value: 'Snow & Winter Sports' },
+    { label: 'Honeymoon', value: 'Honeymoon & Romance' },
+    { label: 'Family', value: 'Family & Leisure' },
+    { label: 'Pilgrimage', value: 'Sacred Pilgrimage & Temples' },
+    { label: 'Heritage', value: 'Heritage & Mughal Architecture' },
+    { label: 'Offbeat', value: 'Offbeat & Camping' },
   ];
 
-  // Count per travel type
-  const travelTypeCounts = useMemo(() => {
-    const counts: Record<string, number> = {};
-    travelTypeOptions.forEach((opt) => {
-      if (opt.value === 'All') {
-        counts['All'] = JK_ALL_DISTRICTS.length;
-      } else {
-        counts[opt.value] = JK_ALL_DISTRICTS.filter((d) =>
-          d.travelTypes.some((t) => t.toLowerCase() === opt.value.toLowerCase())
-        ).length;
-      }
-    });
-    return counts;
-  }, []);
-
-  // Duration counts
-  const durationOptions = [
-    { label: 'Any Duration', value: 'Any', count: JK_ALL_DISTRICTS.length },
-    { label: '1 – 3 Days', value: '1-3', count: JK_ALL_DISTRICTS.filter((d) => d.durationCategory === '1-3').length },
-    { label: '4 – 7 Days', value: '4-7', count: JK_ALL_DISTRICTS.filter((d) => d.durationCategory === '4-7').length },
-    { label: '8 – 14 Days', value: '8-14', count: JK_ALL_DISTRICTS.filter((d) => d.durationCategory === '8-14').length },
+  const durations = [
+    { label: 'Any Duration', value: 'Any' },
+    { label: '1 – 3 Days', value: '1-3' },
+    { label: '4 – 7 Days', value: '4-7' },
+    { label: '8 – 14 Days', value: '8-14' },
   ];
 
-  // Rating options
-  const ratingOptions = [
-    { label: '5 Stars', stars: 5 },
-    { label: '4 Stars & up', stars: 4 },
-    { label: '3 Stars & up', stars: 3 },
-    { label: '2 Stars & up', stars: 2 },
+  const ratingOpts = [
+    { stars: 5.0, label: '5 Stars' },
+    { stars: 4.8, label: '4.8 & up' },
+    { stars: 4.7, label: '4.7 & up' },
   ];
 
-  // Pagination display helpers
-  const getPageNumbers = () => {
-    const pages: (number | '...')[] = [];
-    if (totalPages <= 7) {
-      for (let i = 1; i <= totalPages; i++) pages.push(i);
-    } else {
-      pages.push(1);
-      if (currentPage > 3) pages.push('...');
-      for (let i = Math.max(2, currentPage - 1); i <= Math.min(totalPages - 1, currentPage + 1); i++) {
-        pages.push(i);
-      }
-      if (currentPage < totalPages - 2) pages.push('...');
-      pages.push(totalPages);
+  const getPages = () => {
+    const p: (number | '...')[] = [];
+    if (totalPages <= 7) { for (let i = 1; i <= totalPages; i++) p.push(i); }
+    else {
+      p.push(1);
+      if (currentPage > 3) p.push('...');
+      for (let i = Math.max(2, currentPage - 1); i <= Math.min(totalPages - 1, currentPage + 1); i++) p.push(i);
+      if (currentPage < totalPages - 2) p.push('...');
+      p.push(totalPages);
     }
-    return pages;
+    return p;
   };
 
+  const countType = (v: string) => v === 'All' ? JK_ALL_DISTRICTS.length : JK_ALL_DISTRICTS.filter(d => d.travelTypes.some(t => t.toLowerCase() === v.toLowerCase())).length;
+  const countDur = (v: string) => v === 'Any' ? JK_ALL_DISTRICTS.length : JK_ALL_DISTRICTS.filter(d => d.durationCategory === v).length;
+  const countRating = (s: number) => JK_ALL_DISTRICTS.filter(d => d.rating >= s).length;
+
+  // Checkbox component matching Travivu exactly
+  const Checkbox = ({ checked, onChange }: { checked: boolean; onChange: () => void }) => (
+    <button
+      type="button"
+      onClick={onChange}
+      className={`flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded border-[1.5px] transition-colors ${
+        checked ? 'bg-[#3B71FE] border-[#3B71FE]' : 'border-gray-300 bg-white hover:border-gray-400'
+      }`}
+    >
+      {checked && (
+        <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+      )}
+    </button>
+  );
+
+  // Radio component
+  const Radio = ({ checked, onChange }: { checked: boolean; onChange: () => void }) => (
+    <button
+      type="button"
+      onClick={onChange}
+      className={`flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border-[1.5px] transition-colors ${
+        checked ? 'border-[#3B71FE]' : 'border-gray-300 hover:border-gray-400'
+      }`}
+    >
+      {checked && <div className="h-[10px] w-[10px] rounded-full bg-[#3B71FE]" />}
+    </button>
+  );
+
   return (
-    <div className="min-h-screen bg-[#F8FAFC]">
-      {/* ========================================================================= */}
-      {/* 1. HERO BANNER - Travivu-Style with Scenic Background                    */}
-      {/* ========================================================================= */}
-      <div className="relative overflow-hidden bg-[#0F3B4A] pb-28 pt-12 md:pb-36 md:pt-16">
-        {/* Background Image */}
-        <div 
+    <div className="min-h-screen bg-[#F5F5F5]">
+
+      {/* ═══════════ HERO BANNER ═══════════ */}
+      <div className="relative overflow-hidden bg-[#1A1A2E]">
+        {/* Background image */}
+        <div
           className="absolute inset-0 bg-cover bg-center"
-          style={{
-            backgroundImage: `url('https://images.unsplash.com/photo-1598091383021-15ddea10925d?auto=format&fit=crop&w=2000&q=85')`
-          }}
+          style={{ backgroundImage: `url('https://images.unsplash.com/photo-1598091383021-15ddea10925d?auto=format&fit=crop&w=2000&q=85')` }}
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#0A2733]/95 via-[#0F3B4A]/80 to-[#0F3B4A]/70" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#1A1A2E]/90 via-[#1A1A2E]/70 to-[#1A1A2E]/50" />
 
-        {/* Animated mountain silhouette */}
-        <svg
-          viewBox="0 0 1440 120"
-          preserveAspectRatio="none"
-          className="absolute inset-x-0 bottom-0 h-16 w-full"
-          aria-hidden
-        >
-          <path
-            d="M0 120V60l160-30 200 20 180-40 200 30 160-10 200 25 180-35 160 20V120z"
-            fill="#F8FAFC"
-          />
-        </svg>
-
-        <div className="container-x relative z-10">
+        <div className="container-x relative z-10 pb-28 pt-8 md:pb-36 md:pt-10">
           {/* Breadcrumb */}
-          <nav className="flex items-center gap-2 text-[13px] font-medium text-white/70">
+          <nav className="flex items-center gap-1.5 text-[13px] text-white/60">
             <Link href="/" className="hover:text-white transition-colors">Home</Link>
-            <span className="text-white/40">›</span>
-            <span className="text-white font-semibold">Destinations</span>
+            <span>›</span>
+            <span className="text-white">Destinations</span>
           </nav>
 
-          {/* Hero Heading */}
-          <motion.div 
+          {/* Heading */}
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7 }}
-            className="mt-6 max-w-3xl"
+            transition={{ duration: 0.6 }}
+            className="mt-6 max-w-2xl"
           >
-            <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-[56px] leading-[1.1]">
-              Explore Beautiful Places
-              <br />
-              <span className="bg-gradient-to-r from-white via-amber-200 to-amber-400 bg-clip-text text-transparent">
-                in Jammu & Kashmir
-              </span>
+            <h1 className="text-[32px] sm:text-[42px] lg:text-[48px] font-extrabold text-white leading-[1.15] tracking-tight">
+              Explore Beautiful Places<br />
+              in Jammu &amp; Kashmir
             </h1>
-            <p className="mt-4 text-[15px] text-white/75 leading-relaxed max-w-2xl">
-              Discover breathtaking valleys, snow peaks, sacred shrines, and pristine alpine lakes across all 20 districts of Jammu & Kashmir — all in one place.
+            <p className="mt-4 text-[14px] sm:text-[15px] text-white/70 leading-relaxed max-w-xl">
+              Discover amazing places, unforgettable experiences and the best deals – all in one place.
             </p>
           </motion.div>
         </div>
 
-        {/* ============================== */}
-        {/* FLOATING SEARCH BAR - Travivu Style */}
-        {/* ============================== */}
+        {/* ═══════════ FLOATING SEARCH BAR ═══════════ */}
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.15 }}
-          className="container-x relative z-20 mt-10 md:mt-12"
+          transition={{ duration: 0.6, delay: 0.1 }}
+          className="container-x relative z-20 -mb-14"
+          style={{ marginTop: '-56px' }}
         >
-          <div className="rounded-full bg-white p-2 shadow-2xl shadow-black/15 border border-white/80">
-            <div className="flex flex-col md:flex-row items-center">
-              
-              {/* Destination Input */}
-              <div className="flex-1 flex items-center gap-3 px-4 py-2.5 border-r-0 md:border-r border-slate-200/60 min-w-0">
-                <MapPin size={20} className="text-[#E85D04] shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <label htmlFor="search-input" className="block text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                    Destination
-                  </label>
+          <div className="rounded-full bg-white shadow-xl shadow-black/10 border border-gray-100 p-1.5 sm:p-2">
+            <div className="flex flex-col sm:flex-row items-center">
+
+              {/* Destination */}
+              <div className="flex-1 flex items-center gap-3 px-5 py-3 border-b sm:border-b-0 sm:border-r border-gray-200 w-full">
+                <MapPin size={20} className="text-[#3B71FE] shrink-0" />
+                <div className="flex-1">
+                  <div className="text-[11px] font-bold text-gray-900 tracking-tight">Destination</div>
                   <input
-                    id="search-input"
                     type="text"
                     value={searchTerm}
-                    onChange={(e) => {
-                      setSearchTerm(e.target.value);
-                      setCurrentPage(1);
-                    }}
+                    onChange={e => { setSearchTerm(e.target.value); setCurrentPage(1); }}
                     placeholder="Where are you going?"
-                    className="w-full text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:outline-none bg-transparent"
+                    className="w-full text-[13px] font-normal text-gray-700 placeholder:text-gray-400 focus:outline-none bg-transparent mt-0.5"
                   />
                 </div>
               </div>
 
-              {/* Region Select */}
-              <div className="flex-1 flex items-center gap-3 px-4 py-2.5 border-r-0 md:border-r border-slate-200/60 min-w-0">
-                <Compass size={20} className="text-[#E85D04] shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <label htmlFor="region-select" className="block text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                    Region
-                  </label>
+              {/* Region */}
+              <div className="flex-1 flex items-center gap-3 px-5 py-3 border-b sm:border-b-0 sm:border-r border-gray-200 w-full">
+                <Compass size={20} className="text-[#3B71FE] shrink-0" />
+                <div className="flex-1">
+                  <div className="text-[11px] font-bold text-gray-900 tracking-tight">Region</div>
                   <select
-                    id="region-select"
                     value={selectedDivision}
-                    onChange={(e) => {
-                      setSelectedDivision(e.target.value);
-                      setCurrentPage(1);
-                    }}
-                    className="w-full text-sm font-semibold text-slate-900 focus:outline-none bg-transparent cursor-pointer"
+                    onChange={e => { setSelectedDivision(e.target.value); setCurrentPage(1); }}
+                    className="w-full text-[13px] font-normal text-gray-600 focus:outline-none bg-transparent cursor-pointer mt-0.5"
                   >
                     <option value="All">All Regions</option>
                     <option value="Kashmir Valley">Kashmir Valley</option>
@@ -362,49 +231,37 @@ export default function DestinationsExplorerClient({
                 </div>
               </div>
 
-              {/* Travel Type Select */}
-              <div className="flex-1 flex items-center gap-3 px-4 py-2.5 border-r-0 md:border-r border-slate-200/60 min-w-0">
-                <Mountain size={20} className="text-[#E85D04] shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <label htmlFor="type-select" className="block text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                    Travel Type
-                  </label>
+              {/* Travel Type */}
+              <div className="flex-1 flex items-center gap-3 px-5 py-3 border-b sm:border-b-0 sm:border-r border-gray-200 w-full">
+                <Mountain size={20} className="text-[#3B71FE] shrink-0" />
+                <div className="flex-1">
+                  <div className="text-[11px] font-bold text-gray-900 tracking-tight">Travel Type</div>
                   <select
-                    id="type-select"
                     value={selectedTravelType}
-                    onChange={(e) => {
-                      setSelectedTravelType(e.target.value);
-                      setCurrentPage(1);
-                    }}
-                    className="w-full text-sm font-semibold text-slate-900 focus:outline-none bg-transparent cursor-pointer"
+                    onChange={e => { setSelectedTravelType(e.target.value); setCurrentPage(1); }}
+                    className="w-full text-[13px] font-normal text-gray-600 focus:outline-none bg-transparent cursor-pointer mt-0.5"
                   >
                     <option value="All">All Types</option>
-                    <option value="Snow & Winter Sports">Snow & Winter</option>
-                    <option value="Nature & Alpine Lakes">Nature & Lakes</option>
-                    <option value="Sacred Pilgrimage & Temples">Pilgrimage</option>
+                    <option value="Nature & Alpine Lakes">Nature &amp; Lakes</option>
+                    <option value="Snow & Winter Sports">Snow &amp; Winter</option>
                     <option value="Adventure & High Passes">Adventure</option>
                     <option value="Honeymoon & Romance">Honeymoon</option>
                     <option value="Family & Leisure">Family</option>
+                    <option value="Sacred Pilgrimage & Temples">Pilgrimage</option>
                     <option value="Offbeat & Camping">Offbeat</option>
                   </select>
                 </div>
               </div>
 
-              {/* Duration Select */}
-              <div className="flex-1 flex items-center gap-3 px-4 py-2.5 min-w-0">
-                <Clock size={20} className="text-[#E85D04] shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <label htmlFor="duration-select" className="block text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                    Duration
-                  </label>
+              {/* Duration */}
+              <div className="flex-1 flex items-center gap-3 px-5 py-3 w-full">
+                <Clock size={20} className="text-[#3B71FE] shrink-0" />
+                <div className="flex-1">
+                  <div className="text-[11px] font-bold text-gray-900 tracking-tight">Duration</div>
                   <select
-                    id="duration-select"
                     value={selectedDuration}
-                    onChange={(e) => {
-                      setSelectedDuration(e.target.value);
-                      setCurrentPage(1);
-                    }}
-                    className="w-full text-sm font-semibold text-slate-900 focus:outline-none bg-transparent cursor-pointer"
+                    onChange={e => { setSelectedDuration(e.target.value); setCurrentPage(1); }}
+                    className="w-full text-[13px] font-normal text-gray-600 focus:outline-none bg-transparent cursor-pointer mt-0.5"
                   >
                     <option value="Any">Any Duration</option>
                     <option value="1-3">1 - 3 Days</option>
@@ -417,10 +274,10 @@ export default function DestinationsExplorerClient({
               {/* Search Button */}
               <button
                 onClick={() => setCurrentPage(1)}
-                className="shrink-0 flex items-center justify-center gap-1.5 rounded-full bg-[#E85D04] hover:bg-[#dc5400] text-white h-12 w-12 md:h-12 md:w-auto md:px-6 font-bold text-sm shadow-lg shadow-orange-500/25 transition-all hover:scale-105 active:scale-95 ml-1"
+                className="shrink-0 flex items-center gap-2 rounded-xl sm:rounded-full bg-[#FF5B00] hover:bg-[#E04F00] text-white h-[46px] px-8 font-semibold text-[14px] shadow-md shadow-orange-500/20 transition-all hover:shadow-orange-500/30 active:scale-95 ml-1"
               >
-                <Search size={18} />
-                <span className="hidden md:inline">Search</span>
+                <Search size={16} />
+                <span className="inline">Search</span>
               </button>
 
             </div>
@@ -428,323 +285,179 @@ export default function DestinationsExplorerClient({
         </motion.div>
       </div>
 
-      {/* ========================================================================= */}
-      {/* 2. MAIN CONTENT AREA: TWO COLUMNS (SIDEBAR FILTERS + DESTINATIONS GRID)  */}
-      {/* ========================================================================= */}
-      <div className="container-x py-10 md:py-14">
-        
-        {/* Mobile filter toggle bar */}
-        <div className="lg:hidden flex items-center justify-between mb-6 bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm">
-          <span className="text-xs font-bold text-slate-800">
-            Showing {filteredDistricts.length} destinations
-          </span>
-          <button
-            onClick={() => setMobileFilterOpen(!mobileFilterOpen)}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-[#E85D04] text-white px-3.5 py-1.5 text-xs font-semibold shadow-sm"
-          >
-            <Sliders size={14} />
-            <span>Filters {activeFilterCount > 0 ? `(${activeFilterCount})` : ''}</span>
+      {/* Spacer for floating search bar */}
+      <div className="h-20" />
+
+      {/* ═══════════ MAIN CONTENT ═══════════ */}
+      <div className="container-x py-8">
+
+        {/* Mobile filter toggle */}
+        <div className="lg:hidden flex items-center justify-between mb-5 bg-white p-3 rounded-xl border border-gray-200">
+          <span className="text-xs font-bold text-gray-800">Showing {filtered.length} destinations</span>
+          <button onClick={() => setMobileFilterOpen(!mobileFilterOpen)} className="inline-flex items-center gap-1.5 rounded-lg bg-[#E85D04] text-white px-3 py-1.5 text-xs font-semibold">
+            <Sliders size={14} /> Filters
           </button>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
-          
-          {/* ===================================================================== */}
-          {/* LEFT SIDEBAR: FILTERS (Travivu-Style)                                */}
-          {/* ===================================================================== */}
-          <aside className={`lg:col-span-1 ${mobileFilterOpen ? 'block' : 'hidden lg:block'}`}>
-            <div className="sticky top-20 rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm divide-y divide-slate-100">
-              
-              {/* Header: Filter By & Reset All */}
-              <div className="flex items-center justify-between pb-4">
-                <h3 className="font-display text-base font-bold text-slate-900">
-                  Filter By
-                </h3>
-                <button
-                  onClick={handleResetFilters}
-                  className="inline-flex items-center gap-1 text-xs font-semibold text-[#E85D04] hover:text-[#c14e00] transition-colors"
-                >
-                  <span>Reset All</span>
-                </button>
+        <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr] xl:grid-cols-[260px_1fr] gap-8 items-start">
+
+          {/* ═══════════ SIDEBAR ═══════════ */}
+          <aside className={`${mobileFilterOpen ? 'block' : 'hidden lg:block'}`}>
+            <div className="sticky top-20 rounded-xl bg-white border border-gray-200 p-5">
+
+              {/* Header */}
+              <div className="flex items-center justify-between pb-5 border-b border-gray-100">
+                <h3 className="text-[16px] font-bold text-gray-900">Filter By</h3>
+                <button onClick={resetFilters} className="text-[13px] font-semibold text-[#3B71FE] hover:underline">Reset All</button>
               </div>
 
-              {/* Section 1: Region / Districts */}
-              <div className="py-4">
-                <button
-                  onClick={() => toggleAccordion('region')}
-                  className="flex w-full items-center justify-between font-bold text-sm text-slate-800 hover:text-slate-900"
-                >
-                  <span>Region</span>
-                  {openSections.region ? <ChevronUp size={16} className="text-slate-400" /> : <ChevronDown size={16} className="text-slate-400" />}
+              {/* ── Region ── */}
+              <div className="py-4 border-b border-gray-100">
+                <button onClick={() => toggle('region')} className="flex w-full items-center justify-between">
+                  <span className="text-[13px] font-bold text-gray-900">Region</span>
+                  {openSections.region ? <ChevronUp size={16} className="text-gray-400" /> : <ChevronDown size={16} className="text-gray-400" />}
                 </button>
-
                 {openSections.region && (
-                  <div className="mt-3 max-h-64 overflow-y-auto space-y-1 pr-1 text-xs">
-                    {/* All Districts checkbox */}
-                    <label className="flex items-center justify-between cursor-pointer py-1.5 px-2 rounded-lg hover:bg-slate-50 transition-colors">
+                  <div className="mt-3 max-h-56 overflow-y-auto space-y-2.5 pr-1">
+                    {/* All Regions */}
+                    <label className="flex items-center justify-between cursor-pointer">
                       <div className="flex items-center gap-2.5">
-                        <input
-                          type="checkbox"
-                          checked={selectedDistricts.length === 0 && selectedDivision === 'All'}
-                          onChange={() => {
-                            setSelectedDistricts([]);
-                            setSelectedDivision('All');
-                            setCurrentPage(1);
-                          }}
-                          className="rounded border-slate-300 text-[#E85D04] focus:ring-[#E85D04] w-4 h-4"
-                        />
-                        <span className="font-semibold text-slate-800">All Regions</span>
+                        <Checkbox checked={selectedDistricts.length === 0 && selectedDivision === 'All'} onChange={() => { setSelectedDistricts([]); setSelectedDivision('All'); setCurrentPage(1); }} />
+                        <span className="text-[13px] text-gray-700">All Regions</span>
                       </div>
-                      <span className="text-[11px] font-medium text-slate-400">{JK_ALL_DISTRICTS.length}</span>
+                      <span className="text-[12px] text-gray-400">{JK_ALL_DISTRICTS.length}</span>
                     </label>
-
-                    {/* District item list */}
-                    {JK_ALL_DISTRICTS.map((d) => {
-                      const isChecked = selectedDistricts.includes(d.district);
-                      return (
-                        <label
-                          key={d.id}
-                          className="flex items-center justify-between cursor-pointer py-1.5 px-2 rounded-lg hover:bg-slate-50 transition-colors"
-                        >
-                          <div className="flex items-center gap-2.5">
-                            <input
-                              type="checkbox"
-                              checked={isChecked}
-                              onChange={() => handleToggleDistrict(d.district)}
-                              className="rounded border-slate-300 text-[#E85D04] focus:ring-[#E85D04] w-4 h-4"
-                            />
-                            <span className={`${isChecked ? 'text-slate-900 font-semibold' : 'text-slate-600'}`}>
-                              {d.district}
-                            </span>
-                          </div>
-                          <span className="text-[10px] font-medium text-slate-400">
-                            {d.touristPlaces.length}
-                          </span>
-                        </label>
-                      );
-                    })}
+                    {/* Each district */}
+                    {JK_ALL_DISTRICTS.map(d => (
+                      <label key={d.id} className="flex items-center justify-between cursor-pointer">
+                        <div className="flex items-center gap-2.5">
+                          <Checkbox checked={selectedDistricts.includes(d.district)} onChange={() => handleToggleDistrict(d.district)} />
+                          <span className="text-[13px] text-gray-600">{d.district}</span>
+                        </div>
+                        <span className="text-[12px] text-gray-400">{d.touristPlaces.length}</span>
+                      </label>
+                    ))}
                   </div>
                 )}
               </div>
 
-              {/* Section 2: Budget (Per Person) */}
-              <div className="py-4">
-                <button
-                  onClick={() => toggleAccordion('budget')}
-                  className="flex w-full items-center justify-between font-bold text-sm text-slate-800 hover:text-slate-900"
-                >
-                  <span>Budget (Per Person)</span>
-                  {openSections.budget ? <ChevronUp size={16} className="text-slate-400" /> : <ChevronDown size={16} className="text-slate-400" />}
+              {/* ── Budget ── */}
+              <div className="py-4 border-b border-gray-100">
+                <button onClick={() => toggle('budget')} className="flex w-full items-center justify-between">
+                  <span className="text-[13px] font-bold text-gray-900">Budget (Per Person)</span>
+                  {openSections.budget ? <ChevronUp size={16} className="text-gray-400" /> : <ChevronDown size={16} className="text-gray-400" />}
                 </button>
-
                 {openSections.budget && (
-                  <div className="mt-3 space-y-3">
-                    <input
-                      type="range"
-                      min={5000}
-                      max={15000}
-                      step={500}
-                      value={maxBudget}
-                      onChange={(e) => {
-                        setMaxBudget(Number(e.target.value));
-                        setCurrentPage(1);
-                      }}
-                      className="w-full accent-[#E85D04] cursor-pointer h-1.5"
+                  <div className="mt-3">
+                    <input type="range" min={5000} max={15000} step={500} value={maxBudget}
+                      onChange={e => { setMaxBudget(Number(e.target.value)); setCurrentPage(1); }}
+                      className="w-full accent-[#3B71FE] cursor-pointer h-1"
                     />
-                    <div className="flex items-center justify-between text-xs font-semibold text-slate-600">
-                      <span>₹{(5000).toLocaleString()}</span>
-                      <span className="rounded-md bg-orange-50 border border-orange-200/50 px-2.5 py-0.5 text-[#E85D04] font-bold">
-                        ₹{maxBudget.toLocaleString()}
-                      </span>
-                      <span>₹{(15000).toLocaleString()}+</span>
+                    <div className="flex justify-between mt-2 text-[12px] text-gray-500">
+                      <span>₹5,000</span>
+                      <span className="font-bold text-gray-800">₹{maxBudget.toLocaleString()}+</span>
                     </div>
                   </div>
                 )}
               </div>
 
-              {/* Section 3: Travel Type */}
-              <div className="py-4">
-                <button
-                  onClick={() => toggleAccordion('type')}
-                  className="flex w-full items-center justify-between font-bold text-sm text-slate-800 hover:text-slate-900"
-                >
-                  <span>Travel Type</span>
-                  {openSections.type ? <ChevronUp size={16} className="text-slate-400" /> : <ChevronDown size={16} className="text-slate-400" />}
+              {/* ── Travel Type ── */}
+              <div className="py-4 border-b border-gray-100">
+                <button onClick={() => toggle('type')} className="flex w-full items-center justify-between">
+                  <span className="text-[13px] font-bold text-gray-900">Travel Type</span>
+                  {openSections.type ? <ChevronUp size={16} className="text-gray-400" /> : <ChevronDown size={16} className="text-gray-400" />}
                 </button>
-
                 {openSections.type && (
-                  <div className="mt-3 space-y-1 text-xs">
-                    {travelTypeOptions.map((opt) => (
-                      <label
-                        key={opt.value}
-                        className="flex items-center justify-between cursor-pointer py-1.5 px-2 rounded-lg hover:bg-slate-50 transition-colors"
-                      >
+                  <div className="mt-3 space-y-2.5">
+                    {travelTypes.map(t => (
+                      <label key={t.value} className="flex items-center justify-between cursor-pointer">
                         <div className="flex items-center gap-2.5">
-                          <input
-                            type="radio"
-                            name="travelType"
-                            checked={selectedTravelType === opt.value}
-                            onChange={() => {
-                              setSelectedTravelType(opt.value);
-                              setCurrentPage(1);
-                            }}
-                            className="text-[#E85D04] focus:ring-[#E85D04] w-4 h-4"
-                          />
-                          <span className={`${selectedTravelType === opt.value ? 'text-slate-900 font-semibold' : 'text-slate-600'}`}>{opt.label}</span>
+                          <Radio checked={selectedTravelType === t.value} onChange={() => { setSelectedTravelType(t.value); setCurrentPage(1); }} />
+                          <span className="text-[13px] text-gray-600">{t.label}</span>
                         </div>
-                        <span className="text-[10px] font-medium text-slate-400">{travelTypeCounts[opt.value]}</span>
+                        <span className="text-[12px] text-gray-400">{countType(t.value)}</span>
                       </label>
                     ))}
                   </div>
                 )}
               </div>
 
-              {/* Section 4: Duration */}
-              <div className="py-4">
-                <button
-                  onClick={() => toggleAccordion('duration')}
-                  className="flex w-full items-center justify-between font-bold text-sm text-slate-800 hover:text-slate-900"
-                >
-                  <span>Duration</span>
-                  {openSections.duration ? <ChevronUp size={16} className="text-slate-400" /> : <ChevronDown size={16} className="text-slate-400" />}
+              {/* ── Duration ── */}
+              <div className="py-4 border-b border-gray-100">
+                <button onClick={() => toggle('duration')} className="flex w-full items-center justify-between">
+                  <span className="text-[13px] font-bold text-gray-900">Duration</span>
+                  {openSections.duration ? <ChevronUp size={16} className="text-gray-400" /> : <ChevronDown size={16} className="text-gray-400" />}
                 </button>
-
                 {openSections.duration && (
-                  <div className="mt-3 space-y-1 text-xs">
-                    {durationOptions.map((dur) => (
-                      <label
-                        key={dur.value}
-                        className="flex items-center justify-between cursor-pointer py-1.5 px-2 rounded-lg hover:bg-slate-50 transition-colors"
-                      >
+                  <div className="mt-3 space-y-2.5">
+                    {durations.map(d => (
+                      <label key={d.value} className="flex items-center justify-between cursor-pointer">
                         <div className="flex items-center gap-2.5">
-                          <input
-                            type="radio"
-                            name="durationFilter"
-                            checked={selectedDuration === dur.value}
-                            onChange={() => {
-                              setSelectedDuration(dur.value);
-                              setCurrentPage(1);
-                            }}
-                            className="text-[#E85D04] focus:ring-[#E85D04] w-4 h-4"
-                          />
-                          <span className={`${selectedDuration === dur.value ? 'text-slate-900 font-semibold' : 'text-slate-600'}`}>{dur.label}</span>
+                          <Radio checked={selectedDuration === d.value} onChange={() => { setSelectedDuration(d.value); setCurrentPage(1); }} />
+                          <span className="text-[13px] text-gray-600">{d.label}</span>
                         </div>
-                        <span className="text-[10px] font-medium text-slate-400">{dur.count}</span>
+                        <span className="text-[12px] text-gray-400">{countDur(d.value)}</span>
                       </label>
                     ))}
                   </div>
                 )}
               </div>
 
-              {/* Section 5: Rating */}
-              <div className="py-4">
-                <button
-                  onClick={() => toggleAccordion('rating')}
-                  className="flex w-full items-center justify-between font-bold text-sm text-slate-800 hover:text-slate-900"
-                >
-                  <span>Rating</span>
-                  {openSections.rating ? <ChevronUp size={16} className="text-slate-400" /> : <ChevronDown size={16} className="text-slate-400" />}
+              {/* ── Rating ── */}
+              <div className="py-4 border-b border-gray-100">
+                <button onClick={() => toggle('rating')} className="flex w-full items-center justify-between">
+                  <span className="text-[13px] font-bold text-gray-900">Rating</span>
+                  {openSections.rating ? <ChevronUp size={16} className="text-gray-400" /> : <ChevronDown size={16} className="text-gray-400" />}
                 </button>
-
                 {openSections.rating && (
-                  <div className="mt-3 space-y-1 text-xs">
-                    {/* All Ratings */}
-                    <label className="flex items-center justify-between cursor-pointer py-1.5 px-2 rounded-lg hover:bg-slate-50 transition-colors">
-                      <div className="flex items-center gap-2.5">
-                        <input
-                          type="radio"
-                          name="ratingFilter"
-                          checked={selectedRating === 0}
-                          onChange={() => {
-                            setSelectedRating(0);
-                            setCurrentPage(1);
-                          }}
-                          className="text-[#E85D04] focus:ring-[#E85D04] w-4 h-4"
-                        />
-                        <span className={`${selectedRating === 0 ? 'text-slate-900 font-semibold' : 'text-slate-600'}`}>All Ratings</span>
-                      </div>
+                  <div className="mt-3 space-y-2.5">
+                    <label className="flex items-center gap-2.5 cursor-pointer">
+                      <Radio checked={selectedRating === 0} onChange={() => { setSelectedRating(0); setCurrentPage(1); }} />
+                      <span className="text-[13px] text-gray-600">All Ratings</span>
                     </label>
-
-                    {[
-                      { label: '5.0 Stars', stars: 5.0 },
-                      { label: '4.8 & up', stars: 4.8 },
-                      { label: '4.7 & up', stars: 4.7 },
-                    ].map((r) => {
-                      const count = JK_ALL_DISTRICTS.filter((d) => d.rating >= r.stars).length;
-                      return (
-                        <label
-                          key={r.label}
-                          className="flex items-center justify-between cursor-pointer py-1.5 px-2 rounded-lg hover:bg-slate-50 transition-colors"
-                        >
-                          <div className="flex items-center gap-2.5">
-                            <input
-                              type="radio"
-                              name="ratingFilter"
-                              checked={selectedRating === r.stars}
-                              onChange={() => {
-                                setSelectedRating(r.stars);
-                                setCurrentPage(1);
-                              }}
-                              className="text-[#E85D04] focus:ring-[#E85D04] w-4 h-4"
-                            />
-                            <div className="flex items-center gap-1">
-                              {Array.from({ length: 5 }).map((_, idx) => (
-                                <Star
-                                  key={idx}
-                                  size={13}
-                                  className={idx < Math.floor(r.stars) ? 'fill-[#FBBF24] text-[#FBBF24]' : 'text-slate-300'}
-                                />
-                              ))}
-                              <span className="ml-0.5 text-slate-600">&amp; up</span>
-                            </div>
+                    {ratingOpts.map(r => (
+                      <label key={r.stars} className="flex items-center justify-between cursor-pointer">
+                        <div className="flex items-center gap-2.5">
+                          <Radio checked={selectedRating === r.stars} onChange={() => { setSelectedRating(r.stars); setCurrentPage(1); }} />
+                          <div className="flex items-center gap-0.5">
+                            {Array.from({ length: 5 }).map((_, i) => (
+                              <Star key={i} size={13} className={i < Math.floor(r.stars) ? 'fill-amber-400 text-amber-400' : 'text-gray-300'} />
+                            ))}
+                            <span className="text-[12px] text-gray-500 ml-1">&amp; up</span>
                           </div>
-                          <span className="text-[10px] font-medium text-slate-400">{count}</span>
-                        </label>
-                      );
-                    })}
+                        </div>
+                        <span className="text-[12px] text-gray-400">{countRating(r.stars)}</span>
+                      </label>
+                    ))}
                   </div>
                 )}
               </div>
 
-              {/* Action Button: View Results */}
-              <div className="pt-4">
-                <button
-                  onClick={() => setMobileFilterOpen(false)}
-                  className="w-full rounded-full bg-[#E85D04] py-3 text-xs font-bold text-white hover:bg-[#dc5400] transition-colors shadow-lg shadow-orange-500/20"
-                >
-                  View {filteredDistricts.length} Results
-                </button>
-              </div>
-
+              {/* View Results Button */}
+              <button
+                onClick={() => setMobileFilterOpen(false)}
+                className="mt-5 w-full rounded-xl border border-[#3B71FE] py-2.5 text-[13.5px] font-semibold text-[#3B71FE] hover:bg-[#3B71FE] hover:text-white transition-all shadow-sm"
+              >
+                View {filtered.length} Results
+              </button>
             </div>
           </aside>
 
-          {/* ===================================================================== */}
-          {/* RIGHT MAIN AREA: TOP SORT BAR + DESTINATION CARDS GRID + PAGINATION  */}
-          {/* ===================================================================== */}
-          <main className="lg:col-span-3">
-            
-            {/* Top Bar: Results count, Sort dropdown, and View mode toggles */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 rounded-2xl bg-white p-4 border border-slate-100 shadow-sm mb-6">
-              <div>
-                <p className="text-sm font-semibold text-slate-700">
-                  Showing <span className="font-bold text-slate-950">{filteredDistricts.length}</span> destinations
-                </p>
-                {selectedDistricts.length > 0 && (
-                  <p className="text-[11px] text-[#E85D04] font-medium mt-0.5">
-                    Districts: {selectedDistricts.join(', ')}
-                  </p>
-                )}
-              </div>
+          {/* ═══════════ MAIN GRID ═══════════ */}
+          <main>
 
-              <div className="flex items-center gap-3 self-end sm:self-auto">
-                {/* Sort By Dropdown */}
-                <div className="flex items-center gap-2 text-xs">
-                  <span className="text-slate-500 font-medium">Sort by:</span>
+            {/* Top bar */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+              <p className="text-[14px] text-gray-700">
+                Showing <span className="font-bold text-gray-900">{filtered.length} destinations</span>
+              </p>
+              <div className="flex items-center gap-3">
+                <div className="flex items-center rounded-lg border border-gray-200 bg-white px-3 py-1.5 shadow-sm">
+                  <span className="text-[13px] text-gray-500 mr-1.5">Sort by:</span>
                   <select
                     value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value as any)}
-                    className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 font-semibold text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#E85D04] cursor-pointer"
+                    onChange={e => setSortBy(e.target.value as typeof sortBy)}
+                    className="text-[13px] font-semibold text-gray-800 focus:outline-none cursor-pointer bg-transparent"
                   >
                     <option value="popular">Popular (High to Low)</option>
                     <option value="rating">Rating (High to Low)</option>
@@ -753,20 +466,22 @@ export default function DestinationsExplorerClient({
                     <option value="name">Name (A to Z)</option>
                   </select>
                 </div>
-
-                {/* View Mode Toggle */}
-                <div className="flex items-center border border-slate-200 rounded-lg p-0.5 bg-slate-50">
+                <div className="flex items-center border border-gray-200 rounded-lg p-0.5 bg-white shadow-sm">
                   <button
                     onClick={() => setViewMode('grid')}
                     aria-label="Grid view"
-                    className={`p-1.5 rounded-md transition-colors ${viewMode === 'grid' ? 'bg-white text-[#E85D04] shadow-sm' : 'text-slate-400 hover:text-slate-700'}`}
+                    className={`p-1.5 rounded-md transition ${
+                      viewMode === 'grid' ? 'bg-[#3B71FE] text-white shadow-sm' : 'text-gray-400 hover:text-gray-700'
+                    }`}
                   >
                     <Grid size={16} />
                   </button>
                   <button
                     onClick={() => setViewMode('list')}
                     aria-label="List view"
-                    className={`p-1.5 rounded-md transition-colors ${viewMode === 'list' ? 'bg-white text-[#E85D04] shadow-sm' : 'text-slate-400 hover:text-slate-700'}`}
+                    className={`p-1.5 rounded-md transition ${
+                      viewMode === 'list' ? 'bg-[#3B71FE] text-white shadow-sm' : 'text-gray-400 hover:text-gray-700'
+                    }`}
                   >
                     <List size={16} />
                   </button>
@@ -774,46 +489,32 @@ export default function DestinationsExplorerClient({
               </div>
             </div>
 
-            {/* Destination Cards Display */}
-            {paginatedDistricts.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-16 text-center">
-                <Compass size={48} className="mx-auto text-slate-300" />
-                <h3 className="mt-4 font-display text-lg font-bold text-slate-800">
-                  No destinations match your filters
-                </h3>
-                <p className="mt-2 text-xs text-slate-500 max-w-md mx-auto">
-                  Try clearing your search keyword, resetting budget slider, or selecting &quot;All Regions&quot; to discover every tourist spot.
-                </p>
-                <button
-                  onClick={handleResetFilters}
-                  className="mt-6 rounded-full bg-[#E85D04] px-6 py-2.5 text-xs font-bold text-white hover:bg-[#dc5400] transition-colors shadow-md"
-                >
+            {/* Cards */}
+            {paginated.length === 0 ? (
+              <div className="rounded-xl border border-dashed border-gray-300 bg-white p-16 text-center">
+                <Compass size={48} className="mx-auto text-gray-300" />
+                <h3 className="mt-4 text-lg font-bold text-gray-800">No destinations match</h3>
+                <p className="mt-2 text-[13px] text-gray-500">Try adjusting your filters.</p>
+                <button onClick={resetFilters} className="mt-5 rounded-full bg-[#E85D04] px-6 py-2.5 text-[13px] font-bold text-white hover:bg-[#D45500] transition">
                   Reset All Filters
                 </button>
               </div>
             ) : (
-              <motion.div 
-                layout
-                className={viewMode === 'grid' ? 'grid gap-6 sm:grid-cols-2 lg:grid-cols-3' : 'space-y-4'}
-              >
+              <motion.div layout className={viewMode === 'grid' ? 'grid gap-6 sm:grid-cols-2 xl:grid-cols-3' : 'space-y-4'}>
                 <AnimatePresence mode="popLayout">
-                  {paginatedDistricts.map((district, i) => (
+                  {paginated.map((d, i) => (
                     <motion.div
-                      key={district.id}
-                      initial={{ opacity: 0, y: 20, scale: 0.97 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: -10, scale: 0.97 }}
-                      transition={{ 
-                        duration: 0.35, 
-                        delay: i * 0.05,
-                        ease: [0.25, 0.46, 0.45, 0.94]
-                      }}
+                      key={d.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.3, delay: i * 0.04 }}
                     >
                       <JKDestinationCard
-                        district={district}
-                        onExplore={(d) => setActiveDistrict(d)}
-                        isFavorite={favorites.includes(district.id)}
-                        onToggleFavorite={handleToggleFavorite}
+                        district={d}
+                        onExplore={d => setActiveDistrict(d)}
+                        isFavorite={favorites.includes(d.id)}
+                        onToggleFavorite={id => setFavorites(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id])}
                         viewMode={viewMode}
                       />
                     </motion.div>
@@ -822,101 +523,57 @@ export default function DestinationsExplorerClient({
               </motion.div>
             )}
 
-            {/* =================================================================== */}
-            {/* PAGINATION CONTROLS - Travivu Style                                */}
-            {/* =================================================================== */}
+            {/* Pagination */}
             {totalPages > 1 && (
-              <div className="mt-12 flex items-center justify-center gap-1.5">
-                {/* Prev Button */}
-                <button
-                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                  disabled={currentPage === 1}
-                  className="flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                  aria-label="Previous page"
-                >
+              <div className="mt-10 flex items-center justify-center gap-1">
+                <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}
+                  className="flex h-10 w-10 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 disabled:opacity-40 transition" aria-label="Previous">
                   <ChevronLeft size={18} />
                 </button>
-
-                {/* Page numbers */}
-                {getPageNumbers().map((page, idx) => {
-                  if (page === '...') {
-                    return (
-                      <span key={`ellipsis-${idx}`} className="flex h-10 w-10 items-center justify-center text-sm text-slate-400">
-                        ···
-                      </span>
-                    );
-                  }
-                  const isActive = currentPage === page;
-                  return (
-                    <button
-                      key={page}
-                      onClick={() => setCurrentPage(page as number)}
-                      className={`flex h-10 w-10 items-center justify-center rounded-lg text-sm font-bold transition-all ${
-                        isActive
-                          ? 'bg-[#E85D04] text-white shadow-md shadow-orange-500/25'
-                          : 'border border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
-                      }`}
-                    >
-                      {page}
+                {getPages().map((pg, idx) =>
+                  pg === '...' ? (
+                    <span key={`e${idx}`} className="flex h-10 w-10 items-center justify-center text-[13px] text-gray-400">···</span>
+                  ) : (
+                    <button key={pg} onClick={() => setCurrentPage(pg as number)}
+                      className={`flex h-10 w-10 items-center justify-center rounded-lg text-[13px] font-bold transition ${
+                        currentPage === pg ? 'bg-[#3B71FE] text-white shadow-md' : 'border border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
+                      }`}>
+                      {pg}
                     </button>
-                  );
-                })}
-
-                {/* Next Button */}
-                <button
-                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={currentPage === totalPages}
-                  className="flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                  aria-label="Next page"
-                >
+                  )
+                )}
+                <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}
+                  className="flex h-10 w-10 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 disabled:opacity-40 transition" aria-label="Next">
                   <ChevronRight size={18} />
                 </button>
               </div>
             )}
 
-            {/* =================================================================== */}
-            {/* CTA BANNER: "Can't find what you're looking for?" - Travivu Style   */}
-            {/* =================================================================== */}
-            <div className="mt-14 rounded-2xl overflow-hidden border border-[#E85D04]/20">
-              <div className="bg-gradient-to-r from-[#FFF7ED] to-[#FFF1E6] p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6">
-                <div className="flex items-center gap-5">
-                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[#E85D04] text-white shadow-lg shadow-orange-500/25">
-                    <Plane size={24} className="-rotate-12" />
-                  </div>
-                  <div>
-                    <h4 className="font-display text-lg sm:text-xl font-bold text-slate-900">
-                      Can&apos;t find what you&apos;re looking for?
-                    </h4>
-                    <p className="mt-1 text-sm text-slate-600 max-w-lg leading-relaxed">
-                      Our local travel experts are here to help you plan the perfect trip.
-                    </p>
-                  </div>
+            {/* CTA Banner */}
+            <div className="mt-12 rounded-2xl bg-[#EBF2FF] p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-5">
+              <div className="flex items-center gap-4">
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[#3B71FE] text-white shadow-lg">
+                  <Plane size={24} className="-rotate-45" />
                 </div>
-
-                <div className="flex items-center gap-3 shrink-0 w-full sm:w-auto">
-                  <Link
-                    href="/contact"
-                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full border-2 border-[#E85D04] bg-white px-6 py-3 text-sm font-bold text-[#E85D04] hover:bg-[#E85D04] hover:text-white transition-all shadow-sm"
-                  >
-                    Contact an Expert
-                  </Link>
+                <div>
+                  <h4 className="text-[16px] font-bold text-gray-900">Can&apos;t find what you&apos;re looking for?</h4>
+                  <p className="text-[13px] text-gray-500 mt-0.5">Our travel experts are here to help you plan the perfect trip.</p>
                 </div>
               </div>
+              <Link href="/contact" className="shrink-0 rounded-full border-2 border-[#3B71FE] px-6 py-2.5 text-[13px] font-bold text-[#3B71FE] hover:bg-[#3B71FE] hover:text-white transition-all">
+                Contact an Expert
+              </Link>
             </div>
 
           </main>
         </div>
       </div>
 
-      {/* ========================================================================= */}
-      {/* 3D DISTRICT EXPLORER MODAL                                                */}
-      {/* ========================================================================= */}
+      {/* 3D Modal */}
       <District3DModal
         district={activeDistrict}
         onClose={() => setActiveDistrict(null)}
-        onBookClick={(dist) => {
-          window.location.href = `/plan?district=${encodeURIComponent(dist.district)}`;
-        }}
+        onBookClick={d => { window.location.href = `/plan?district=${encodeURIComponent(d.district)}`; }}
       />
     </div>
   );

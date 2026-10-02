@@ -102,71 +102,71 @@ export default function JKDestinationCard({
       style={{ rotateX, rotateY, transformStyle: 'preserve-3d' }}
       whileHover={{ y: -6 }}
       transition={{ duration: 0.2 }}
-      className="group relative flex h-full flex-col overflow-hidden rounded-xl bg-white border border-gray-200 hover:shadow-xl transition-shadow duration-300 cursor-pointer will-change-transform"
+      className="group relative flex h-full flex-col overflow-hidden rounded-2xl bg-white border border-gray-100/90 hover:border-gray-200 hover:shadow-xl transition-all duration-300 cursor-pointer will-change-transform"
     >
       {/* 3D Glare */}
       {isHovered && (
         <motion.div
-          style={{ background: `radial-gradient(circle at ${glareX} ${glareY}, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 60%)` }}
-          className="pointer-events-none absolute inset-0 z-30 rounded-xl"
+          style={{ background: `radial-gradient(circle at ${glareX} ${glareY}, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0) 65%)` }}
+          className="pointer-events-none absolute inset-0 z-30 rounded-2xl"
           aria-hidden
         />
       )}
 
-      {/* Image */}
-      <div className="relative aspect-[16/12] w-full overflow-hidden">
+      {/* Image Container */}
+      <div className="relative aspect-[16/11] w-full overflow-hidden bg-gray-100">
         <Image
           src={district.image}
           alt={district.district}
           fill
-          className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+          className="object-cover transition-transform duration-700 ease-out group-hover:scale-108"
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
         />
 
-        {/* Heart - top right */}
+        {/* Heart Icon - top right floating white circle */}
         <button
           onClick={handleHeartClick}
           aria-label="Save to favorites"
-          className="absolute right-3 top-3 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-white shadow-md transition-all hover:scale-110 active:scale-90"
+          className="absolute right-3.5 top-3.5 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-white/95 shadow-[0_2px_8px_rgba(0,0,0,0.12)] transition-transform hover:scale-110 active:scale-95"
         >
-          <Heart size={15} className={`transition-colors ${fav ? 'fill-red-500 text-red-500' : 'text-gray-400'}`} />
+          <Heart
+            size={16}
+            className={`transition-colors ${
+              fav ? 'fill-red-500 text-red-500' : 'text-[#3B71FE] hover:fill-[#3B71FE]/20'
+            }`}
+          />
         </button>
-
-        {/* Listings count badge */}
-        <div className="absolute right-3 bottom-3 z-10">
-          <span className="rounded bg-white/90 backdrop-blur-sm px-2 py-0.5 text-[11px] font-semibold text-gray-700 shadow-sm">
-            {district.listingsCount} Listings
-          </span>
-        </div>
       </div>
 
       {/* Content - translateZ for 3D depth */}
-      <div style={{ transform: 'translateZ(16px)' }} className="flex flex-1 flex-col justify-between p-4">
-        {/* Title row */}
+      <div style={{ transform: 'translateZ(14px)' }} className="flex flex-1 flex-col justify-between p-4 sm:p-5">
         <div>
+          {/* Row 1: Title (left) & Listings count (right) */}
           <div className="flex items-start justify-between gap-2">
-            <h3 className="font-bold text-[15px] text-gray-900 leading-snug group-hover:text-[#3B71FE] transition-colors">
-              {district.district}
+            <h3 className="font-bold text-[15px] sm:text-[16px] text-gray-900 leading-snug group-hover:text-[#3B71FE] transition-colors">
+              {district.district}, J&amp;K
             </h3>
-            <span className="text-[11px] text-gray-400 shrink-0 pt-0.5 whitespace-nowrap">
-              {district.touristPlaces.length} Places
+            <span className="text-[12px] text-gray-400 font-medium shrink-0 pt-0.5 whitespace-nowrap">
+              {district.listingsCount} Listings
             </span>
           </div>
 
-          {/* Description */}
-          <p className="mt-1.5 text-[12px] text-gray-500 line-clamp-2 leading-[1.6]">
+          {/* Row 2: Short Description */}
+          <p className="mt-1.5 text-[12.5px] text-gray-500 line-clamp-2 leading-[1.6]">
             {district.shortDescription}
           </p>
         </div>
 
-        {/* Bottom: Rating + Explore */}
-        <div className="mt-3 flex items-center justify-between pt-3 border-t border-gray-100">
-          <div className="flex items-center gap-1">
+        {/* Row 3: Rating (left) & Explore -> in blue (right) */}
+        <div className="mt-4 flex items-center justify-between pt-3 border-t border-gray-100">
+          <div className="flex items-center gap-1.5">
             <Star size={14} className="fill-amber-400 text-amber-400" />
             <span className="text-[13px] font-bold text-gray-900">{district.rating.toFixed(1)}</span>
-            <span className="text-[11px] text-gray-400">({district.reviewsCount.toLocaleString()} reviews)</span>
+            <span className="text-[12px] text-gray-400 font-normal">
+              ({district.reviewsCount.toLocaleString()} reviews)
+            </span>
           </div>
-          <span className="inline-flex items-center gap-1 text-[12px] font-semibold text-[#E85D04] group-hover:gap-2 transition-all">
+          <span className="inline-flex items-center gap-1 text-[12.5px] font-semibold text-[#3B71FE] group-hover:gap-1.5 transition-all">
             Explore <ArrowRight size={13} />
           </span>
         </div>

@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Facebook, Instagram, Twitter, Youtube, Send, Check } from 'lucide-react';
+import { Facebook, Instagram, Twitter, Youtube, Check } from 'lucide-react';
 
 export default function Footer() {
   const [subscribed, setSubscribed] = useState(false);
@@ -12,151 +12,93 @@ export default function Footer() {
     e.preventDefault();
     if (!email) return;
     setSubscribed(true);
-    setTimeout(() => {
-      setEmail('');
-      setSubscribed(false);
-    }, 4000);
+    setTimeout(() => { setEmail(''); setSubscribed(false); }, 4000);
   };
 
   return (
-    <footer className="mt-20 bg-[#0A2733] text-slate-300">
+    <footer className="bg-[#0B1528] text-gray-400">
       <div className="container-x py-14">
-        <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-5">
-          {/* Brand info */}
-          <div className="lg:col-span-2">
-            <Link href="/" className="inline-flex items-center gap-2.5 font-display text-2xl font-extrabold text-white">
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#E85D04] text-white shadow-md font-black text-sm">
-                W
-              </span>
+        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-5">
+
+          {/* Column 1: Brand */}
+          <div className="lg:col-span-1">
+            <Link href="/" className="inline-flex items-center gap-2 font-sans text-xl font-extrabold text-white">
+              <svg className="w-6 h-6 text-[#3B71FE]" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+              </svg>
               <span>Wayfarer</span>
             </Link>
-            <p className="mt-4 max-w-sm text-sm text-slate-400 leading-relaxed">
-              Wayfarer is your trusted travel partner for discovering amazing places and unforgettable experiences across all 20 districts of Jammu & Kashmir.
+            <p className="mt-4 text-[13px] text-gray-400 leading-relaxed">
+              Wayfarer is your trusted travel partner for discovering amazing places and unforgettable experiences around Jammu &amp; Kashmir.
             </p>
-            <div className="mt-6 flex items-center gap-3">
-              <a
-                href="https://facebook.com"
-                target="_blank"
-                rel="noreferrer"
-                aria-label="Facebook"
-                className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 hover:bg-[#E85D04] text-white transition-colors"
-              >
-                <Facebook size={16} />
-              </a>
-              <a
-                href="https://instagram.com"
-                target="_blank"
-                rel="noreferrer"
-                aria-label="Instagram"
-                className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 hover:bg-[#E85D04] text-white transition-colors"
-              >
-                <Instagram size={16} />
-              </a>
-              <a
-                href="https://twitter.com"
-                target="_blank"
-                rel="noreferrer"
-                aria-label="Twitter"
-                className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 hover:bg-[#E85D04] text-white transition-colors"
-              >
-                <Twitter size={16} />
-              </a>
-              <a
-                href="https://youtube.com"
-                target="_blank"
-                rel="noreferrer"
-                aria-label="YouTube"
-                className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 hover:bg-[#E85D04] text-white transition-colors"
-              >
-                <Youtube size={16} />
-              </a>
+            <div className="mt-5 flex items-center gap-2.5">
+              {[Facebook, Instagram, Twitter, Youtube].map((Icon, i) => (
+                <a key={i} href="#" className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-gray-300 hover:bg-[#FF5B00] hover:text-white transition-colors">
+                  <Icon size={14} />
+                </a>
+              ))}
             </div>
           </div>
 
-          {/* Company */}
+          {/* Column 2: Company */}
           <div>
-            <h4 className="text-xs font-bold uppercase tracking-wider text-white">Company</h4>
-            <ul className="mt-4 space-y-3 text-sm text-slate-400">
-              <li><Link href="/about" className="hover:text-[#E85D04] transition-colors">About Us</Link></li>
-              <li><Link href="/careers" className="hover:text-[#E85D04] transition-colors">Careers</Link></li>
-              <li><Link href="/press" className="hover:text-[#E85D04] transition-colors">Press & Media</Link></li>
-              <li><Link href="/blog" className="hover:text-[#E85D04] transition-colors">Travel Guides</Link></li>
-              <li><Link href="/sustainability" className="hover:text-[#E85D04] transition-colors">Sustainability</Link></li>
+            <h4 className="text-[12px] font-bold uppercase tracking-wider text-white">COMPANY</h4>
+            <ul className="mt-4 space-y-2.5 text-[13px]">
+              {[['About Us', '/about'], ['Careers', '/careers'], ['Press & Media', '/press'], ['Travel Guides', '/blog'], ['Sustainability', '/sustainability']].map(([label, href]) => (
+                <li key={href}><Link href={href} className="hover:text-white transition-colors">{label}</Link></li>
+              ))}
             </ul>
           </div>
 
-          {/* Support */}
+          {/* Column 3: Support */}
           <div>
-            <h4 className="text-xs font-bold uppercase tracking-wider text-white">Support</h4>
-            <ul className="mt-4 space-y-3 text-sm text-slate-400">
-              <li><Link href="/contact" className="hover:text-[#E85D04] transition-colors">Help Center</Link></li>
-              <li><Link href="/faq" className="hover:text-[#E85D04] transition-colors">FAQ&apos;s</Link></li>
-              <li><Link href="/plan" className="hover:text-[#E85D04] transition-colors">Booking Tools</Link></li>
-              <li><Link href="/terms" className="hover:text-[#E85D04] transition-colors">Terms & Conditions</Link></li>
-              <li><Link href="/privacy" className="hover:text-[#E85D04] transition-colors">Privacy Policy</Link></li>
+            <h4 className="text-[12px] font-bold uppercase tracking-wider text-white">SUPPORT</h4>
+            <ul className="mt-4 space-y-2.5 text-[13px]">
+              {[['Help Center', '/contact'], ["FAQ's", '/faq'], ['Booking Tools', '/plan'], ['Terms & Conditions', '/terms'], ['Privacy Policy', '/privacy']].map(([label, href]) => (
+                <li key={href}><Link href={href} className="hover:text-white transition-colors">{label}</Link></li>
+              ))}
             </ul>
           </div>
 
-          {/* Newsletter */}
+          {/* Column 4: Top Destinations */}
           <div>
-            <h4 className="text-xs font-bold uppercase tracking-wider text-white">Newsletter</h4>
-            <p className="mt-4 text-sm text-slate-400 leading-relaxed">
+            <h4 className="text-[12px] font-bold uppercase tracking-wider text-white">TOP DESTINATIONS</h4>
+            <ul className="mt-4 space-y-2.5 text-[13px]">
+              {[['Srinagar', '/destinations?q=Srinagar'], ['Gulmarg', '/destinations?q=Gulmarg'], ['Pahalgam', '/destinations?q=Pahalgam'], ['Sonamarg', '/destinations?q=Sonamarg'], ['Vaishno Devi', '/destinations?q=Vaishno+Devi'], ['Bhaderwah', '/destinations?q=Bhaderwah']].map(([label, href]) => (
+                <li key={label}><Link href={href} className="hover:text-white transition-colors">{label}</Link></li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Column 5: Newsletter */}
+          <div>
+            <h4 className="text-[12px] font-bold uppercase tracking-wider text-white">NEWSLETTER</h4>
+            <p className="mt-4 text-[13px] text-gray-400 leading-relaxed">
               Subscribe to get the best travel deals and inspiration straight to your inbox.
             </p>
-            <form onSubmit={handleSubscribe} className="mt-4">
-              <div className="flex flex-col gap-2">
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter your email"
-                  required
-                  className="w-full rounded-lg bg-white/10 border border-white/10 px-3.5 py-2.5 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#E85D04] focus:border-transparent"
-                />
-                <button
-                  type="submit"
-                  className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-[#E85D04] hover:bg-[#dc5400] px-4 py-2.5 text-sm font-bold text-white transition-colors shadow-sm"
-                >
-                  {subscribed ? (
-                    <>
-                      <Check size={14} /> Subscribed!
-                    </>
-                  ) : (
-                    'Subscribe'
-                  )}
-                </button>
-              </div>
+            <form onSubmit={handleSubscribe} className="mt-4 flex rounded-lg overflow-hidden bg-white shadow-sm">
+              <input
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="Enter your email"
+                required
+                className="flex-1 px-3 py-2.5 text-[13px] text-gray-800 placeholder:text-gray-400 focus:outline-none min-w-0 bg-transparent"
+              />
+              <button type="submit" className="shrink-0 bg-[#FF5B00] hover:bg-[#E04F00] px-4 text-[12.5px] font-bold text-white transition-colors">
+                {subscribed ? <Check size={16} /> : 'Subscribe'}
+              </button>
             </form>
           </div>
         </div>
 
-        {/* Top Destinations row */}
-        <div className="mt-10 border-t border-white/10 pt-8">
-          <h4 className="text-xs font-bold uppercase tracking-wider text-white mb-4">Top Destinations</h4>
-          <div className="flex flex-wrap gap-3">
-            {['Srinagar', 'Gulmarg', 'Pahalgam', 'Sonamarg', 'Gurez Valley', 'Vaishno Devi', 'Patnitop', 'Bhaderwah', 'Doodhpathri', 'Kishtwar'].map((dest) => (
-              <Link
-                key={dest}
-                href={`/destinations?q=${encodeURIComponent(dest)}`}
-                className="rounded-full bg-white/5 border border-white/10 px-3.5 py-1.5 text-xs font-medium text-slate-400 hover:bg-[#E85D04]/20 hover:text-[#E85D04] hover:border-[#E85D04]/30 transition-all"
-              >
-                {dest}
-              </Link>
+        {/* Bottom Bar */}
+        <div className="mt-12 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-white/10 pt-6 text-[12px] text-gray-400">
+          <p>© 2026 Wayfarer. All rights reserved.</p>
+          <div className="flex items-center gap-1.5">
+            {['VISA', 'Mastercard', 'AMEX', 'DISCOVER', 'PayPal'].map(card => (
+              <span key={card} className="rounded bg-white px-2 py-0.5 text-[10px] font-bold text-gray-800 shadow-sm">{card}</span>
             ))}
-          </div>
-        </div>
-
-        {/* Bottom copyright & payment cards */}
-        <div className="mt-10 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-white/10 pt-6 text-xs text-slate-500">
-          <p>© {new Date().getFullYear()} Wayfarer. All rights reserved.</p>
-
-          {/* Payment Badges */}
-          <div className="flex items-center gap-2">
-            <span className="rounded bg-white px-2.5 py-1 text-[10px] font-bold text-blue-900 shadow-sm">VISA</span>
-            <span className="rounded bg-white px-2.5 py-1 text-[10px] font-bold text-red-600 shadow-sm">Mastercard</span>
-            <span className="rounded bg-white px-2.5 py-1 text-[10px] font-bold text-blue-600 shadow-sm">AMEX</span>
-            <span className="rounded bg-white px-2.5 py-1 text-[10px] font-bold text-amber-600 shadow-sm">DISCOVER</span>
-            <span className="rounded bg-white px-2.5 py-1 text-[10px] font-bold text-blue-700 shadow-sm">PayPal</span>
           </div>
         </div>
       </div>
