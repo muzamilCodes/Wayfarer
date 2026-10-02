@@ -49,6 +49,21 @@ export default function JKDestinationCard({
               <span className="text-xs text-gray-400 shrink-0 pt-0.5">{district.listingsCount} Listings</span>
             </div>
             <p className="mt-1.5 text-[13px] text-gray-500 line-clamp-2 leading-relaxed">{district.shortDescription}</p>
+            <div className="mt-2 flex flex-wrap gap-1 items-center">
+              {district.touristPlaces.slice(0, 4).map((p) => (
+                <span
+                  key={p.name}
+                  className="inline-block rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-600 truncate max-w-[150px]"
+                >
+                  {p.name.split('(')[0].trim()}
+                </span>
+              ))}
+              {district.touristPlaces.length > 4 && (
+                <span className="inline-block rounded-md bg-blue-50 px-1.5 py-0.5 text-[11px] font-semibold text-[#3B71FE]">
+                  +{district.touristPlaces.length - 4} more
+                </span>
+              )}
+            </div>
           </div>
           <div className="mt-3 flex items-center justify-between border-t border-gray-100 pt-3">
             <div className="flex items-center gap-1 text-[13px]">
@@ -116,10 +131,28 @@ export default function JKDestinationCard({
           <p className="mt-1.5 text-[12.5px] text-gray-500 line-clamp-2 leading-[1.6]">
             {district.shortDescription}
           </p>
+
+          {/* Key Tourist Places Badges */}
+          <div className="mt-2.5 flex flex-wrap gap-1 items-center">
+            {district.touristPlaces.slice(0, 3).map((p) => (
+              <span
+                key={p.name}
+                className="inline-block rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-600 truncate max-w-[130px]"
+                title={p.name}
+              >
+                {p.name.split('(')[0].trim()}
+              </span>
+            ))}
+            {district.touristPlaces.length > 3 && (
+              <span className="inline-block rounded-md bg-blue-50 px-1.5 py-0.5 text-[11px] font-semibold text-[#3B71FE]">
+                +{district.touristPlaces.length - 3} more
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Row 3: Rating (left) & Explore -> in blue (right) */}
-        <div className="mt-4 flex items-center justify-between pt-3 border-t border-gray-100">
+        <div className="mt-3.5 flex items-center justify-between pt-3 border-t border-gray-100">
           <div className="flex items-center gap-1.5">
             <Star size={14} className="fill-amber-400 text-amber-400" />
             <span className="text-[13px] font-bold text-gray-900">{district.rating.toFixed(1)}</span>

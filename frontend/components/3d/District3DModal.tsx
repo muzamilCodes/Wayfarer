@@ -275,7 +275,7 @@ export default function District3DModal({
                   <span className="text-xs text-slate-500 font-medium">All Famous & Offbeat Sights</span>
                 </div>
 
-                <div className="grid gap-3 sm:grid-cols-2">
+                <div className="grid gap-4 sm:grid-cols-2">
                   {district.touristPlaces.map((place, idx) => {
                     // Category badge colors
                     const badgeStyles: Record<string, string> = {
@@ -285,6 +285,8 @@ export default function District3DModal({
                       'Spiritual': 'bg-emerald-100 text-emerald-900 border-emerald-200',
                       'Lake & Nature': 'bg-teal-100 text-teal-900 border-teal-200',
                       'Scenic View': 'bg-purple-100 text-purple-900 border-purple-200',
+                      'Family & Leisure': 'bg-pink-100 text-pink-900 border-pink-200',
+                      'Offbeat & Camping': 'bg-orange-100 text-orange-900 border-orange-200',
                     };
 
                     return (
@@ -292,20 +294,45 @@ export default function District3DModal({
                         key={place.name}
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: idx * 0.04 }}
-                        className="rounded-2xl border border-slate-200/80 bg-slate-50/60 p-4 hover:bg-white hover:border-[#0F3B4A]/30 hover:shadow-md transition-all group"
+                        transition={{ delay: idx * 0.03 }}
+                        className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden hover:border-[#0F3B4A]/40 hover:shadow-md transition-all group flex flex-col"
                       >
-                        <div className="flex items-start justify-between gap-2">
-                          <h4 className="font-bold text-sm text-slate-900 group-hover:text-[#0F3B4A] transition-colors">
-                            {place.name}
-                          </h4>
-                          <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold border ${badgeStyles[place.category] || 'bg-slate-100 text-slate-700'}`}>
-                            {place.category}
-                          </span>
+                        {place.image && (
+                          <div className="relative h-40 w-full overflow-hidden bg-slate-100">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={place.image}
+                              alt={place.name}
+                              className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
+                              loading="lazy"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent pointer-events-none" />
+                            <span className={`absolute top-2.5 right-2.5 rounded-full px-2.5 py-0.5 text-[10px] font-bold border backdrop-blur-md shadow-sm ${badgeStyles[place.category] || 'bg-white/90 text-slate-800'}`}>
+                              {place.category}
+                            </span>
+                            <span className="absolute bottom-2 left-3 text-[11px] font-medium text-white/90 drop-shadow">
+                              {district.district}
+                            </span>
+                          </div>
+                        )}
+                        <div className="p-4 flex-1 flex flex-col justify-between">
+                          <div>
+                            {!place.image && (
+                              <div className="flex items-start justify-end mb-1">
+                                <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold border ${badgeStyles[place.category] || 'bg-slate-100 text-slate-700'}`}>
+                                  {place.category}
+                                </span>
+                              </div>
+                            )}
+                            <h4 className="font-bold text-sm text-slate-900 group-hover:text-[#0F3B4A] transition-colors flex items-center gap-1.5">
+                              <MapPin size={13} className="text-[#D9A441] shrink-0" />
+                              {place.name}
+                            </h4>
+                            <p className="mt-1.5 text-xs text-slate-600 leading-relaxed">
+                              {place.description}
+                            </p>
+                          </div>
                         </div>
-                        <p className="mt-1.5 text-xs text-slate-600 leading-relaxed">
-                          {place.description}
-                        </p>
                       </motion.div>
                     );
                   })}
