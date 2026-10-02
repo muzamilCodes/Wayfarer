@@ -117,17 +117,17 @@ export default async function DestinationPage({ params }: Props) {
               </span>
             </div>
 
-            <h1 className="text-3xl sm:text-5xl md:text-6xl font-black tracking-tight text-white drop-shadow-md">
+            <h1 className="font-display text-3xl sm:text-5xl md:text-6xl font-black tracking-tight text-white drop-shadow-md">
               {jkDistrict.district}
             </h1>
-            <p className="mt-2 text-sm sm:text-lg text-slate-200/90 font-medium max-w-3xl leading-relaxed">
+            <p className="mt-2 font-body text-sm sm:text-lg text-slate-200/90 font-medium max-w-3xl leading-relaxed">
               {jkDistrict.tagline}
             </p>
           </div>
         </section>
 
         {/* Quick Stats Ribbon */}
-        <section className="border-b border-gray-200 bg-white shadow-sm">
+        <section className="border-b border-gray-200 bg-white shadow-sm font-body">
           <div className="container-x">
             <div className="grid grid-cols-2 sm:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-gray-100 py-3 sm:py-4">
               <div className="p-3 text-center sm:text-left flex items-center justify-center sm:justify-start gap-3">
@@ -179,14 +179,14 @@ export default async function DestinationPage({ params }: Props) {
           <div className="space-y-10">
             {/* Overview Card */}
             <div className="rounded-3xl border border-gray-200/80 bg-white p-6 sm:p-8 shadow-sm">
-              <h2 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center gap-2.5">
+              <h2 className="font-display text-xl sm:text-2xl font-bold text-gray-900 flex items-center gap-2.5">
                 <Compass className="text-[#3B71FE]" size={24} />
                 About {jkDistrict.district}
               </h2>
-              <p className="mt-4 text-sm sm:text-base text-gray-600 leading-relaxed">
+              <p className="mt-4 font-body text-sm sm:text-base text-gray-600 leading-relaxed">
                 {jkDistrict.overview}
               </p>
-              <p className="mt-3 text-xs sm:text-sm text-gray-500 leading-relaxed">
+              <p className="mt-3 font-body text-xs sm:text-sm text-gray-500 leading-relaxed">
                 {jkDistrict.shortDescription}
               </p>
             </div>
@@ -195,15 +195,15 @@ export default async function DestinationPage({ params }: Props) {
             <div>
               <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2 border-b border-gray-200 pb-4 mb-6">
                 <div>
-                  <span className="text-xs font-bold uppercase tracking-wider text-[#3B71FE]">
+                  <span className="font-body text-xs font-bold uppercase tracking-wider text-[#3B71FE]">
                     Comprehensive Guide to Attractions
                   </span>
-                  <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mt-1 flex items-center gap-2">
+                  <h2 className="font-display text-2xl sm:text-3xl font-extrabold text-gray-900 mt-1 flex items-center gap-2">
                     <MapPin className="text-rose-500" size={26} />
                     All Tourist Places in {jkDistrict.district} ({jkDistrict.touristPlaces.length} Spots)
                   </h2>
                 </div>
-                <span className="text-xs text-gray-500 font-medium">
+                <span className="font-body text-xs text-gray-500 font-medium">
                   Verified Scenic, Historical &amp; Religious Sights
                 </span>
               </div>
@@ -247,42 +247,74 @@ export default async function DestinationPage({ params }: Props) {
                     )}
 
                     {/* Attraction Details */}
-                    <div className="p-5 flex-1 flex flex-col justify-between">
+                    <div className="p-5 sm:p-6 flex-1 flex flex-col justify-between font-body">
                       <div>
-                        {!place.image && (
-                          <div className="flex items-center justify-between mb-2">
-                            {place.pinCode ? (
-                              <span className="text-[10px] font-mono font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
-                                PIN {place.pinCode}
-                              </span>
-                            ) : <div />}
-                            <span
-                              className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold border ${
-                                badgeStyles[place.category] || 'bg-gray-100 text-gray-700'
-                              }`}
-                            >
-                              {place.category}
+                        {/* Meta Tags Bar (Tehsil, Type, PIN) */}
+                        <div className="flex flex-wrap items-center gap-1.5 mb-2.5">
+                          {place.tehsil && (
+                            <span className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md">
+                              <MapPin size={11} className="text-rose-500 shrink-0" />
+                              {place.tehsil}
                             </span>
-                          </div>
-                        )}
-                        <h3 className="text-base sm:text-lg font-bold text-gray-900 group-hover:text-[#3B71FE] transition-colors flex items-center gap-1.5">
-                          <MapPin size={15} className="text-[#D9A441] shrink-0" />
-                          {place.name}
+                          )}
+                          {place.type && (
+                            <span className="inline-block text-[11px] font-medium text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100">
+                              {place.type}
+                            </span>
+                          )}
+                          {!place.image && place.pinCode && (
+                            <span className="text-[10.5px] font-mono font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">
+                              PIN {place.pinCode}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Title */}
+                        <h3 className="font-display text-lg sm:text-xl font-extrabold text-slate-900 group-hover:text-[#3B71FE] transition-colors leading-snug flex items-baseline gap-2">
+                          <span>{place.name}</span>
                         </h3>
-                        <p className="mt-2 text-xs sm:text-sm text-gray-600 leading-relaxed">
+
+                        {/* Description */}
+                        <p className="mt-2 text-sm text-slate-600 leading-relaxed font-normal">
                           {place.description}
                         </p>
 
                         {/* Speciality (Khasiyat) Highlight Box */}
                         {place.speciality && (
-                          <div className="mt-3.5 rounded-xl bg-amber-50/80 border border-amber-200/80 p-3 text-xs text-amber-950">
-                            <span className="font-bold text-amber-900 flex items-center gap-1.5 mb-1 text-[11.5px]">
+                          <div className="mt-3.5 rounded-2xl bg-amber-50/90 border border-amber-200/90 p-3.5 text-xs text-amber-950 shadow-sm">
+                            <span className="font-display font-bold text-amber-900 flex items-center gap-1.5 mb-1 text-[12px] uppercase tracking-wider">
                               <Sparkles size={13} className="text-[#D9A441] shrink-0" />
                               Speciality (Khasiyat):
                             </span>
                             <p className="text-amber-900/90 leading-relaxed font-medium">
                               {place.speciality}
                             </p>
+                          </div>
+                        )}
+
+                        {/* Famous For & Activities */}
+                        <div className="mt-3.5 pt-3 border-t border-slate-100 space-y-1.5 text-xs">
+                          {place.famousFor && (
+                            <div className="flex items-start gap-1.5 text-slate-600 leading-relaxed">
+                              <span className="font-bold text-slate-800 shrink-0">Famous For:</span>
+                              <span className="text-slate-600">{place.famousFor}</span>
+                            </div>
+                          )}
+                          {place.activities && (
+                            <div className="flex items-start gap-1.5 text-slate-600 leading-relaxed">
+                              <span className="font-bold text-slate-800 shrink-0">Activities:</span>
+                              <span className="text-slate-600">{place.activities}</span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Best Time Pill */}
+                        {place.bestTime && (
+                          <div className="mt-3">
+                            <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-emerald-800 bg-emerald-50 border border-emerald-200/80 px-2.5 py-1 rounded-lg">
+                              <Calendar size={12} className="text-emerald-600 shrink-0" />
+                              <span><strong>Best Time:</strong> {place.bestTime}</span>
+                            </span>
                           </div>
                         )}
                       </div>
