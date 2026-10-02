@@ -5,7 +5,7 @@ import Link from 'next/link';
 import {
   Search, MapPin, Calendar, Clock, Sliders, Grid, List,
   ChevronDown, ChevronUp, RotateCcw, ChevronLeft, ChevronRight,
-  Star, Compass, Plane, Mountain
+  Star, Compass, Mountain
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { JK_ALL_DISTRICTS, JKDistrictDestination } from '@/lib/jk-destinations-data';
@@ -732,7 +732,9 @@ export default function DestinationsExplorerClient({
             <div className="mt-12 rounded-2xl bg-[#EBF2FF] p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-5">
               <div className="flex items-center gap-4">
                 <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[#3B71FE] text-white shadow-lg">
-                  <Plane size={24} className="-rotate-45" />
+                  <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                  </svg>
                 </div>
                 <div>
                   <h4 className="text-[16px] font-bold text-gray-900">Can&apos;t find what you&apos;re looking for?</h4>
