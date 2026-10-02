@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Search, Compass, MapPin, Star, ArrowRight, Mountain, TreePine, Snowflake } from 'lucide-react';
+import { Search, Compass, MapPin, Star, ArrowRight, Mountain, Snowflake } from 'lucide-react';
 import { detectTier, Tier } from '@/lib/capability';
 
 const Scene = dynamic(() => import('./3d/Scene'), {
@@ -95,7 +95,7 @@ export default function Hero() {
               <span><strong className="text-white">20</strong> Districts</span>
             </div>
             <div className="flex items-center gap-2 text-sm text-glacier/80">
-              <TreePine size={16} className="text-[#E85D04]" />
+              <Compass size={16} className="text-[#E85D04]" />
               <span><strong className="text-white">150+</strong> Tourist Places</span>
             </div>
             <div className="flex items-center gap-2 text-sm text-glacier/80">
