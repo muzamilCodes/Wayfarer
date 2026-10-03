@@ -22,7 +22,7 @@ async function sendOtp(email: string, purpose: Purpose) {
   if (!u) return null;
   const otp = genOtp();
   await User.updateOne({ email }, { otpHash: sha256(otp), otpPurpose: purpose, otpExpires: new Date(Date.now() + TTL) });
-  await sendEmail(email, SUBJECT[purpose], `Your code is ${otp}. It expires in 10 minutes. If you did not request it, ignore this email.`);
+  void sendEmail(email, SUBJECT[purpose], `Your code is ${otp}. It expires in 10 minutes. If you did not request it, ignore this email.`).catch(console.error);
   return otp;
 }
 
@@ -72,7 +72,7 @@ export const authService = {
     const user = await checkOtp(email.toLowerCase(), otp, 'verify');
     user.emailVerified = true; user.otpHash = undefined; user.otpExpires = undefined;
     await user.save();
-    await sendEmail(user.email, 'Welcome!', `Welcome aboard, ${user.name}.`);
+    void sendEmail(user.email, 'Welcome!', `Welcome aboard, ${user.name}.`).catch(console.error);
     const tokens = await issueTokens(user);
     return { user: publicUser(user), ...tokens };
   },
