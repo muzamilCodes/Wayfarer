@@ -83,6 +83,8 @@ declare module 'lucide-react' {
   export const Download: Icon;
   export const DollarSign: Icon;
   export const Eye: Icon;
+  export const Edit: Icon;
+  export const Pencil: Icon;
 
   const icons: { [key: string]: Icon };
   export default icons;

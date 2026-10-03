@@ -36,7 +36,6 @@ export const getStats = asyncHandler(async (_req, res) => {
     ]),
     Booking.find()
       .populate('user', 'name email')
-      .populate('package', 'title slug')
       .sort({ createdAt: -1 })
       .limit(10),
     User.find()
@@ -148,13 +147,24 @@ export const deleteVehicle = asyncHandler(async (req, res) => {
 
 // Bookings
 export const listBookings = asyncHandler(async (_req, res) => {
-  const items = await Booking.find().populate('user', 'name email').populate('package', 'title slug').sort({ createdAt: -1 });
+  const items = await Booking.find().populate('user', 'name email').sort({ createdAt: -1 });
   ok(res, 'Bookings list', { items });
 });
 
 export const updateBookingStatus = asyncHandler(async (req, res) => {
-  const booking = await Booking.findByIdAndUpdate(req.params.id, { status: req.body.status }, { new: true });
-  ok(res, 'Booking status updated', booking);
+  const updateData: any = {};
+  if (req.body.status) updateData.status = req.body.status;
+  if (req.body.total !== undefined) updateData.total = req.body.total;
+  if (req.body.travelDate) updateData.travelDate = req.body.travelDate;
+  if (req.body.items) updateData.items = req.body.items;
+
+  const booking = await Booking.findByIdAndUpdate(req.params.id, updateData, { new: true }).populate('user', 'name email');
+  ok(res, 'Booking updated', booking);
+});
+
+export const deleteBooking = asyncHandler(async (req, res) => {
+  await Booking.findByIdAndDelete(req.params.id);
+  ok(res, 'Booking deleted');
 });
 
 // Users
@@ -164,8 +174,20 @@ export const listUsers = asyncHandler(async (_req, res) => {
 });
 
 export const updateUserRole = asyncHandler(async (req, res) => {
-  const user = await User.findByIdAndUpdate(req.params.id, { role: req.body.role }, { new: true }).select('-passwordHash');
-  ok(res, 'User role updated', user);
+  const updateData: any = {};
+  if (req.body.role) updateData.role = req.body.role;
+  if (req.body.name) updateData.name = req.body.name;
+  if (req.body.email) updateData.email = req.body.email;
+  if (req.body.phone) updateData.phone = req.body.phone;
+  if (req.body.emailVerified !== undefined) updateData.emailVerified = req.body.emailVerified;
+
+  const user = await User.findByIdAndUpdate(req.params.id, updateData, { new: true }).select('-passwordHash');
+  ok(res, 'User updated', user);
+});
+
+export const deleteUser = asyncHandler(async (req, res) => {
+  await User.findByIdAndDelete(req.params.id);
+  ok(res, 'User deleted');
 });
 
 // Reviews Moderation

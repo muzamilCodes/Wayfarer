@@ -59,6 +59,7 @@ import {
   LogOut,
   Map,
   Filter,
+  Edit3,
 } from 'lucide-react';
 
 // Micro SVG helper components for icons not directly available
@@ -605,6 +606,38 @@ export default function AdminPage() {
   const [newPlaceTehsil, setNewPlaceTehsil] = useState('');
   const [selectedInvoice, setSelectedInvoice] = useState<BookingRecord | null>(null);
 
+  // Edit Modals State
+  const [editingBooking, setEditingBooking] = useState<BookingRecord | null>(null);
+  const [editingTour, setEditingTour] = useState<any | null>(null);
+  const [editingHotel, setEditingHotel] = useState<any | null>(null);
+  const [editingVehicle, setEditingVehicle] = useState<any | null>(null);
+  const [editingUser, setEditingUser] = useState<UserRecord | null>(null);
+  const [editingPlace, setEditingPlace] = useState<{
+    place: TouristPlace;
+    originalName: string;
+    districtName: string;
+  } | null>(null);
+
+  // Real activities computed from live bookings and users
+  const realActivities = useMemo(() => {
+    const list: { text: string; time: string; color: string }[] = [];
+    bookings.slice(0, 3).forEach((b) => {
+      list.push({
+        text: `Reservation ${b.status} - ${b.id} (${b.customer})`,
+        time: b.date || 'Recent',
+        color: b.status === 'Confirmed' ? 'bg-emerald-400' : 'bg-blue-400',
+      });
+    });
+    usersList.slice(0, 2).forEach((u) => {
+      list.push({
+        text: `User account - ${u.name} (${u.role})`,
+        time: u.joined || 'Registered',
+        color: 'bg-purple-400',
+      });
+    });
+    return list;
+  }, [bookings, usersList]);
+
   const handleSaveNewPlace = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newPlaceName.trim()) return;
@@ -879,10 +912,33 @@ export default function AdminPage() {
     addLog(`Published new tour package: ${newTourTitle}`, 'success');
   };
 
-  const handleDeleteTour = (id: string, title: string) => {
+  const handleDeleteTour = async (id: string, title: string) => {
+    if (!confirm(`Are you sure you want to delete tour "${title}"?`)) return;
+    try {
+      const headers: Record<string, string> = {};
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      await fetch(`${API}/admin/tours/${id}`, { method: 'DELETE', headers, credentials: 'include' });
+    } catch {}
     setTours((prev) => prev.filter((t) => t._id !== id));
     showToast(`Tour package "${title}" removed.`);
     addLog(`Deleted tour package: ${title}`, 'warning');
+  };
+
+  const handleSaveEditTour = async (updatedTour: any) => {
+    try {
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      await fetch(`${API}/admin/tours/${updatedTour._id}`, {
+        method: 'PUT',
+        headers,
+        credentials: 'include',
+        body: JSON.stringify(updatedTour),
+      });
+    } catch {}
+    setTours((prev) => prev.map((t) => (t._id === updatedTour._id ? { ...t, ...updatedTour } : t)));
+    setEditingTour(null);
+    showToast(`Tour "${updatedTour.title}" updated.`);
+    addLog(`Edited tour package ${updatedTour.title}`, 'info');
   };
 
   const handleAddHotel = (e: React.FormEvent) => {
@@ -919,10 +975,33 @@ export default function AdminPage() {
     showToast('Hotel inventory status updated.');
   };
 
-  const handleDeleteHotel = (id: string, name: string) => {
+  const handleDeleteHotel = async (id: string, name: string) => {
+    if (!confirm(`Are you sure you want to delete stay "${name}"?`)) return;
+    try {
+      const headers: Record<string, string> = {};
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      await fetch(`${API}/admin/hotels/${id}`, { method: 'DELETE', headers, credentials: 'include' });
+    } catch {}
     setHotels((prev) => prev.filter((h) => h._id !== id));
     showToast(`Hotel "${name}" deleted.`);
     addLog(`Removed stay: ${name}`, 'warning');
+  };
+
+  const handleSaveEditHotel = async (updatedHotel: any) => {
+    try {
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      await fetch(`${API}/admin/hotels/${updatedHotel._id}`, {
+        method: 'PUT',
+        headers,
+        credentials: 'include',
+        body: JSON.stringify(updatedHotel),
+      });
+    } catch {}
+    setHotels((prev) => prev.map((h) => (h._id === updatedHotel._id ? { ...h, ...updatedHotel } : h)));
+    setEditingHotel(null);
+    showToast(`Hotel "${updatedHotel.name}" updated.`);
+    addLog(`Edited hotel ${updatedHotel.name}`, 'info');
   };
 
   const handleAddVehicle = (e: React.FormEvent) => {
@@ -963,10 +1042,33 @@ export default function AdminPage() {
     showToast('Vehicle status cycled.');
   };
 
-  const handleDeleteVehicle = (id: string, name: string) => {
+  const handleDeleteVehicle = async (id: string, name: string) => {
+    if (!confirm(`Are you sure you want to remove vehicle "${name}"?`)) return;
+    try {
+      const headers: Record<string, string> = {};
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      await fetch(`${API}/admin/vehicles/${id}`, { method: 'DELETE', headers, credentials: 'include' });
+    } catch {}
     setVehicles((prev) => prev.filter((v) => v._id !== id));
     showToast(`Vehicle "${name}" removed from fleet.`);
     addLog(`Decommissioned vehicle: ${name}`, 'warning');
+  };
+
+  const handleSaveEditVehicle = async (updatedVehicle: any) => {
+    try {
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      await fetch(`${API}/admin/vehicles/${updatedVehicle._id}`, {
+        method: 'PUT',
+        headers,
+        credentials: 'include',
+        body: JSON.stringify(updatedVehicle),
+      });
+    } catch {}
+    setVehicles((prev) => prev.map((v) => (v._id === updatedVehicle._id ? { ...v, ...updatedVehicle } : v)));
+    setEditingVehicle(null);
+    showToast(`Vehicle "${updatedVehicle.name}" updated.`);
+    addLog(`Edited vehicle ${updatedVehicle.name}`, 'info');
   };
 
   const handleCycleBookingStatus = (id: string) => {
@@ -988,6 +1090,48 @@ export default function AdminPage() {
     addLog(`Updated reservation status for ${id}`, 'info');
   };
 
+  const handleDeleteBooking = async (id: string) => {
+    if (!confirm(`Are you sure you want to delete reservation ${id}?`)) return;
+    try {
+      const headers: Record<string, string> = {};
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      const found = bookings.find((b) => b.id === id || (b as any)._id === id);
+      const dbId = (found as any)?._id || id;
+      await fetch(`${API}/admin/bookings/${dbId}`, {
+        method: 'DELETE',
+        headers,
+        credentials: 'include',
+      });
+    } catch {}
+    setBookings((prev) => prev.filter((b) => b.id !== id && (b as any)._id !== id));
+    showToast(`Reservation ${id} deleted.`);
+    addLog(`Deleted reservation ${id}`, 'warning');
+  };
+
+  const handleSaveEditBooking = async (updated: BookingRecord) => {
+    try {
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      const found = bookings.find((b) => b.id === updated.id || (b as any)._id === updated.id);
+      const dbId = (found as any)?._id || updated.id;
+      await fetch(`${API}/admin/bookings/${dbId}`, {
+        method: 'PUT',
+        headers,
+        credentials: 'include',
+        body: JSON.stringify({
+          status: updated.status.toLowerCase(),
+          total: updated.amount,
+          travelDate: updated.date,
+          travellers: [{ name: updated.customer }],
+        }),
+      });
+    } catch {}
+    setBookings((prev) => prev.map((b) => (b.id === updated.id ? updated : b)));
+    setEditingBooking(null);
+    showToast(`Reservation ${updated.id} updated!`);
+    addLog(`Updated reservation ${updated.id}`, 'info');
+  };
+
   const handleToggleUserRole = (id: string) => {
     setUsersList((prev) =>
       prev.map((u) => {
@@ -998,6 +1142,67 @@ export default function AdminPage() {
     );
     showToast('User security permission updated.');
     addLog(`Updated role for user ID: ${id}`, 'warning');
+  };
+
+  const handleDeleteUser = async (id: string, name: string) => {
+    if (!confirm(`Are you sure you want to delete user account "${name}"?`)) return;
+    try {
+      const headers: Record<string, string> = {};
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      await fetch(`${API}/admin/users/${id}`, { method: 'DELETE', headers, credentials: 'include' });
+    } catch {}
+    setUsersList((prev) => prev.filter((u) => u.id !== id));
+    showToast(`User "${name}" deleted.`);
+    addLog(`Deleted user account: ${name}`, 'warning');
+  };
+
+  const handleSaveEditUser = async (updatedUser: UserRecord) => {
+    try {
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      await fetch(`${API}/admin/users/${updatedUser.id}`, {
+        method: 'PUT',
+        headers,
+        credentials: 'include',
+        body: JSON.stringify({
+          name: updatedUser.name,
+          email: updatedUser.email,
+          role: updatedUser.role,
+          emailVerified: updatedUser.emailVerified,
+        }),
+      });
+    } catch {}
+    setUsersList((prev) => prev.map((u) => (u.id === updatedUser.id ? updatedUser : u)));
+    setEditingUser(null);
+    showToast(`User "${updatedUser.name}" updated.`);
+    addLog(`Updated user ${updatedUser.name}`, 'info');
+  };
+
+  const handleSaveEditPlace = (updatedPlace: TouristPlace, originalName: string, districtName: string) => {
+    setAllDistricts((prev) =>
+      prev.map((d) => {
+        if (d.district.toLowerCase() === districtName.toLowerCase()) {
+          return {
+            ...d,
+            touristPlaces: (d.touristPlaces || []).map((p) =>
+              p.name === originalName ? updatedPlace : p
+            ),
+          };
+        }
+        return d;
+      })
+    );
+    if (selectedDistrict.district.toLowerCase() === districtName.toLowerCase()) {
+      setSelectedDistrict((prev) => ({
+        ...prev,
+        touristPlaces: (prev.touristPlaces || []).map((p) =>
+          p.name === originalName ? updatedPlace : p
+        ),
+      }));
+    }
+    setEditingPlace(null);
+    showToast(`Tourist place "${updatedPlace.name}" updated!`);
+    addLog(`Updated tourist attraction "${updatedPlace.name}"`, 'info');
   };
 
   const handleToggleUserVerification = (id: string) => {
@@ -1284,6 +1489,21 @@ export default function AdminPage() {
               onOpenAddTour={() => setShowAddTourModal(true)}
               onOpenAddHotel={() => setShowAddHotelModal(true)}
               onOpenAddPlace={() => setShowAddPlaceModal(true)}
+              onEditReservation={(b) => {
+                const found = bookings.find((bk) => bk.id === b.id);
+                setEditingBooking(found || {
+                  id: b.id,
+                  customer: b.customer,
+                  email: b.email || 'customer@example.com',
+                  tour: b.tour,
+                  date: b.date,
+                  status: b.status,
+                  amount: b.amount,
+                  guests: b.guests || 2,
+                });
+              }}
+              onDeleteReservation={handleDeleteBooking}
+              recentActivity={realActivities}
               onViewReservation={(b) => {
                 const found = bookings.find((bk) => bk.id === b.id);
                 setSelectedInvoice(found || {
@@ -1450,27 +1670,38 @@ export default function AdminPage() {
                           </div>
                         </div>
 
-                        <div className="mt-3 pt-3 border-t border-[#132847] flex items-center justify-between gap-2">
+                        <div className="mt-3 pt-3 border-t border-[#132847] flex items-center justify-between gap-1.5">
                           <button
                             onClick={() => setInspectPlace(p as any)}
-                            className="flex items-center gap-1 rounded-lg bg-blue-600/20 hover:bg-blue-600 hover:text-white border border-blue-500/30 px-2.5 py-1 text-[11px] font-bold text-blue-300 transition"
+                            className="flex items-center gap-1 rounded-lg bg-blue-600/20 hover:bg-blue-600 hover:text-white border border-blue-500/30 px-2 py-1 text-[11px] font-bold text-blue-300 transition"
                           >
                             <EyeIcon size={12} />
-                            <span>Inspect 28 Fields</span>
+                            <span>Inspect</span>
                           </button>
 
-                          <button
-                            onClick={() => {
-                              if (confirm(`Remove "${p.name}" from ${p.districtName}?`)) {
-                                handleDeletePlace(p.name, p.districtName);
-                              }
-                            }}
-                            className="flex items-center gap-1 rounded-lg bg-rose-500/10 hover:bg-rose-600 hover:text-white border border-rose-500/30 px-2 py-1 text-[11px] font-bold text-rose-400 transition"
-                            title="Delete Tourist Place"
-                          >
-                            <Trash2 size={12} />
-                            <span>Delete</span>
-                          </button>
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              onClick={() => setEditingPlace({ place: p as any, originalName: p.name, districtName: p.districtName })}
+                              className="flex items-center gap-1 rounded-lg bg-blue-500/15 hover:bg-blue-600 hover:text-white border border-blue-500/30 px-2 py-1 text-[11px] font-bold text-blue-300 transition"
+                              title="Edit Tourist Place"
+                            >
+                              <Edit3 size={12} />
+                              <span>Edit</span>
+                            </button>
+
+                            <button
+                              onClick={() => {
+                                if (confirm(`Remove "${p.name}" from ${p.districtName}?`)) {
+                                  handleDeletePlace(p.name, p.districtName);
+                                }
+                              }}
+                              className="flex items-center gap-1 rounded-lg bg-rose-500/10 hover:bg-rose-600 hover:text-white border border-rose-500/30 px-2 py-1 text-[11px] font-bold text-rose-400 transition"
+                              title="Delete Tourist Place"
+                            >
+                              <Trash2 size={12} />
+                              <span>Delete</span>
+                            </button>
+                          </div>
                         </div>
                       </div>
                     ))}
@@ -1668,10 +1899,19 @@ export default function AdminPage() {
                           <div className="flex items-center gap-1.5 shrink-0">
                             <button
                               onClick={() => setInspectPlace(place)}
-                              className="flex items-center gap-1.5 rounded-lg bg-[#3B71FE] hover:bg-blue-600 px-3 py-1.5 text-xs font-bold text-white transition"
+                              className="flex items-center gap-1 rounded-lg bg-[#3B71FE] hover:bg-blue-600 px-2.5 py-1.5 text-xs font-bold text-white transition"
                             >
                               <EyeIcon size={13} />
-                              <span>Inspect 28 Fields</span>
+                              <span>Inspect</span>
+                            </button>
+
+                            <button
+                              onClick={() => setEditingPlace({ place, originalName: place.name, districtName: selectedDistrict.district })}
+                              className="flex items-center gap-1 rounded-lg bg-blue-500/20 hover:bg-blue-600 hover:text-white border border-blue-500/30 px-2.5 py-1.5 text-xs font-bold text-blue-300 transition"
+                              title="Edit Tourist Place"
+                            >
+                              <Edit3 size={13} />
+                              <span>Edit</span>
                             </button>
 
                             <button
@@ -1783,6 +2023,13 @@ export default function AdminPage() {
                         <ExternalLinkIcon size={14} />
                       </Link>
                       <button
+                        onClick={() => setEditingTour(tour)}
+                        className="rounded-lg border border-blue-500/30 bg-blue-500/10 p-2 text-blue-400 hover:bg-blue-600 hover:text-white transition"
+                        title="Edit Tour Package"
+                      >
+                        <Edit3 size={14} />
+                      </button>
+                      <button
                         onClick={() => handleDeleteTour(tour._id, tour.title)}
                         className="rounded-lg border border-rose-500/30 bg-rose-500/10 p-2 text-rose-400 hover:bg-rose-500/20 transition"
                         title="Delete Tour"
@@ -1870,8 +2117,16 @@ export default function AdminPage() {
                         {htl.isAvailable ? 'In Stock' : 'Booked'}
                       </button>
                       <button
+                        onClick={() => setEditingHotel(htl)}
+                        className="rounded-lg border border-blue-500/30 bg-blue-500/10 p-2 text-blue-400 hover:bg-blue-600 hover:text-white transition"
+                        title="Edit Hotel"
+                      >
+                        <Edit3 size={14} />
+                      </button>
+                      <button
                         onClick={() => handleDeleteHotel(htl._id, htl.name)}
                         className="rounded-lg border border-rose-500/30 bg-rose-500/10 p-2 text-rose-400 hover:bg-rose-500/20 transition"
+                        title="Delete Hotel"
                       >
                         <Trash2 size={14} />
                       </button>
@@ -1959,12 +2214,22 @@ export default function AdminPage() {
                       </span>
                     </div>
 
-                    <button
-                      onClick={() => handleDeleteVehicle(veh._id, veh.name)}
-                      className="rounded-lg border border-rose-500/30 bg-rose-500/10 p-2 text-rose-400 hover:bg-rose-500/20 transition"
-                    >
-                      <Trash2 size={14} />
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setEditingVehicle(veh)}
+                        className="rounded-lg border border-blue-500/30 bg-blue-500/10 p-2 text-blue-400 hover:bg-blue-600 hover:text-white transition"
+                        title="Edit Vehicle"
+                      >
+                        <Edit3 size={14} />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteVehicle(veh._id, veh.name)}
+                        className="rounded-lg border border-rose-500/30 bg-rose-500/10 p-2 text-rose-400 hover:bg-rose-500/20 transition"
+                        title="Delete Vehicle"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -2032,12 +2297,27 @@ export default function AdminPage() {
                             {b.status} ↻
                           </button>
                         </td>
-                        <td className="py-3.5 text-right space-x-2">
+                        <td className="py-3.5 text-right space-x-1.5">
                           <button
                             onClick={() => setSelectedInvoice(b)}
-                            className="rounded-lg border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-300 hover:text-white transition"
+                            className="rounded-lg border border-slate-700 bg-slate-800 px-2.5 py-1 text-xs font-semibold text-slate-300 hover:text-white transition"
+                            title="View Invoice"
                           >
                             Invoice
+                          </button>
+                          <button
+                            onClick={() => setEditingBooking(b)}
+                            className="rounded-lg border border-blue-500/30 bg-blue-500/10 px-2.5 py-1 text-xs font-semibold text-blue-300 hover:bg-blue-600 hover:text-white transition"
+                            title="Edit Reservation"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDeleteBooking(b.id)}
+                            className="rounded-lg border border-rose-500/30 bg-rose-500/10 px-2.5 py-1 text-xs font-semibold text-rose-300 hover:bg-rose-600 hover:text-white transition"
+                            title="Delete Reservation"
+                          >
+                            Delete
                           </button>
                         </td>
                       </tr>
@@ -2073,7 +2353,7 @@ export default function AdminPage() {
                       <th className="pb-3">Registered</th>
                       <th className="pb-3">Email Status</th>
                       <th className="pb-3">Role</th>
-                      <th className="pb-3 text-right">Toggle Role</th>
+                      <th className="pb-3 text-right">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-800/60">
@@ -2110,12 +2390,27 @@ export default function AdminPage() {
                             {u.role}
                           </span>
                         </td>
-                        <td className="py-3.5 text-right">
+                        <td className="py-3.5 text-right space-x-1.5">
                           <button
                             onClick={() => handleToggleUserRole(u.id)}
-                            className="rounded-lg border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-300 hover:text-white transition"
+                            className="rounded-lg border border-slate-700 bg-slate-800 px-2.5 py-1 text-xs font-semibold text-slate-300 hover:text-white transition"
+                            title="Toggle Role"
                           >
-                            Switch to {u.role === 'admin' ? 'User' : 'Admin'}
+                            {u.role === 'admin' ? 'Make User' : 'Make Admin'}
+                          </button>
+                          <button
+                            onClick={() => setEditingUser(u)}
+                            className="rounded-lg border border-blue-500/30 bg-blue-500/10 px-2.5 py-1 text-xs font-semibold text-blue-300 hover:bg-blue-600 hover:text-white transition"
+                            title="Edit User"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDeleteUser(u.id, u.name)}
+                            className="rounded-lg border border-rose-500/30 bg-rose-500/10 px-2.5 py-1 text-xs font-semibold text-rose-300 hover:bg-rose-600 hover:text-white transition"
+                            title="Delete User"
+                          >
+                            Delete
                           </button>
                         </td>
                       </tr>
@@ -2800,57 +3095,535 @@ export default function AdminPage() {
       )}
 
       {/* ============================================================ */}
-      {/* ADD TOURIST PLACE MODAL */}
+      {/* 1. EDIT BOOKING MODAL */}
       {/* ============================================================ */}
-      {showAddPlaceModal && (
+      {editingBooking && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-150">
           <div className="relative w-full max-w-lg rounded-3xl border border-slate-700 bg-slate-900 p-6 sm:p-8 text-slate-100 shadow-2xl">
             <div className="flex items-start justify-between border-b border-slate-800 pb-4">
               <div>
-                <span className="font-mono text-xs font-bold text-blue-400">Catalog Entry</span>
-                <h3 className="text-lg font-bold text-white">Add Tourist Place</h3>
+                <span className="font-mono text-xs font-bold text-blue-400">
+                  {editingBooking.id}
+                </span>
+                <h3 className="text-lg font-bold text-white">Edit Reservation</h3>
               </div>
-              <button onClick={() => setShowAddPlaceModal(false)} className="text-slate-400 hover:text-white">
+              <button onClick={() => setEditingBooking(null)} className="text-slate-400 hover:text-white">
                 <X size={18} />
               </button>
             </div>
 
-            <form onSubmit={handleSaveNewPlace} className="mt-5 space-y-4 text-xs max-h-[75vh] overflow-y-auto pr-1">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSaveEditBooking(editingBooking);
+              }}
+              className="mt-5 space-y-4 text-xs"
+            >
+              <div>
+                <label className="block font-semibold text-slate-300 mb-1">Customer Name</label>
+                <input
+                  type="text"
+                  required
+                  value={editingBooking.customer}
+                  onChange={(e) => setEditingBooking({ ...editingBooking, customer: e.target.value })}
+                  className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3.5 py-2.5 text-white focus:border-blue-500 focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block font-semibold text-slate-300 mb-1">Tour Package Title</label>
+                <input
+                  type="text"
+                  required
+                  value={editingBooking.tour}
+                  onChange={(e) => setEditingBooking({ ...editingBooking, tour: e.target.value })}
+                  className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3.5 py-2.5 text-white focus:border-blue-500 focus:outline-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-semibold text-slate-300 mb-1">Travel Date</label>
+                  <input
+                    type="text"
+                    required
+                    value={editingBooking.date}
+                    onChange={(e) => setEditingBooking({ ...editingBooking, date: e.target.value })}
+                    className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3.5 py-2.5 text-white focus:border-blue-500 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block font-semibold text-slate-300 mb-1">Total Amount (₹)</label>
+                  <input
+                    type="number"
+                    required
+                    value={editingBooking.amount}
+                    onChange={(e) => setEditingBooking({ ...editingBooking, amount: Number(e.target.value) || 0 })}
+                    className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3.5 py-2.5 text-white focus:border-blue-500 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-semibold text-slate-300 mb-1">Status</label>
+                  <select
+                    value={editingBooking.status}
+                    onChange={(e) => setEditingBooking({ ...editingBooking, status: e.target.value as any })}
+                    className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3.5 py-2.5 text-white focus:border-blue-500 focus:outline-none"
+                  >
+                    <option value="Confirmed">Confirmed</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Cancelled">Cancelled</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block font-semibold text-slate-300 mb-1">Guests</label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={editingBooking.guests || 1}
+                    onChange={(e) => setEditingBooking({ ...editingBooking, guests: Number(e.target.value) || 1 })}
+                    className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3.5 py-2.5 text-white focus:border-blue-500 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="mt-6 flex justify-end gap-2 border-t border-slate-800 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setEditingBooking(null)}
+                  className="rounded-xl border border-slate-700 px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="rounded-xl bg-blue-600 px-5 py-2 text-xs font-bold text-white hover:bg-blue-500 transition shadow-md shadow-blue-600/20"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================ */}
+      {/* 2. EDIT TOUR MODAL */}
+      {/* ============================================================ */}
+      {editingTour && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-150">
+          <div className="relative w-full max-w-lg rounded-3xl border border-slate-700 bg-slate-900 p-6 sm:p-8 text-slate-100 shadow-2xl">
+            <div className="flex items-start justify-between border-b border-slate-800 pb-4">
+              <div>
+                <span className="font-mono text-xs font-bold text-blue-400">Tour Package</span>
+                <h3 className="text-lg font-bold text-white">Edit Tour Package</h3>
+              </div>
+              <button onClick={() => setEditingTour(null)} className="text-slate-400 hover:text-white">
+                <X size={18} />
+              </button>
+            </div>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSaveEditTour(editingTour);
+              }}
+              className="mt-5 space-y-4 text-xs"
+            >
+              <div>
+                <label className="block font-semibold text-slate-300 mb-1">Package Title</label>
+                <input
+                  type="text"
+                  required
+                  value={editingTour.title}
+                  onChange={(e) => setEditingTour({ ...editingTour, title: e.target.value })}
+                  className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3.5 py-2.5 text-white focus:border-blue-500 focus:outline-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-semibold text-slate-300 mb-1">Duration (Days)</label>
+                  <input
+                    type="number"
+                    min="1"
+                    required
+                    value={editingTour.durationDays}
+                    onChange={(e) => setEditingTour({ ...editingTour, durationDays: Number(e.target.value) || 1 })}
+                    className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3.5 py-2.5 text-white focus:border-blue-500 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block font-semibold text-slate-300 mb-1">Base Price (INR ₹)</label>
+                  <input
+                    type="number"
+                    required
+                    value={editingTour.basePrice}
+                    onChange={(e) => setEditingTour({ ...editingTour, basePrice: Number(e.target.value) || 0 })}
+                    className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3.5 py-2.5 text-white focus:border-blue-500 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-semibold text-slate-300 mb-1">Overview</label>
+                <textarea
+                  rows={3}
+                  value={editingTour.overview || ''}
+                  onChange={(e) => setEditingTour({ ...editingTour, overview: e.target.value })}
+                  className="w-full rounded-xl border border-slate-700 bg-slate-800 p-3 text-white focus:border-blue-500 focus:outline-none"
+                />
+              </div>
+
+              <div className="mt-6 flex justify-end gap-2 border-t border-slate-800 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setEditingTour(null)}
+                  className="rounded-xl border border-slate-700 px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="rounded-xl bg-blue-600 px-5 py-2 text-xs font-bold text-white hover:bg-blue-500 transition shadow-md shadow-blue-600/20"
+                >
+                  Save Tour
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================ */}
+      {/* 3. EDIT HOTEL MODAL */}
+      {/* ============================================================ */}
+      {editingHotel && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-150">
+          <div className="relative w-full max-w-lg rounded-3xl border border-slate-700 bg-slate-900 p-6 sm:p-8 text-slate-100 shadow-2xl">
+            <div className="flex items-start justify-between border-b border-slate-800 pb-4">
+              <div>
+                <span className="font-mono text-xs font-bold text-blue-400">Partner Stay</span>
+                <h3 className="text-lg font-bold text-white">Edit Hotel / Resort</h3>
+              </div>
+              <button onClick={() => setEditingHotel(null)} className="text-slate-400 hover:text-white">
+                <X size={18} />
+              </button>
+            </div>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSaveEditHotel(editingHotel);
+              }}
+              className="mt-5 space-y-4 text-xs"
+            >
+              <div>
+                <label className="block font-semibold text-slate-300 mb-1">Hotel Name</label>
+                <input
+                  type="text"
+                  required
+                  value={editingHotel.name}
+                  onChange={(e) => setEditingHotel({ ...editingHotel, name: e.target.value })}
+                  className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3.5 py-2.5 text-white focus:border-blue-500 focus:outline-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-semibold text-slate-300 mb-1">Star Rating</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    min="1"
+                    max="5"
+                    value={editingHotel.rating}
+                    onChange={(e) => setEditingHotel({ ...editingHotel, rating: parseFloat(e.target.value) || 4.5 })}
+                    className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3.5 py-2.5 text-white focus:border-blue-500 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block font-semibold text-slate-300 mb-1">Price Per Night (₹)</label>
+                  <input
+                    type="number"
+                    step="500"
+                    value={editingHotel.pricePerNight}
+                    onChange={(e) => setEditingHotel({ ...editingHotel, pricePerNight: Number(e.target.value) || 0 })}
+                    className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3.5 py-2.5 text-white focus:border-blue-500 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-semibold text-slate-300 mb-1">Inventory Status</label>
+                <select
+                  value={editingHotel.isAvailable ? 'available' : 'unavailable'}
+                  onChange={(e) => setEditingHotel({ ...editingHotel, isAvailable: e.target.value === 'available' })}
+                  className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3.5 py-2.5 text-white focus:border-blue-500 focus:outline-none"
+                >
+                  <option value="available">In Stock (Available for Booking)</option>
+                  <option value="unavailable">Booked / Out of Stock</option>
+                </select>
+              </div>
+
+              <div className="mt-6 flex justify-end gap-2 border-t border-slate-800 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setEditingHotel(null)}
+                  className="rounded-xl border border-slate-700 px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="rounded-xl bg-blue-600 px-5 py-2 text-xs font-bold text-white hover:bg-blue-500 transition shadow-md shadow-blue-600/20"
+                >
+                  Save Hotel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================ */}
+      {/* 4. EDIT VEHICLE MODAL */}
+      {/* ============================================================ */}
+      {editingVehicle && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-150">
+          <div className="relative w-full max-w-lg rounded-3xl border border-slate-700 bg-slate-900 p-6 sm:p-8 text-slate-100 shadow-2xl">
+            <div className="flex items-start justify-between border-b border-slate-800 pb-4">
+              <div>
+                <span className="font-mono text-xs font-bold text-blue-400">
+                  {editingVehicle.plateNumber}
+                </span>
+                <h3 className="text-lg font-bold text-white">Edit Fleet Vehicle</h3>
+              </div>
+              <button onClick={() => setEditingVehicle(null)} className="text-slate-400 hover:text-white">
+                <X size={18} />
+              </button>
+            </div>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSaveEditVehicle(editingVehicle);
+              }}
+              className="mt-5 space-y-4 text-xs"
+            >
+              <div>
+                <label className="block font-semibold text-slate-300 mb-1">Vehicle Model & Make</label>
+                <input
+                  type="text"
+                  required
+                  value={editingVehicle.name}
+                  onChange={(e) => setEditingVehicle({ ...editingVehicle, name: e.target.value })}
+                  className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3.5 py-2.5 text-white focus:border-blue-500 focus:outline-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-semibold text-slate-300 mb-1">Seats Capacity</label>
+                  <input
+                    type="number"
+                    min="2"
+                    max="30"
+                    value={editingVehicle.seats}
+                    onChange={(e) => setEditingVehicle({ ...editingVehicle, seats: Number(e.target.value) || 4 })}
+                    className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3.5 py-2.5 text-white focus:border-blue-500 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block font-semibold text-slate-300 mb-1">Base Day Fare (₹)</label>
+                  <input
+                    type="number"
+                    step="500"
+                    value={editingVehicle.baseFare}
+                    onChange={(e) => setEditingVehicle({ ...editingVehicle, baseFare: Number(e.target.value) || 0 })}
+                    className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3.5 py-2.5 text-white focus:border-blue-500 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-semibold text-slate-300 mb-1">Fleet Status</label>
+                <select
+                  value={editingVehicle.status}
+                  onChange={(e) => setEditingVehicle({ ...editingVehicle, status: e.target.value })}
+                  className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3.5 py-2.5 text-white focus:border-blue-500 focus:outline-none"
+                >
+                  <option value="Available">Available</option>
+                  <option value="On Trip">On Trip</option>
+                  <option value="Maintenance">Maintenance</option>
+                </select>
+              </div>
+
+              <div className="mt-6 flex justify-end gap-2 border-t border-slate-800 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setEditingVehicle(null)}
+                  className="rounded-xl border border-slate-700 px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="rounded-xl bg-blue-600 px-5 py-2 text-xs font-bold text-white hover:bg-blue-500 transition shadow-md shadow-blue-600/20"
+                >
+                  Save Vehicle
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================ */}
+      {/* 5. EDIT USER MODAL */}
+      {/* ============================================================ */}
+      {editingUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-150">
+          <div className="relative w-full max-w-lg rounded-3xl border border-slate-700 bg-slate-900 p-6 sm:p-8 text-slate-100 shadow-2xl">
+            <div className="flex items-start justify-between border-b border-slate-800 pb-4">
+              <div>
+                <span className="font-mono text-xs font-bold text-blue-400">User Account</span>
+                <h3 className="text-lg font-bold text-white">Edit User Account</h3>
+              </div>
+              <button onClick={() => setEditingUser(null)} className="text-slate-400 hover:text-white">
+                <X size={18} />
+              </button>
+            </div>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSaveEditUser(editingUser);
+              }}
+              className="mt-5 space-y-4 text-xs"
+            >
+              <div>
+                <label className="block font-semibold text-slate-300 mb-1">Full Name</label>
+                <input
+                  type="text"
+                  required
+                  value={editingUser.name}
+                  onChange={(e) => setEditingUser({ ...editingUser, name: e.target.value })}
+                  className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3.5 py-2.5 text-white focus:border-blue-500 focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block font-semibold text-slate-300 mb-1">Email Address</label>
+                <input
+                  type="email"
+                  required
+                  value={editingUser.email}
+                  onChange={(e) => setEditingUser({ ...editingUser, email: e.target.value })}
+                  className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3.5 py-2.5 text-white focus:border-blue-500 focus:outline-none font-mono"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-semibold text-slate-300 mb-1">Security Role</label>
+                  <select
+                    value={editingUser.role}
+                    onChange={(e) => setEditingUser({ ...editingUser, role: e.target.value as any })}
+                    className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3.5 py-2.5 text-white focus:border-blue-500 focus:outline-none"
+                  >
+                    <option value="user">User (Explorer)</option>
+                    <option value="admin">Administrator (Super Admin)</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block font-semibold text-slate-300 mb-1">Email Verification</label>
+                  <select
+                    value={editingUser.emailVerified ? 'verified' : 'unverified'}
+                    onChange={(e) => setEditingUser({ ...editingUser, emailVerified: e.target.value === 'verified' })}
+                    className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3.5 py-2.5 text-white focus:border-blue-500 focus:outline-none"
+                  >
+                    <option value="verified">Verified (OTP passed)</option>
+                    <option value="unverified">Unverified</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="mt-6 flex justify-end gap-2 border-t border-slate-800 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setEditingUser(null)}
+                  className="rounded-xl border border-slate-700 px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="rounded-xl bg-blue-600 px-5 py-2 text-xs font-bold text-white hover:bg-blue-500 transition shadow-md shadow-blue-600/20"
+                >
+                  Save User
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================ */}
+      {/* 6. EDIT TOURIST PLACE MODAL */}
+      {/* ============================================================ */}
+      {editingPlace && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-150">
+          <div className="relative w-full max-w-lg rounded-3xl border border-slate-700 bg-slate-900 p-6 sm:p-8 text-slate-100 shadow-2xl">
+            <div className="flex items-start justify-between border-b border-slate-800 pb-4">
+              <div>
+                <span className="font-mono text-xs font-bold text-blue-400">
+                  {editingPlace.districtName} District
+                </span>
+                <h3 className="text-lg font-bold text-white">Edit Tourist Place</h3>
+              </div>
+              <button onClick={() => setEditingPlace(null)} className="text-slate-400 hover:text-white">
+                <X size={18} />
+              </button>
+            </div>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSaveEditPlace(editingPlace.place, editingPlace.originalName, editingPlace.districtName);
+              }}
+              className="mt-5 space-y-4 text-xs max-h-[75vh] overflow-y-auto pr-1"
+            >
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
                   <label className="block font-bold text-slate-300 mb-1">Place Name *</label>
                   <input
                     type="text"
                     required
-                    placeholder="e.g. Aru Valley Lavender Field"
-                    value={newPlaceName}
-                    onChange={(e) => setNewPlaceName(e.target.value)}
+                    value={editingPlace.place.name}
+                    onChange={(e) =>
+                      setEditingPlace({
+                        ...editingPlace,
+                        place: { ...editingPlace.place, name: e.target.value },
+                      })
+                    }
                     className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3.5 py-2 text-white focus:border-blue-500 focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-bold text-slate-300 mb-1">Target District (All 20 Districts) *</label>
-                  <select
-                    value={newPlaceDistrict}
-                    onChange={(e) => setNewPlaceDistrict(e.target.value)}
-                    className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3.5 py-2 text-white focus:border-blue-500 focus:outline-none"
-                  >
-                    {allDistricts.map((d) => (
-                      <option key={d.id} value={d.district}>
-                        {d.district} ({d.touristPlaces?.length || 0} places)
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                <div>
                   <label className="block font-bold text-slate-300 mb-1">Category *</label>
                   <select
-                    value={newPlaceCategory}
-                    onChange={(e) => setNewPlaceCategory(e.target.value as any)}
+                    value={editingPlace.place.category}
+                    onChange={(e) =>
+                      setEditingPlace({
+                        ...editingPlace,
+                        place: { ...editingPlace.place, category: e.target.value as any },
+                      })
+                    }
                     className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3.5 py-2 text-white focus:border-blue-500 focus:outline-none"
                   >
                     <option value="Must-Visit">Must-Visit</option>
@@ -2863,65 +3636,73 @@ export default function AdminPage() {
                     <option value="Family & Leisure">Family & Leisure</option>
                   </select>
                 </div>
-
-                <div>
-                  <label className="block font-bold text-slate-300 mb-1">Speciality / Tagline *</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Alpine Meadows & Trout Angling Haven"
-                    value={newPlaceSpeciality}
-                    onChange={(e) => setNewPlaceSpeciality(e.target.value)}
-                    className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3.5 py-2 text-white focus:border-blue-500 focus:outline-none"
-                  />
-                </div>
               </div>
 
               <div>
-                <label className="block font-bold text-slate-300 mb-1">Cover Image URL (Live Photo Preview)</label>
+                <label className="block font-bold text-slate-300 mb-1">Speciality / Tagline</label>
                 <input
-                  type="url"
-                  placeholder="https://images.unsplash.com/..."
-                  value={newPlaceImage}
-                  onChange={(e) => setNewPlaceImage(e.target.value)}
+                  type="text"
+                  value={editingPlace.place.speciality || ''}
+                  onChange={(e) =>
+                    setEditingPlace({
+                      ...editingPlace,
+                      place: { ...editingPlace.place, speciality: e.target.value },
+                    })
+                  }
                   className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3.5 py-2 text-white focus:border-blue-500 focus:outline-none"
                 />
-                {newPlaceImage && (
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-300 mb-1">Cover Image URL</label>
+                <input
+                  type="url"
+                  value={editingPlace.place.image || ''}
+                  onChange={(e) =>
+                    setEditingPlace({
+                      ...editingPlace,
+                      place: { ...editingPlace.place, image: e.target.value },
+                    })
+                  }
+                  className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3.5 py-2 text-white focus:border-blue-500 focus:outline-none"
+                />
+                {editingPlace.place.image && (
                   <div className="mt-2 h-24 w-full rounded-xl overflow-hidden border border-slate-800 bg-slate-950 relative">
                     <img
-                      src={newPlaceImage}
-                      alt="Tourist spot preview"
+                      src={editingPlace.place.image}
+                      alt="Preview"
                       className="h-full w-full object-cover"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1598091383021-15ddea10925d?auto=format&fit=crop&w=1200&q=80';
-                      }}
                     />
-                    <span className="absolute bottom-1.5 right-2 rounded bg-black/70 px-2 py-0.5 text-[9px] text-white">
-                      Live Image Preview
-                    </span>
                   </div>
                 )}
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
-                  <label className="block font-bold text-slate-300 mb-1">Best Season / Time to Visit</label>
+                  <label className="block font-bold text-slate-300 mb-1">Best Season</label>
                   <input
                     type="text"
-                    placeholder="e.g. April to October, Winter for Snow"
-                    value={newPlaceBestTime}
-                    onChange={(e) => setNewPlaceBestTime(e.target.value)}
+                    value={editingPlace.place.bestTime || ''}
+                    onChange={(e) =>
+                      setEditingPlace({
+                        ...editingPlace,
+                        place: { ...editingPlace.place, bestTime: e.target.value },
+                      })
+                    }
                     className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3.5 py-2 text-white focus:border-blue-500 focus:outline-none"
                   />
                 </div>
-
                 <div>
-                  <label className="block font-bold text-slate-300 mb-1">Activities & Things to Do</label>
+                  <label className="block font-bold text-slate-300 mb-1">Activities</label>
                   <input
                     type="text"
-                    placeholder="e.g. Trekking, Photography, Horse Riding"
-                    value={newPlaceActivities}
-                    onChange={(e) => setNewPlaceActivities(e.target.value)}
+                    value={editingPlace.place.activities || ''}
+                    onChange={(e) =>
+                      setEditingPlace({
+                        ...editingPlace,
+                        place: { ...editingPlace.place, activities: e.target.value },
+                      })
+                    }
                     className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3.5 py-2 text-white focus:border-blue-500 focus:outline-none"
                   />
                 </div>
@@ -2929,36 +3710,46 @@ export default function AdminPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
-                  <label className="block font-bold text-slate-300 mb-1">Tehsil / Sub-district</label>
+                  <label className="block font-bold text-slate-300 mb-1">Tehsil</label>
                   <input
                     type="text"
-                    placeholder="e.g. Pahalgam Tehsil"
-                    value={newPlaceTehsil}
-                    onChange={(e) => setNewPlaceTehsil(e.target.value)}
+                    value={editingPlace.place.tehsil || ''}
+                    onChange={(e) =>
+                      setEditingPlace({
+                        ...editingPlace,
+                        place: { ...editingPlace.place, tehsil: e.target.value },
+                      })
+                    }
                     className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3.5 py-2 text-white focus:border-blue-500 focus:outline-none"
                   />
                 </div>
-
                 <div>
                   <label className="block font-bold text-slate-300 mb-1">PIN Code</label>
                   <input
                     type="text"
-                    placeholder="e.g. 192126"
-                    value={newPlacePinCode}
-                    onChange={(e) => setNewPlacePinCode(e.target.value)}
+                    value={editingPlace.place.pinCode || ''}
+                    onChange={(e) =>
+                      setEditingPlace({
+                        ...editingPlace,
+                        place: { ...editingPlace.place, pinCode: e.target.value },
+                      })
+                    }
                     className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3.5 py-2 text-white focus:border-blue-500 focus:outline-none"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block font-bold text-slate-300 mb-1">Comprehensive Description *</label>
+                <label className="block font-bold text-slate-300 mb-1">Description</label>
                 <textarea
                   rows={3}
-                  required
-                  placeholder="Detailed geographic wonders, history, access roads, and unique attractions..."
-                  value={newPlaceDescription}
-                  onChange={(e) => setNewPlaceDescription(e.target.value)}
+                  value={editingPlace.place.description || ''}
+                  onChange={(e) =>
+                    setEditingPlace({
+                      ...editingPlace,
+                      place: { ...editingPlace.place, description: e.target.value },
+                    })
+                  }
                   className="w-full rounded-xl border border-slate-700 bg-slate-800 p-3 text-white focus:border-blue-500 focus:outline-none leading-relaxed"
                 />
               </div>
@@ -2966,14 +3757,14 @@ export default function AdminPage() {
               <div className="mt-6 flex justify-end gap-2 border-t border-slate-800 pt-4">
                 <button
                   type="button"
-                  onClick={() => setShowAddPlaceModal(false)}
+                  onClick={() => setEditingPlace(null)}
                   className="rounded-xl border border-slate-700 px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 px-5 py-2 text-xs font-bold text-white shadow-lg shadow-blue-600/30 transition transform hover:-translate-y-0.5"
+                  className="rounded-xl bg-blue-600 hover:bg-blue-500 px-5 py-2 text-xs font-bold text-white shadow-lg shadow-blue-600/30 transition transform hover:-translate-y-0.5"
                 >
                   Save Tourist Place
                 </button>

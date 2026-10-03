@@ -51,6 +51,9 @@ interface AdminOverviewViewProps {
   onOpenAddHotel: () => void;
   onOpenAddPlace: () => void;
   onViewReservation: (b: ReservationItem) => void;
+  onEditReservation?: (b: ReservationItem) => void;
+  onDeleteReservation?: (id: string) => void;
+  recentActivity?: { text: string; time: string; color: string }[];
 }
 
 export default function AdminOverviewView({
@@ -62,6 +65,9 @@ export default function AdminOverviewView({
   onOpenAddHotel,
   onOpenAddPlace,
   onViewReservation,
+  onEditReservation,
+  onDeleteReservation,
+  recentActivity,
 }: AdminOverviewViewProps) {
   // Chart View Toggle (Revenue / Bookings)
   const [chartMode, setChartMode] = useState<'both' | 'revenue' | 'bookings'>('both');
@@ -749,14 +755,23 @@ export default function AdminOverviewView({
                           <button
                             onClick={() => onViewReservation(b)}
                             className="rounded-lg border border-[#1E3A5F] bg-[#0C1E38] hover:bg-[#122B4E] px-2.5 py-1 text-[11px] font-semibold text-slate-200 transition"
+                            title="View Invoice"
                           >
                             View
                           </button>
                           <button
-                            onClick={() => onViewReservation(b)}
-                            className="text-slate-400 hover:text-white p-1"
+                            onClick={() => onEditReservation?.(b)}
+                            className="rounded-lg border border-blue-500/30 bg-blue-500/10 hover:bg-blue-600 hover:text-white px-2.5 py-1 text-[11px] font-semibold text-blue-300 transition"
+                            title="Edit Reservation"
                           >
-                            <MoreVertical size={14} />
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => onDeleteReservation?.(b.id)}
+                            className="rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-600 hover:text-white px-2.5 py-1 text-[11px] font-semibold text-rose-300 transition"
+                            title="Delete Reservation"
+                          >
+                            Delete
                           </button>
                         </div>
                       </td>
@@ -824,33 +839,14 @@ export default function AdminOverviewView({
             </div>
 
             <div className="mt-3 space-y-2.5">
-              {[
-                {
-                  text: 'New reservation received - WF-7835',
-                  time: '2 hours ago',
-                  color: 'bg-blue-400',
-                },
-                {
-                  text: 'Tour package updated - Kashmir Paradise',
-                  time: '4 hours ago',
-                  color: 'bg-emerald-400',
-                },
-                {
-                  text: 'New user registered - ananya@example.com',
-                  time: '6 hours ago',
-                  color: 'bg-purple-400',
-                },
-                {
-                  text: 'Payment received - ₹27,000 (WF-7829)',
-                  time: '8 hours ago',
-                  color: 'bg-cyan-400',
-                },
-                {
-                  text: 'New review submitted - Pahalgam',
-                  time: '10 hours ago',
-                  color: 'bg-amber-400',
-                },
-              ].map((act, i) => (
+              {(recentActivity && recentActivity.length > 0
+                ? recentActivity
+                : reservations.slice(0, 5).map((r, i) => ({
+                    text: `Reservation ${r.status.toLowerCase()} - ${r.id} (${r.customer})`,
+                    time: r.date || 'Recent',
+                    color: r.status === 'Confirmed' ? 'bg-emerald-400' : 'bg-blue-400',
+                  }))
+              ).slice(0, 5).map((act, i) => (
                 <div key={i} className="flex items-center justify-between text-xs">
                   <div className="flex items-center gap-2 truncate max-w-[210px]">
                     <span className={`h-2 w-2 rounded-full ${act.color} shrink-0`} />

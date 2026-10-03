@@ -73,6 +73,12 @@ r.delete('/admin/vehicles/:id', adminAuth, admin.deleteVehicle);
 // Admin Bookings
 r.get('/admin/bookings', adminAuth, admin.listBookings);
 r.put('/admin/bookings/:id', adminAuth, admin.updateBookingStatus);
+r.delete('/admin/bookings/:id', adminAuth, admin.deleteBooking);
+
+// Admin Users
+r.get('/admin/users', adminAuth, admin.listUsers);
+r.put('/admin/users/:id', adminAuth, admin.updateUserRole);
+r.delete('/admin/users/:id', adminAuth, admin.deleteUser);
 
 // Admin Reviews
 r.get('/admin/reviews', adminAuth, admin.listReviews);
