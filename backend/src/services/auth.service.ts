@@ -37,8 +37,19 @@ const publicUser = (u: any) => ({ id: u.id, name: u.name, email: u.email, role: 
 
 export const authService = {
   async register(d: { name: string; email: string; phone?: string; password: string }) {
-    const e = d.email.toLowerCase();
-    if (await User.exists({ email: e })) throw new ApiError(409, 'Email already registered');
+    const e = d.email.toLowerCase().trim();
+    const existing = await User.findOne({ email: e });
+    if (existing) {
+      if (!existing.emailVerified) {
+        existing.name = d.name;
+        if (d.phone) existing.phone = d.phone;
+        existing.passwordHash = await argon2.hash(d.password);
+        await existing.save();
+        const otp = await sendOtp(existing.email, 'verify');
+        return { id: existing.id, email: existing.email, devOtp: otp };
+      }
+      throw new ApiError(409, 'Email already registered');
+    }
     const passwordHash = await argon2.hash(d.password);
     const isAdmin =
       e === 'warmuzamil113@gmail.com' ||
@@ -51,7 +62,7 @@ export const authService = {
       phone: d.phone,
       passwordHash,
       role: isAdmin ? 'admin' : 'user',
-      emailVerified: isAdmin,
+      emailVerified: false,
     });
     const otp = await sendOtp(user.email, 'verify');
     return { id: user.id, email: user.email, devOtp: otp };
@@ -62,7 +73,8 @@ export const authService = {
     user.emailVerified = true; user.otpHash = undefined; user.otpExpires = undefined;
     await user.save();
     await sendEmail(user.email, 'Welcome!', `Welcome aboard, ${user.name}.`);
-    return issueTokens(user);
+    const tokens = await issueTokens(user);
+    return { user: publicUser(user), ...tokens };
   },
 
   async resendOtp(email: string, purpose: 'verify' | 'reset') {

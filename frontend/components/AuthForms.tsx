@@ -8,7 +8,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { post } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
-import { Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Loader2, CheckCircle2, AlertCircle, Sparkles } from 'lucide-react';
 
 const field =
   'mt-1 w-full rounded-2xl border border-lake/15 bg-white/90 px-4 py-3.5 text-sm text-ink placeholder:text-mist/60 shadow-sm transition-all focus:border-lake focus:bg-white focus:outline-none focus:ring-2 focus:ring-lake/20';
@@ -251,9 +251,10 @@ export function LoginForm() {
   const searchParams = useSearchParams();
   const next = searchParams.get('next');
   const errorParam = searchParams.get('error');
+  const emailParam = searchParams.get('email') || '';
   const { signIn } = useAuth();
-  const [mode, setMode] = useState<'otp' | 'password'>('otp');
-  const [emailInput, setEmailInput] = useState('');
+  const [mode, setMode] = useState<'otp' | 'password'>(emailParam ? 'password' : 'otp');
+  const [emailInput, setEmailInput] = useState(emailParam);
   const [passwordInput, setPasswordInput] = useState('');
   const [otpEmail, setOtpEmail] = useState('');
   const [hintOtp, setHintOtp] = useState('');
@@ -490,14 +491,78 @@ export function RegisterForm() {
   const [email, setEmail] = useState('');
   const [hintOtp, setHintOtp] = useState('');
   const [error, setError] = useState('');
+  const [existingEmail, setExistingEmail] = useState('');
+  const [isQuickLoggingIn, setIsQuickLoggingIn] = useState(false);
+  const [loginSuccess, setLoginSuccess] = useState(false);
 
   const {
     register,
     handleSubmit,
+    getValues,
     formState: { errors, isSubmitting },
   } = useForm<z.infer<typeof regSchema>>({
     resolver: zodResolver(regSchema),
   });
+
+  const handleQuickPasswordLogin = async () => {
+    const vals = getValues();
+    const em = (vals.email || existingEmail).trim();
+    if (!em) return;
+    setIsQuickLoggingIn(true);
+    setError('');
+    try {
+      const res = await post<{ accessToken: string; user?: any }>('/auth/login', {
+        email: em,
+        password: vals.password,
+      });
+      setLoginSuccess(true);
+      await signIn(res.accessToken, res.user);
+      setTimeout(() => {
+        const destination =
+          next && next.startsWith('/')
+            ? (next.startsWith('/admin') && res.user?.role !== 'admin' ? '/account?error=admin_required' : next)
+            : (res.user?.role === 'admin' ? '/admin' : '/account');
+        window.location.href = destination;
+      }, 350);
+    } catch (err) {
+      setError(msg(err));
+      setIsQuickLoggingIn(false);
+    }
+  };
+
+  const handleQuickOtpLogin = async () => {
+    const vals = getValues();
+    const em = (vals.email || existingEmail).trim();
+    if (!em) return;
+    setIsQuickLoggingIn(true);
+    setError('');
+    try {
+      const res = await post<{ message: string; devOtp?: string }>('/auth/login-otp/request', {
+        email: em,
+      });
+      setEmail(em);
+      if (res?.devOtp) setHintOtp(res.devOtp);
+      setExistingEmail('');
+    } catch (err) {
+      setError(msg(err));
+    } finally {
+      setIsQuickLoggingIn(false);
+    }
+  };
+
+  if (loginSuccess) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="rounded-3xl border border-emerald-500/20 bg-emerald-500/10 p-8 text-center"
+      >
+        <CheckCircle2 className="mx-auto text-emerald-600 mb-3" size={40} />
+        <h3 className="font-display text-xl font-bold text-lake">Welcome to Wayfarer!</h3>
+        <p className="mt-1 text-sm text-mist">Setting up your secure session…</p>
+      </motion.div>
+    );
+  }
 
   if (email) {
     return (
@@ -505,23 +570,36 @@ export function RegisterForm() {
         email={email}
         label="Verify and continue"
         hintOtp={hintOtp}
-        onBack={() => setEmail('')}
+        onBack={() => {
+          setEmail('');
+          setHintOtp('');
+        }}
         resend={async () => {
           const res = await post<{ devOtp?: string }>('/auth/resend-otp', { email, purpose: 'verify' });
           return res?.devOtp;
         }}
         onVerify={async (otp) => {
-          const d = await post<{ accessToken: string; user?: any }>(
-            '/auth/verify-email',
-            { email, otp }
-          );
-          const destination =
-            next && next.startsWith('/')
-              ? next
-              : d.user?.role === 'admin'
-              ? '/admin'
-              : '/account';
-          window.location.href = destination;
+          let d: { accessToken: string; user?: any };
+          try {
+            d = await post<{ accessToken: string; user?: any }>(
+              '/auth/verify-email',
+              { email, otp }
+            );
+          } catch {
+            d = await post<{ accessToken: string; user?: any }>(
+              '/auth/login-otp/verify',
+              { email, otp }
+            );
+          }
+          setLoginSuccess(true);
+          await signIn(d.accessToken, d.user);
+          setTimeout(() => {
+            const destination =
+              next && next.startsWith('/')
+                ? (next.startsWith('/admin') && d.user?.role !== 'admin' ? '/account?error=admin_required' : next)
+                : (d.user?.role === 'admin' ? '/admin' : '/account');
+            window.location.href = destination;
+          }, 350);
         }}
       />
     );
@@ -544,6 +622,7 @@ export function RegisterForm() {
       <form
         onSubmit={handleSubmit(async (v) => {
           setError('');
+          setExistingEmail('');
           try {
             const res = await post<{ devOtp?: string }>('/auth/register', {
               name: v.name,
@@ -553,7 +632,12 @@ export function RegisterForm() {
             setEmail(v.email);
             if (res?.devOtp) setHintOtp(res.devOtp);
           } catch (e) {
-            setError(msg(e));
+            const m = msg(e);
+            if (m.toLowerCase().includes('already registered')) {
+              setExistingEmail(v.email);
+            } else {
+              setError(m);
+            }
           }
         })}
         className="space-y-4"
@@ -605,6 +689,41 @@ export function RegisterForm() {
           />
           <Err m={errors.confirmPassword?.message} />
         </div>
+
+        {existingEmail && (
+          <motion.div
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="rounded-2xl border border-crocus/30 bg-crocus/10 p-4 space-y-2.5 text-left"
+          >
+            <div className="flex items-center gap-2 text-lake font-semibold text-xs">
+              <Sparkles size={15} className="text-crocus" />
+              <span>This email is already registered ({existingEmail})</span>
+            </div>
+            <p className="text-xs text-mist">
+              An account already exists for this email. You can sign in directly with your password or use an instant OTP code:
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+              <button
+                type="button"
+                onClick={handleQuickPasswordLogin}
+                disabled={isQuickLoggingIn}
+                className="btn btn-dark text-xs py-2 px-3 flex items-center justify-center gap-1.5"
+              >
+                {isQuickLoggingIn ? <Loader2 className="animate-spin" size={13} /> : null}
+                <span>Sign in with Password</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleQuickOtpLogin}
+                disabled={isQuickLoggingIn}
+                className="btn btn-secondary text-xs py-2 px-3 flex items-center justify-center gap-1.5"
+              >
+                <span>Instant OTP Sign In</span>
+              </button>
+            </div>
+          </motion.div>
+        )}
 
         <Err m={error} />
 

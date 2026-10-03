@@ -17,9 +17,9 @@ export const register = asyncHandler(async (req, res) =>
 
 export const verifyEmail = asyncHandler(async (req, res) => {
   const { email, otp } = v.otpSchema.parse(req.body);
-  const { accessToken, refreshToken } = await authService.verifyEmail(email, otp);
+  const { user, accessToken, refreshToken } = await authService.verifyEmail(email, otp);
   setRefresh(res, refreshToken);
-  ok(res, 'Email verified', { accessToken });
+  ok(res, 'Email verified', { user, accessToken });
 });
 
 export const login = asyncHandler(async (req, res) => {
