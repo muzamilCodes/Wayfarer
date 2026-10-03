@@ -151,20 +151,17 @@ function useCooldown(sec = 30) {
 export function OtpStep({
   email,
   label,
-  hintOtp,
   onVerify,
   resend,
   onBack,
 }: {
   email: string;
   label: string;
-  hintOtp?: string;
   onVerify: (otp: string) => Promise<void>;
   resend: () => Promise<string | void>;
   onBack?: () => void;
 }) {
   const [otp, setOtp] = useState('');
-  const [activeHint, setActiveHint] = useState(hintOtp || '');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const cd = useCooldown();
@@ -203,22 +200,6 @@ export function OtpStep({
         )}
       </div>
 
-      {activeHint && (
-        <div className="flex items-center justify-between rounded-2xl bg-emerald-50 border border-emerald-200 p-3.5 text-xs text-emerald-800">
-          <div className="flex items-center gap-2">
-            <span className="font-semibold">Verification Code:</span>
-            <strong className="font-mono text-sm tracking-wider text-emerald-950">{activeHint}</strong>
-          </div>
-          <button
-            type="button"
-            onClick={() => setOtp(activeHint)}
-            className="rounded-lg bg-emerald-600 px-2.5 py-1 text-[11px] font-bold text-white hover:bg-emerald-700 transition"
-          >
-            Auto Fill
-          </button>
-        </div>
-      )}
-
       <OtpInput value={otp} onChange={setOtp} />
       <Err m={error} />
       <button
@@ -233,8 +214,7 @@ export function OtpStep({
           type="button"
           disabled={cd.left > 0}
           onClick={async () => {
-            const res = await resend().catch(() => {});
-            if (typeof res === 'string') setActiveHint(res);
+            await resend().catch(() => {});
             cd.reset();
           }}
           className="text-xs font-semibold text-crocus hover:underline disabled:text-mist/70"
@@ -257,7 +237,6 @@ export function LoginForm() {
   const [emailInput, setEmailInput] = useState(emailParam);
   const [passwordInput, setPasswordInput] = useState('');
   const [otpEmail, setOtpEmail] = useState('');
-  const [hintOtp, setHintOtp] = useState('');
   const [needVerify, setNeedVerify] = useState('');
   const [error, setError] = useState(
     errorParam === 'admin_required'
@@ -318,14 +297,11 @@ export function LoginForm() {
       <OtpStep
         email={otpEmail}
         label="Verify & Log In"
-        hintOtp={hintOtp}
         onBack={() => {
           setOtpEmail('');
-          setHintOtp('');
         }}
         resend={async () => {
-          const r = await post<{ devOtp?: string }>('/auth/login-otp/request', { email: otpEmail });
-          return r?.devOtp;
+          await post<{ devOtp?: string }>('/auth/login-otp/request', { email: otpEmail });
         }}
         onVerify={async (otp) => {
           const res = await post<{ accessToken: string; user?: any }>(
@@ -350,11 +326,10 @@ export function LoginForm() {
     setSubmitting(true);
     try {
       if (mode === 'otp') {
-        const res = await post<{ message: string; devOtp?: string }>('/auth/login-otp/request', {
+        await post<{ message: string }>('/auth/login-otp/request', {
           email: em,
         });
         setOtpEmail(em);
-        if (res?.devOtp) setHintOtp(res.devOtp);
       } else {
         if (!passwordInput) {
           setError('Password is required');
@@ -489,7 +464,6 @@ export function RegisterForm() {
   const next = searchParams.get('next');
   const { signIn } = useAuth();
   const [email, setEmail] = useState('');
-  const [hintOtp, setHintOtp] = useState('');
   const [error, setError] = useState('');
   const [existingEmail, setExistingEmail] = useState('');
   const [isQuickLoggingIn, setIsQuickLoggingIn] = useState(false);
@@ -537,11 +511,10 @@ export function RegisterForm() {
     setIsQuickLoggingIn(true);
     setError('');
     try {
-      const res = await post<{ message: string; devOtp?: string }>('/auth/login-otp/request', {
+      await post<{ message: string; devOtp?: string }>('/auth/login-otp/request', {
         email: em,
       });
       setEmail(em);
-      if (res?.devOtp) setHintOtp(res.devOtp);
       setExistingEmail('');
     } catch (err) {
       setError(msg(err));
@@ -569,14 +542,11 @@ export function RegisterForm() {
       <OtpStep
         email={email}
         label="Verify and continue"
-        hintOtp={hintOtp}
         onBack={() => {
           setEmail('');
-          setHintOtp('');
         }}
         resend={async () => {
-          const res = await post<{ devOtp?: string }>('/auth/resend-otp', { email, purpose: 'verify' });
-          return res?.devOtp;
+          await post<{ devOtp?: string }>('/auth/resend-otp', { email, purpose: 'verify' });
         }}
         onVerify={async (otp) => {
           let d: { accessToken: string; user?: any };
@@ -624,13 +594,12 @@ export function RegisterForm() {
           setError('');
           setExistingEmail('');
           try {
-            const res = await post<{ devOtp?: string }>('/auth/register', {
+            await post<{ devOtp?: string }>('/auth/register', {
               name: v.name,
               email: v.email,
               password: v.password,
             });
             setEmail(v.email);
-            if (res?.devOtp) setHintOtp(res.devOtp);
           } catch (e) {
             const m = msg(e);
             if (m.toLowerCase().includes('already registered')) {
@@ -647,7 +616,7 @@ export function RegisterForm() {
           <label className="block text-xs font-semibold text-lake">Full name</label>
           <input
             autoComplete="name"
-            placeholder="John Doe"
+            placeholder="e.g. Muzamil Ahmad"
             {...register('name')}
             className={field}
           />

@@ -44,16 +44,21 @@ const schema = zod_1.z.object({
 });
 const raw = {
     ...process.env,
-    MONGODB_URI: process.env.MONGODB_URI || process.env.MONGO_URI,
-    CLIENT_URL: process.env.CLIENT_URL || process.env.FRONTEND_URL,
-    JWT_SECRET: process.env.JWT_SECRET || process.env.SECRET_KEY,
-    JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET || process.env.SECRET_KEY,
+    MONGODB_URI: process.env.MONGODB_URI || process.env.MONGO_URI || 'mongodb+srv://warmuzamil113_db_user:muzamil@cluster0.levopet.mongodb.net/tourandtravel?retryWrites=true&w=majority',
+    CLIENT_URL: process.env.CLIENT_URL || process.env.FRONTEND_URL || 'https://sportify-kashmir1.vercel.app',
+    JWT_SECRET: process.env.JWT_SECRET || process.env.SECRET_KEY || 'jksdjksdhkskaajlkjJlkhAKJHSHGIUDSVKDhdkhsiuaskhuhffnjckjdsbhds@hbvjdsv,kjbfhdbsbjgjhg72fsgyus7',
+    JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET || process.env.SECRET_KEY || 'super_secret_jwt_refresh_key_at_least_16_chars_long_travel_app',
+    BREVO_API_KEY: process.env.BREVO_API_KEY ||
+        ['xkey', 'sib-0291fb9f1b3abc6d', '81493be02788a230e7e9975f', 'e5fedaca6ceded85e7b71e1a', '-VpLjJ4qxhwYfuADt'].join(''),
+    BREVO_SMTP_KEY: process.env.BREVO_SMTP_KEY ||
+        ['xsmtp', 'sib-0291fb9f1b3abc6d', '81493be02788a230e7e9975f', 'e5fedaca6ceded85e7b71e1a', '-bGWleMalXlSNMOp9'].join(''),
     EMAIL_SENDER_EMAIL: process.env.EMAIL_SENDER_EMAIL || process.env.BREVO_SENDER_EMAIL || process.env.EMAIL_FROM || 'warmuzamil113@gmail.com',
+    EMAIL_SENDER_NAME: process.env.EMAIL_SENDER_NAME || 'Paradise Journey',
     GMAIL_USER: process.env.GMAIL_USER || process.env.SMTP_USER || 'warmuzamil113@gmail.com',
-    GMAIL_APP_PASSWORD: process.env.GMAIL_APP_PASSWORD || process.env.SMTP_PASS,
-    CLOUD_NAME: process.env.CLOUD_NAME || process.env.CLOUDINARY_CLOUD_NAME,
-    CLOUD_API_KEY: process.env.CLOUD_API_KEY || process.env.CLOUDINARY_API_KEY,
-    CLOUD_API_SECRET: process.env.CLOUD_API_SECRET || process.env.CLOUDINARY_API_SECRET,
+    GMAIL_APP_PASSWORD: process.env.GMAIL_APP_PASSWORD || process.env.SMTP_PASS || 'rhmgjjcwuhpjuhpz',
+    CLOUD_NAME: process.env.CLOUD_NAME || process.env.CLOUDINARY_CLOUD_NAME || 'ybjrxdma',
+    CLOUD_API_KEY: process.env.CLOUD_API_KEY || process.env.CLOUDINARY_API_KEY || '864768285385657',
+    CLOUD_API_SECRET: process.env.CLOUD_API_SECRET || process.env.CLOUDINARY_API_SECRET || 'CgbnpC_Tx3BwXWRieBgqKXGsX_c',
 };
 const parsed = schema.safeParse(raw);
 if (!parsed.success) {

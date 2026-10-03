@@ -72,7 +72,7 @@ export default function Contact() {
                 >
                   <div>
                     <label className="text-xs font-semibold text-lake">Full Name</label>
-                    <input name="name" required minLength={2} placeholder="John Doe" className={field} />
+                    <input name="name" required minLength={2} placeholder="e.g. Muzamil Ahmad" className={field} />
                   </div>
                   <div>
                     <label className="text-xs font-semibold text-lake">Email Address</label>

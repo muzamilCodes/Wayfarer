@@ -1,7 +1,7 @@
 import nodemailer from 'nodemailer';
 import { env } from '../config/env';
 
-// Primary Transporter: Google Gmail SMTP with App Password
+// Gmail SMTP Transporter with connection timeouts
 const gmailTransporter =
   env.GMAIL_USER && env.GMAIL_APP_PASSWORD
     ? nodemailer.createTransport({
@@ -10,11 +10,14 @@ const gmailTransporter =
           user: env.GMAIL_USER,
           pass: env.GMAIL_APP_PASSWORD.replace(/\s+/g, ''),
         },
+        connectionTimeout: 8000,
+        greetingTimeout: 8000,
+        socketTimeout: 10000,
       })
     : null;
 
 /**
- * Sends transactional emails via Gmail SMTP (Google App Password) with Brevo fallback.
+ * Sends transactional emails via Brevo REST API (HTTPS port 443) or Gmail SMTP fallback.
  * Includes a responsive, beautifully styled HTML template for OTP codes and account alerts.
  */
 export async function sendEmail(
@@ -80,26 +83,12 @@ export async function sendEmail(
     </html>
   `;
 
-  // 1. Try sending via Gmail SMTP (Google App Password)
-  if (gmailTransporter) {
-    try {
-      const info = await gmailTransporter.sendMail({
-        from: `"${env.EMAIL_SENDER_NAME}" <${env.GMAIL_USER}>`,
-        to,
-        subject,
-        text,
-        html: htmlContent,
-      });
-      console.log(`[email:gmail-smtp:success] Delivered to ${to} (MessageId: ${info.messageId})`);
-      return;
-    } catch (err) {
-      console.warn('[email:gmail-smtp:error] Gmail SMTP failed, attempting Brevo fallback:', (err as Error).message);
-    }
-  }
-
-  // 2. Fallback to Brevo REST API
+  // 1. Primary: Try Brevo REST API (HTTPS port 443 — guaranteed open on all cloud platforms like Render)
   if (env.BREVO_API_KEY) {
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000);
+
       const res = await fetch('https://api.brevo.com/v3/smtp/email', {
         method: 'POST',
         headers: {
@@ -117,18 +106,37 @@ export async function sendEmail(
           textContent: text,
           htmlContent,
         }),
+        signal: controller.signal,
       });
+      clearTimeout(timeoutId);
 
       if (!res.ok) {
         const errJson = await res.json().catch(() => ({}));
-        console.error('[email:brevo:error] Brevo API rejected email:', res.status, errJson);
+        console.error('[email:brevo:error] Brevo API status:', res.status, errJson);
       } else {
-        const data = await res.json().catch(() => ({}));
-        console.log(`[email:brevo:success] Delivered via Brevo to ${to} (MessageId: ${(data as any).messageId})`);
+        const data = (await res.json().catch(() => ({}))) as any;
+        console.log(`[email:brevo:success] Delivered via Brevo to ${to} (MessageId: ${data?.messageId || 'ok'})`);
         return;
       }
     } catch (err) {
-      console.error('[email:brevo:exception] Brevo fallback failed:', (err as Error).message);
+      console.warn('[email:brevo:warning] Brevo API error, attempting Gmail SMTP fallback:', (err as Error).message);
+    }
+  }
+
+  // 2. Secondary: Fallback to Gmail SMTP (with timeout protection)
+  if (gmailTransporter) {
+    try {
+      const info = await gmailTransporter.sendMail({
+        from: `"${env.EMAIL_SENDER_NAME}" <${env.GMAIL_USER}>`,
+        to,
+        subject,
+        text,
+        html: htmlContent,
+      });
+      console.log(`[email:gmail-smtp:success] Delivered to ${to} (MessageId: ${info.messageId})`);
+      return;
+    } catch (err) {
+      console.error('[email:gmail-smtp:error] Gmail SMTP failed:', (err as Error).message);
     }
   }
 
