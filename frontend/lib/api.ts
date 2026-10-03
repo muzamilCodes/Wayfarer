@@ -8,7 +8,9 @@ import {
   SEED_BLOGS,
 } from './seed-data';
 
-export const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:5000/api';
+const rawApi = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:5000/api';
+const cleanApi = rawApi.replace(/\/+$/, '');
+export const API = cleanApi.endsWith('/api') ? cleanApi : `${cleanApi}/api`;
 export const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
 
 export interface Listing {

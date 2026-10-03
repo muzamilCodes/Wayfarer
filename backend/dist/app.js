@@ -18,6 +18,7 @@ exports.app.set('trust proxy', 1);
 const allowedOrigins = [
     env_1.env.CLIENT_URL,
     env_1.env.FRONTEND_URL,
+    'https://wayfarer-nine-delta.vercel.app',
     'https://sportify-kashmir1.vercel.app',
     'http://localhost:3000',
     'http://localhost:3001',
@@ -45,6 +46,7 @@ exports.app.use(express_1.default.json({ limit: '100kb' }));
 exports.app.use((0, cookie_parser_1.default)());
 exports.app.use((0, hpp_1.default)());
 exports.app.use('/api', rateLimit_1.apiLimiter, routes_1.default);
+exports.app.use(rateLimit_1.apiLimiter, routes_1.default);
 exports.app.get('/', (_req, res) => res.json({
     name: 'Paradise Journey API',
     version: '1.0.0',

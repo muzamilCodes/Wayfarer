@@ -22,13 +22,13 @@ const pages: Record<
   }
 > = {
   about: {
-    title: 'About Wayfarer',
+    title: 'About Paradise Journey',
     subtitle: 'Locally guided mountain journeys across Kashmir, Ladakh and the Himalaya.',
     icon: 'compass',
     body: [
-      'Wayfarer was born in the heart of Srinagar out of a profound love for the high Himalaya. For over a decade, we have been crafting bespoke private journeys that celebrate the timeless beauty and warmth of the Kashmiri and Ladakhi valleys.',
+      'Paradise Journey was born in the heart of Srinagar out of a profound love for the high Himalaya. For over a decade, we have been crafting bespoke private journeys that celebrate the timeless beauty and warmth of the Kashmiri and Ladakhi valleys.',
       'Unlike aggregator platforms, our team lives and works here. Every recommendation—from the best phase to ride the Gulmarg gondola on a clear morning, to which heritage houseboat has the warmest cedar interiors and freshest saffron kehwa—comes from genuine local knowledge.',
-      'We partner exclusively with verified local drivers, traditional Shikara artisans, certified mountain guides, and boutique family-run chalets. When you travel with Wayfarer, your journey directly supports regional Himalayan families and sustainable mountain tourism.',
+      'We partner exclusively with verified local drivers, traditional Shikara artisans, certified mountain guides, and boutique family-run chalets. When you travel with Paradise Journey, your journey directly supports regional Himalayan families and sustainable mountain tourism.',
     ],
   },
   offers: {
@@ -94,7 +94,44 @@ const pages: Record<
     body: [
       '1. Processing Timelines: Approved refunds are processed immediately and credited back to the original payment source within 3 to 5 business days.',
       '2. Payment Methods: Refunds are issued via the identical payment route (UPI, Net Banking, Credit/Debit card) used during booking.',
-      '3. Direct Inquiries: For any refund tracking or invoice queries, our accounts desk is reachable directly via contact@wayfarer.local or WhatsApp.',
+      '3. Direct Inquiries: For any refund tracking or invoice queries, our accounts desk is reachable directly via WhatsApp or official support email.',
+    ],
+  },
+  careers: {
+    title: 'Careers at Paradise Journey',
+    subtitle: 'Join our team shaping authentic Himalayan hospitality and mountain expeditions.',
+    body: [
+      '1. Local Guiding & Trek Leaders: We are looking for certified mountaineering guides and passionate local storytellers across Srinagar, Gulmarg, and Ladakh.',
+      '2. Fleet Management & Logistics: Opportunities for transport coordinators and client relation managers based in Srinagar and Jammu.',
+      '3. How to Apply: Send your CV and portfolio to careers@paradisejourney.local or reach out via our contact desk.',
+    ],
+  },
+  press: {
+    title: 'Press & Media',
+    subtitle: 'Latest news, press releases, and editorial stories from Paradise Journey.',
+    body: [
+      '1. Media Inquiries: For interviews, editorial imagery of Jammu & Kashmir, and press trip sponsorship, contact our communications desk.',
+      '2. Awards & Recognition: Honored as one of the leading regional experiential travel providers promoting eco-friendly mountain tourism.',
+      '3. Brand Assets: High-resolution media kits and photography permits are available upon verification.',
+    ],
+  },
+  faq: {
+    title: "Frequently Asked Questions (FAQ's)",
+    subtitle: 'Helpful answers to common queries regarding permits, weather, and tour bookings.',
+    body: [
+      '1. Best Time to Visit Kashmir: April to October is ideal for lush green meadows and Dal Lake stays; December to March is ideal for snow and skiing in Gulmarg.',
+      '2. Inner Line Permits: We arrange all necessary permits for Pangong Tso, Nubra Valley, Gurez Valley, and border circuit zones.',
+      '3. Vehicle & Pickup: Private airport pickups and 24/7 dedicated local drivers are included in all confirmed package bookings.',
+      '4. Custom Itineraries: You can personalize any existing tour or create a custom plan directly through our website.',
+    ],
+  },
+  sustainability: {
+    title: 'Sustainability & Eco-Tourism',
+    subtitle: 'Our pledge to preserve the pristine environment of the Western Himalayas.',
+    body: [
+      '1. Leave No Trace: We educate our trekking groups on waste management and strictly adhere to zero single-use plastic policies in high alpine passes.',
+      '2. Direct Community Impact: Over 85% of tour proceeds remain directly within local Kashmiri and Ladakhi communities through vetted homestays and local artisans.',
+      '3. Wildlife Conservation: We actively support conservation awareness programs in Dachigam National Park and Kishtwar High Altitude Sanctuary.',
     ],
   },
 };
