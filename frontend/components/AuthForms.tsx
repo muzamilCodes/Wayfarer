@@ -270,16 +270,12 @@ export function LoginForm() {
     setLoginSuccess(true);
     await signIn(t, u);
     setTimeout(() => {
-      if (next && next.startsWith('/')) {
-        if (next.startsWith('/admin') && u?.role !== 'admin') {
-          router.push('/account?error=admin_required');
-          return;
-        }
-        router.push(next);
-      } else {
-        router.push(u?.role === 'admin' ? '/admin' : '/account');
-      }
-    }, 400);
+      const destination =
+        next && next.startsWith('/')
+          ? (next.startsWith('/admin') && u?.role !== 'admin' ? '/account?error=admin_required' : next)
+          : (u?.role === 'admin' ? '/admin' : '/account');
+      window.location.href = destination;
+    }, 300);
   };
 
   if (loginSuccess) {
@@ -519,12 +515,13 @@ export function RegisterForm() {
             '/auth/verify-email',
             { email, otp }
           );
-          await signIn(d.accessToken, d.user);
-          if (next && next.startsWith('/')) {
-            router.push(next);
-          } else {
-            router.push(d.user?.role === 'admin' ? '/admin' : '/account');
-          }
+          const destination =
+            next && next.startsWith('/')
+              ? next
+              : d.user?.role === 'admin'
+              ? '/admin'
+              : '/account';
+          window.location.href = destination;
         }}
       />
     );
