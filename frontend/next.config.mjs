@@ -11,4 +11,12 @@ export default {
     ],
     formats: ['image/avif', 'image/webp'],
   },
+  webpack: (config, { dev }) => {
+    if (dev) {
+      // Disable disk pack cache in dev to avoid OneDrive sync conflicts
+      // that corrupt .next cache and cause layout.css 404
+      config.cache = false;
+    }
+    return config;
+  },
 };
