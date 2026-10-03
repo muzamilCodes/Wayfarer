@@ -8,6 +8,10 @@ const schema = z.object({
   MONGODB_URI: z.string().min(1),
   JWT_SECRET: z.string().min(16),
   JWT_REFRESH_SECRET: z.string().min(16),
+  BREVO_API_KEY: z.string().optional(),
+  BREVO_SMTP_KEY: z.string().optional(),
+  EMAIL_SENDER_EMAIL: z.string().default('warmuzamil113@gmail.com'),
+  EMAIL_SENDER_NAME: z.string().default('Wayfarer J&K Travel'),
 });
 
 const parsed = schema.safeParse(process.env);
