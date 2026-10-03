@@ -20,7 +20,7 @@ const schema = zod_1.z.object({
     // Email Config
     EMAIL_FROM: zod_1.z.string().optional(),
     EMAIL_SENDER_EMAIL: zod_1.z.string().default('warmuzamil113@gmail.com'),
-    EMAIL_SENDER_NAME: zod_1.z.string().default('Wayfarer J&K Travel'),
+    EMAIL_SENDER_NAME: zod_1.z.string().default('Paradise Journey'),
     // Gmail SMTP
     GMAIL_USER: zod_1.z.string().optional(),
     GMAIL_APP_PASSWORD: zod_1.z.string().optional(),

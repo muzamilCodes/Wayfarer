@@ -26,10 +26,10 @@ export default function Footer() {
               <svg className="w-6 h-6 text-[#3B71FE]" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
               </svg>
-              <span>Wayfarer</span>
+              <span>Paradise Journey</span>
             </Link>
             <p className="mt-4 text-[13px] text-gray-400 leading-relaxed">
-              Wayfarer is your trusted travel partner for discovering amazing places and unforgettable experiences around Jammu &amp; Kashmir.
+              Paradise Journey is your trusted travel partner for discovering amazing places and unforgettable experiences around Jammu &amp; Kashmir.
             </p>
             <div className="mt-5 flex items-center gap-2.5">
               {[Facebook, Instagram, Twitter, Youtube].map((Icon, i) => (
@@ -94,7 +94,7 @@ export default function Footer() {
 
         {/* Bottom Bar */}
         <div className="mt-12 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-white/10 pt-6 text-[12px] text-gray-400">
-          <p>© 2026 Wayfarer. All rights reserved.</p>
+          <p>© 2026 Paradise Journey. All rights reserved.</p>
           <div className="flex items-center gap-1.5">
             {['VISA', 'Mastercard', 'AMEX', 'DISCOVER', 'PayPal'].map(card => (
               <span key={card} className="rounded bg-white px-2 py-0.5 text-[10px] font-bold text-gray-800 shadow-sm">{card}</span>

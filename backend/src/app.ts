@@ -47,7 +47,7 @@ app.use(hpp());
 app.use('/api', apiLimiter, routes);
 app.get('/', (_req, res) =>
   res.json({
-    name: 'Wayfarer Jammu & Kashmir API',
+    name: 'Paradise Journey API',
     version: '1.0.0',
     status: 'online',
     health: '/health',
@@ -61,7 +61,7 @@ app.get('/', (_req, res) =>
       bookings: '/api/bookings',
       admin: '/api/admin',
     },
-    message: 'Welcome to Wayfarer - The Himalayan Haven API.',
+    message: 'Welcome to Paradise Journey - The Himalayan Haven API.',
   })
 );
 app.get('/health', (_q, s) => s.json({ ok: true }));

@@ -46,7 +46,7 @@ exports.app.use((0, cookie_parser_1.default)());
 exports.app.use((0, hpp_1.default)());
 exports.app.use('/api', rateLimit_1.apiLimiter, routes_1.default);
 exports.app.get('/', (_req, res) => res.json({
-    name: 'Wayfarer Jammu & Kashmir API',
+    name: 'Paradise Journey API',
     version: '1.0.0',
     status: 'online',
     health: '/health',
@@ -60,7 +60,7 @@ exports.app.get('/', (_req, res) => res.json({
         bookings: '/api/bookings',
         admin: '/api/admin',
     },
-    message: 'Welcome to Wayfarer - The Himalayan Haven API.',
+    message: 'Welcome to Paradise Journey - The Himalayan Haven API.',
 }));
 exports.app.get('/health', (_q, s) => s.json({ ok: true }));
 exports.app.use(error_1.notFound);

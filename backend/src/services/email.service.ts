@@ -54,7 +54,7 @@ export async function sendEmail(
       <body>
         <div class="container">
           <div class="header">
-            <h1 class="logo">WAYFARER</h1>
+            <h1 class="logo">PARADISE JOURNEY</h1>
             <div class="tagline">Jammu & Kashmir Himalayan Expeditions</div>
           </div>
           <div class="body">
@@ -72,7 +72,7 @@ export async function sendEmail(
             }
           </div>
           <div class="footer">
-            <p>© ${new Date().getFullYear()} Wayfarer Travel. Srinagar & Jammu, J&K.</p>
+            <p>© ${new Date().getFullYear()} Paradise Journey. Srinagar & Jammu, J&K.</p>
             <p>If you did not make this request, you can safely ignore this email.</p>
           </div>
         </div>

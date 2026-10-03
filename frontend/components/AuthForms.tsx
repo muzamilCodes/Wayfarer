@@ -558,7 +558,7 @@ export function RegisterForm() {
         className="rounded-3xl border border-emerald-500/20 bg-emerald-500/10 p-8 text-center"
       >
         <CheckCircle2 className="mx-auto text-emerald-600 mb-3" size={40} />
-        <h3 className="font-display text-xl font-bold text-lake">Welcome to Wayfarer!</h3>
+        <h3 className="font-display text-xl font-bold text-lake">Welcome to Paradise Journey!</h3>
         <p className="mt-1 text-sm text-mist">Setting up your secure session…</p>
       </motion.div>
     );

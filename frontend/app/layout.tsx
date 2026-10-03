@@ -22,12 +22,12 @@ const body = Instrument_Sans({
 export const metadata: Metadata = {
   metadataBase: new URL(SITE),
   title: {
-    default: 'Wayfarer | Kashmir, Ladakh & Himalayan tours',
-    template: '%s | Wayfarer',
+    default: 'Paradise Journey | Kashmir, Ladakh & Himalayan Tours',
+    template: '%s | Paradise Journey',
   },
   description:
     'Curated Kashmir, Ladakh and Himalayan tour packages with local guides, hotels and cabs.',
-  openGraph: { type: 'website', siteName: 'Wayfarer' },
+  openGraph: { type: 'website', siteName: 'Paradise Journey' },
 };
 
 export default function RootLayout({

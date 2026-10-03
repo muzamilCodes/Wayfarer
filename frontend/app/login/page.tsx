@@ -4,7 +4,7 @@ import { Suspense } from 'react';
 import AuthShell from '@/components/AuthShell';
 import { LoginForm } from '@/components/AuthForms';
 
-export const metadata: Metadata = { title: 'Log in | Wayfarer' };
+export const metadata: Metadata = { title: 'Log in | Paradise Journey' };
 
 export default function Login() {
   return (
@@ -23,7 +23,7 @@ export default function Login() {
         <LoginForm />
       </Suspense>
       <p className="mt-6 text-center text-sm text-mist">
-        New to Wayfarer?{' '}
+        New to Paradise Journey?{' '}
         <Link href="/signup" className="font-semibold text-lake hover:underline">
           Create an account
         </Link>

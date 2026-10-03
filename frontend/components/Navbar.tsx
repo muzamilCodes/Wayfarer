@@ -35,12 +35,12 @@ export default function Navbar() {
     <header className="sticky top-0 z-50 bg-white border-b border-gray-100 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
       <div className="container-x flex h-[64px] items-center justify-between">
 
-        {/* Logo - Wayfarer */}
+        {/* Logo - Paradise Journey */}
         <Link href="/" className="group flex items-center gap-2.5 font-sans text-xl font-extrabold text-gray-900 tracking-tight">
           <svg className="w-7 h-7 text-[#3B71FE] transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" viewBox="0 0 24 24" fill="currentColor">
             <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
           </svg>
-          <span className="text-[21px] font-extrabold text-gray-900 tracking-tight">Wayfarer</span>
+          <span className="text-[21px] font-extrabold text-gray-900 tracking-tight">Paradise Journey</span>
         </Link>
 
         {/* Desktop Nav */}

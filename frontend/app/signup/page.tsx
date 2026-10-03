@@ -5,15 +5,15 @@ import AuthShell from '@/components/AuthShell';
 import { RegisterForm } from '@/components/AuthForms';
 
 export const metadata: Metadata = {
-  title: 'Sign Up | Wayfarer',
-  description: 'Create your Wayfarer account to save itineraries and book Himalayan tours.',
+  title: 'Sign Up | Paradise Journey',
+  description: 'Create your Paradise Journey account to save itineraries and book Himalayan tours.',
 };
 
 export default function SignupPage() {
   return (
     <AuthShell
       title="Begin your journey"
-      subtitle="Join Wayfarer to plan, personalize, and book your dream Himalayan escape."
+      subtitle="Join Paradise Journey to plan, personalize, and book your dream Himalayan escape."
     >
       <Suspense
         fallback={
