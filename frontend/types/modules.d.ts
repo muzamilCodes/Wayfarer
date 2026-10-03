@@ -66,6 +66,18 @@ declare module 'lucide-react' {
   export const Instagram: Icon;
   export const Twitter: Icon;
   export const Youtube: Icon;
+  export const Home: Icon;
+  export const MessageSquare: Icon;
+  export const CreditCard: Icon;
+  export const BarChart2: Icon;
+  export const Settings: Icon;
+  export const Bell: Icon;
+  export const ExternalLink: Icon;
+  export const Map: Icon;
+  export const Filter: Icon;
+  export const Activity: Icon;
+  export const Layers: Icon;
+  export const MoreVertical: Icon;
 
   const icons: { [key: string]: Icon };
   export default icons;

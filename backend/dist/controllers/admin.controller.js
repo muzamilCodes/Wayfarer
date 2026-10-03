@@ -11,7 +11,7 @@ const Booking_1 = require("../models/Booking");
 const User_1 = require("../models/User");
 const Enquiry_1 = require("../models/Enquiry");
 exports.getStats = (0, asyncHandler_1.asyncHandler)(async (_req, res) => {
-    const [destinations, packages, hotels, vehicles, bookings, users, enquiries] = await Promise.all([
+    const [destinations, packages, hotels, vehicles, bookings, users, enquiries, revenueAgg, recentBookings, recentUsers,] = await Promise.all([
         Destination_1.Destination.countDocuments(),
         Package_1.Package.countDocuments(),
         Hotel_1.Hotel.countDocuments(),
@@ -19,7 +19,21 @@ exports.getStats = (0, asyncHandler_1.asyncHandler)(async (_req, res) => {
         Booking_1.Booking.countDocuments(),
         User_1.User.countDocuments(),
         Enquiry_1.Enquiry.countDocuments(),
+        Booking_1.Booking.aggregate([
+            { $match: { status: { $in: ['confirmed', 'completed'] } } },
+            { $group: { _id: null, total: { $sum: '$total' } } },
+        ]),
+        Booking_1.Booking.find()
+            .populate('user', 'name email')
+            .populate('package', 'title slug')
+            .sort({ createdAt: -1 })
+            .limit(10),
+        User_1.User.find()
+            .select('name email role emailVerified createdAt')
+            .sort({ createdAt: -1 })
+            .limit(10),
     ]);
+    const totalRevenue = revenueAgg[0]?.total || 0;
     (0, response_1.ok)(res, 'Admin stats retrieved', {
         destinations,
         packages,
@@ -28,6 +42,10 @@ exports.getStats = (0, asyncHandler_1.asyncHandler)(async (_req, res) => {
         bookings,
         users,
         enquiries,
+        totalRevenue,
+        recentBookings,
+        recentUsers,
+        serverUptime: process.uptime(),
     });
 });
 // Packages (Tours)
