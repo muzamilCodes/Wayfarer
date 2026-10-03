@@ -510,16 +510,19 @@ export default function AdminPage() {
   };
 
   // ----------------------------------------------------
-  // J&K Districts Master Database State
+  // J&K Districts Master Database State (All 20 Districts)
   // ----------------------------------------------------
+  const [allDistricts, setAllDistricts] = useState<JKDistrictDestination[]>(JK_ALL_DISTRICTS);
   const [districtDivisionFilter, setDistrictDivisionFilter] = useState<'All' | 'Kashmir' | 'Jammu'>('All');
   const [districtSearchQuery, setDistrictSearchQuery] = useState('');
   const [selectedDistrict, setSelectedDistrict] = useState<JKDistrictDestination>(JK_ALL_DISTRICTS[0]);
   const [inspectPlace, setInspectPlace] = useState<TouristPlace | null>(null);
+  const [placesDistrictFilter, setPlacesDistrictFilter] = useState<string>('All');
+  const [placesCategoryFilter, setPlacesCategoryFilter] = useState<string>('All');
 
   // Filtered districts
   const filteredDistricts = useMemo(() => {
-    return JK_ALL_DISTRICTS.filter((d) => {
+    return allDistricts.filter((d) => {
       const matchesDivision =
         districtDivisionFilter === 'All'
           ? true
@@ -531,7 +534,7 @@ export default function AdminPage() {
       if (!q) return matchesDivision;
 
       const matchesDistrictName = d.district.toLowerCase().includes(q);
-      const matchesPlace = d.touristPlaces.some(
+      const matchesPlace = (d.touristPlaces || []).some(
         (p) =>
           p.name.toLowerCase().includes(q) ||
           (p.pinCode && p.pinCode.includes(q)) ||
@@ -540,26 +543,26 @@ export default function AdminPage() {
 
       return matchesDivision && (matchesDistrictName || matchesPlace);
     });
-  }, [districtDivisionFilter, districtSearchQuery]);
+  }, [allDistricts, districtDivisionFilter, districtSearchQuery]);
 
   // Aggregate stats
   const totalAttractions = useMemo(() => {
-    return JK_ALL_DISTRICTS.reduce((acc, d) => acc + (d.touristPlaces?.length || 0), 0);
-  }, []);
+    return allDistricts.reduce((acc, d) => acc + (d.touristPlaces?.length || 0), 0);
+  }, [allDistricts]);
 
   const kashmirAttractions = useMemo(() => {
-    return JK_ALL_DISTRICTS.filter((d) => d.division === 'Kashmir Valley').reduce(
+    return allDistricts.filter((d) => d.division === 'Kashmir Valley').reduce(
       (acc, d) => acc + (d.touristPlaces?.length || 0),
       0
     );
-  }, []);
+  }, [allDistricts]);
 
   const jammuAttractions = useMemo(() => {
-    return JK_ALL_DISTRICTS.filter((d) => d.division !== 'Kashmir Valley').reduce(
+    return allDistricts.filter((d) => d.division !== 'Kashmir Valley').reduce(
       (acc, d) => acc + (d.touristPlaces?.length || 0),
       0
     );
-  }, []);
+  }, [allDistricts]);
 
   const totalRevenue = useMemo(() => {
     return bookings
@@ -592,9 +595,86 @@ export default function AdminPage() {
   const [showAddPlaceModal, setShowAddPlaceModal] = useState(false);
   const [newPlaceName, setNewPlaceName] = useState('');
   const [newPlaceDistrict, setNewPlaceDistrict] = useState('Srinagar');
-  const [newPlaceCategory, setNewPlaceCategory] = useState('Scenic Valley');
+  const [newPlaceCategory, setNewPlaceCategory] = useState<TouristPlace['category']>('Scenic View');
   const [newPlaceSpeciality, setNewPlaceSpeciality] = useState('');
+  const [newPlaceDescription, setNewPlaceDescription] = useState('');
+  const [newPlaceBestTime, setNewPlaceBestTime] = useState('April to October');
+  const [newPlaceActivities, setNewPlaceActivities] = useState('Sightseeing, Photography, Trekking');
+  const [newPlaceImage, setNewPlaceImage] = useState('https://images.unsplash.com/photo-1598091383021-15ddea10925d?auto=format&fit=crop&w=1200&q=80');
+  const [newPlacePinCode, setNewPlacePinCode] = useState('');
+  const [newPlaceTehsil, setNewPlaceTehsil] = useState('');
   const [selectedInvoice, setSelectedInvoice] = useState<BookingRecord | null>(null);
+
+  const handleSaveNewPlace = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newPlaceName.trim()) return;
+
+    const newPlace: TouristPlace = {
+      name: newPlaceName.trim(),
+      category: newPlaceCategory,
+      district: newPlaceDistrict,
+      speciality: newPlaceSpeciality.trim() || 'Scenic mountain attraction with captivating views.',
+      description: newPlaceDescription.trim() || newPlaceSpeciality.trim() || 'Detailed regional attraction catalogued in J&K Tourism master database.',
+      bestTime: newPlaceBestTime.trim() || 'April to October',
+      activities: newPlaceActivities.trim() || 'Sightseeing, Photography',
+      image: newPlaceImage.trim() || 'https://images.unsplash.com/photo-1598091383021-15ddea10925d?auto=format&fit=crop&w=1200&q=80',
+      pinCode: newPlacePinCode.trim() || undefined,
+      tehsil: newPlaceTehsil.trim() || undefined,
+    };
+
+    setAllDistricts((prev) => {
+      return prev.map((d) => {
+        if (d.district.toLowerCase() === newPlaceDistrict.toLowerCase()) {
+          return {
+            ...d,
+            touristPlaces: [newPlace, ...(d.touristPlaces || [])],
+          };
+        }
+        return d;
+      });
+    });
+
+    if (selectedDistrict.district.toLowerCase() === newPlaceDistrict.toLowerCase()) {
+      setSelectedDistrict((prev) => ({
+        ...prev,
+        touristPlaces: [newPlace, ...(prev.touristPlaces || [])],
+      }));
+    }
+
+    setShowAddPlaceModal(false);
+    showToast(`Tourist attraction "${newPlaceName}" added to ${newPlaceDistrict} with full details!`);
+    addLog(`Added tourist place "${newPlaceName}" to ${newPlaceDistrict}`, 'success');
+
+    setNewPlaceName('');
+    setNewPlaceSpeciality('');
+    setNewPlaceDescription('');
+    setNewPlacePinCode('');
+    setNewPlaceTehsil('');
+  };
+
+  const handleDeletePlace = (placeName: string, districtName: string) => {
+    setAllDistricts((prev) =>
+      prev.map((d) => {
+        if (d.district.toLowerCase() === districtName.toLowerCase()) {
+          return {
+            ...d,
+            touristPlaces: (d.touristPlaces || []).filter((p) => p.name !== placeName),
+          };
+        }
+        return d;
+      })
+    );
+
+    if (selectedDistrict.district.toLowerCase() === districtName.toLowerCase()) {
+      setSelectedDistrict((prev) => ({
+        ...prev,
+        touristPlaces: (prev.touristPlaces || []).filter((p) => p.name !== placeName),
+      }));
+    }
+
+    showToast(`Removed "${placeName}" from ${districtName}.`);
+    addLog(`Deleted tourist attraction "${placeName}" from ${districtName}`, 'warning');
+  };
 
   // ----------------------------------------------------
   // Destinations Handlers (Live MongoDB Sync)
@@ -1230,63 +1310,173 @@ export default function AdminPage() {
                     <span>J&K Master Attractions Database ({totalAttractions} Places)</span>
                   </h2>
                   <p className="text-xs text-slate-400 mt-0.5">
-                    Complete catalogue of tourist spots across Kashmir Valley and Jammu Division
+                    Complete catalogue of tourist spots across all 20 districts of Kashmir Valley and Jammu Division
                   </p>
                 </div>
                 <button
                   onClick={() => setShowAddPlaceModal(true)}
-                  className="flex items-center gap-2 rounded-xl bg-blue-600 hover:bg-blue-500 px-4 py-2.5 text-xs font-bold text-white transition shadow-lg shadow-blue-600/20"
+                  className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 px-4 py-2.5 text-xs font-bold text-white transition shadow-lg shadow-blue-600/20 transform hover:-translate-y-0.5"
                 >
                   <Plus size={15} />
-                  <span>Add New Place</span>
+                  <span>+ Add Tourist Place</span>
                 </button>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
-                {JK_ALL_DISTRICTS.flatMap((d) =>
-                  (d.touristPlaces || []).map((p) => ({ ...p, districtName: d.district, division: d.division }))
-                )
-                  .filter((p) => {
-                    const q = globalSearch.toLowerCase().trim();
-                    if (!q) return true;
-                    return (
-                      p.name.toLowerCase().includes(q) ||
-                      p.districtName.toLowerCase().includes(q) ||
-                      (p.category && p.category.toLowerCase().includes(q))
-                    );
-                  })
-                  .slice(0, 30)
-                  .map((p, idx) => (
-                    <div
-                      key={idx}
-                      className="rounded-2xl border border-[#162B4E] bg-[#0A1628] p-4 hover:border-blue-500/40 transition group flex flex-col justify-between"
-                    >
-                      <div>
-                        <div className="flex items-start justify-between gap-2">
-                          <h4 className="font-bold text-sm text-white group-hover:text-blue-400 transition">
-                            {p.name}
-                          </h4>
-                          <span
-                            className={`rounded-full px-2 py-0.5 text-[9px] font-bold ${
-                              p.division === 'Kashmir Valley'
-                                ? 'bg-blue-500/20 text-blue-300'
-                                : 'bg-emerald-500/20 text-emerald-300'
-                            }`}
-                          >
-                            {p.districtName}
-                          </span>
-                        </div>
-                        <p className="text-[11px] text-slate-400 mt-1 line-clamp-2">
-                          {p.speciality || p.description}
-                        </p>
-                      </div>
-                      <div className="mt-3 pt-2.5 border-t border-[#132847] flex items-center justify-between text-[10px] text-slate-500">
-                        <span>{p.category}</span>
-                        {p.pinCode && <span className="font-mono text-emerald-400">PIN: {p.pinCode}</span>}
-                      </div>
-                    </div>
-                  ))}
+              {/* District & Category Filters Toolbar */}
+              <div className="flex flex-col sm:flex-row items-center gap-3">
+                <div className="relative flex-1 w-full">
+                  <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <input
+                    type="text"
+                    placeholder="Search by spot name, speciality, PIN code, or tehsil..."
+                    value={globalSearch}
+                    onChange={(e) => setGlobalSearch(e.target.value)}
+                    className="w-full rounded-xl border border-[#1E3A5F]/60 bg-[#081222] pl-10 pr-4 py-2.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
+                  />
+                </div>
+
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                  <select
+                    value={placesDistrictFilter}
+                    onChange={(e) => setPlacesDistrictFilter(e.target.value)}
+                    className="rounded-xl border border-[#1E3A5F] bg-[#070F1E] px-3 py-2 text-xs font-semibold text-white focus:outline-none focus:border-blue-500"
+                  >
+                    <option value="All">All 20 Districts</option>
+                    {allDistricts.map((d) => (
+                      <option key={d.id} value={d.district}>
+                        {d.district} ({d.touristPlaces?.length || 0})
+                      </option>
+                    ))}
+                  </select>
+
+                  <select
+                    value={placesCategoryFilter}
+                    onChange={(e) => setPlacesCategoryFilter(e.target.value)}
+                    className="rounded-xl border border-[#1E3A5F] bg-[#070F1E] px-3 py-2 text-xs font-semibold text-white focus:outline-none focus:border-blue-500"
+                  >
+                    <option value="All">All Categories</option>
+                    <option value="Must-Visit">Must-Visit</option>
+                    <option value="Scenic View">Scenic View</option>
+                    <option value="Lake & Nature">Lake & Nature</option>
+                    <option value="Spiritual">Spiritual</option>
+                    <option value="Adventure">Adventure</option>
+                    <option value="Heritage">Heritage</option>
+                    <option value="Offbeat & Camping">Offbeat & Camping</option>
+                    <option value="Family & Leisure">Family & Leisure</option>
+                  </select>
+                </div>
               </div>
+
+              {/* Places Cards Grid */}
+              {(() => {
+                const allPlaces = allDistricts.flatMap((d) =>
+                  (d.touristPlaces || []).map((p) => ({
+                    ...p,
+                    districtName: d.district,
+                    division: d.division,
+                    districtId: d.id,
+                  }))
+                );
+
+                const filtered = allPlaces.filter((p) => {
+                  const q = globalSearch.toLowerCase().trim();
+                  const matchesSearch =
+                    !q ||
+                    p.name.toLowerCase().includes(q) ||
+                    p.districtName.toLowerCase().includes(q) ||
+                    (p.category && p.category.toLowerCase().includes(q)) ||
+                    (p.speciality && p.speciality.toLowerCase().includes(q)) ||
+                    (p.pinCode && p.pinCode.includes(q)) ||
+                    (p.tehsil && p.tehsil.toLowerCase().includes(q));
+
+                  const matchesDistrict =
+                    placesDistrictFilter === 'All' ||
+                    p.districtName.toLowerCase() === placesDistrictFilter.toLowerCase();
+
+                  const matchesCategory =
+                    placesCategoryFilter === 'All' ||
+                    (p.category && p.category.toLowerCase() === placesCategoryFilter.toLowerCase());
+
+                  return matchesSearch && matchesDistrict && matchesCategory;
+                });
+
+                if (filtered.length === 0) {
+                  return (
+                    <div className="rounded-2xl border border-dashed border-slate-800 bg-[#081222]/60 p-12 text-center">
+                      <MapPin size={36} className="mx-auto text-slate-600 mb-2" />
+                      <p className="text-sm font-semibold text-slate-300">No tourist attractions found.</p>
+                      <p className="text-xs text-slate-500 mt-1">Try resetting the district or category filter.</p>
+                    </div>
+                  );
+                }
+
+                return (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {filtered.map((p, idx) => (
+                      <div
+                        key={`${p.districtName}-${p.name}-${idx}`}
+                        className="rounded-2xl border border-[#162B4E] bg-[#0A1628] p-4 hover:border-blue-500/40 transition group flex flex-col justify-between shadow-md"
+                      >
+                        <div className="space-y-2">
+                          <div className="flex items-start justify-between gap-2">
+                            <div>
+                              <h4 className="font-bold text-sm text-white group-hover:text-blue-400 transition leading-snug">
+                                {p.name}
+                              </h4>
+                              <span className="text-[10px] text-cyan-300 font-semibold">
+                                {p.districtName} District
+                              </span>
+                            </div>
+
+                            <span
+                              className={`rounded-full px-2 py-0.5 text-[9px] font-bold shrink-0 ${
+                                p.division === 'Kashmir Valley'
+                                  ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30'
+                                  : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                              }`}
+                            >
+                              {p.category || 'Attraction'}
+                            </span>
+                          </div>
+
+                          <p className="text-[11px] text-slate-400 line-clamp-2 leading-relaxed">
+                            {p.speciality || p.description}
+                          </p>
+
+                          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-slate-500 pt-1">
+                            {p.bestTime && <span>Season: <strong className="text-slate-300">{p.bestTime}</strong></span>}
+                            {p.pinCode && <span className="font-mono text-emerald-400 font-bold">PIN: {p.pinCode}</span>}
+                            {p.tehsil && <span>Tehsil: {p.tehsil}</span>}
+                          </div>
+                        </div>
+
+                        <div className="mt-3 pt-3 border-t border-[#132847] flex items-center justify-between gap-2">
+                          <button
+                            onClick={() => setInspectPlace(p as any)}
+                            className="flex items-center gap-1 rounded-lg bg-blue-600/20 hover:bg-blue-600 hover:text-white border border-blue-500/30 px-2.5 py-1 text-[11px] font-bold text-blue-300 transition"
+                          >
+                            <EyeIcon size={12} />
+                            <span>Inspect 28 Fields</span>
+                          </button>
+
+                          <button
+                            onClick={() => {
+                              if (confirm(`Remove "${p.name}" from ${p.districtName}?`)) {
+                                handleDeletePlace(p.name, p.districtName);
+                              }
+                            }}
+                            className="flex items-center gap-1 rounded-lg bg-rose-500/10 hover:bg-rose-600 hover:text-white border border-rose-500/30 px-2 py-1 text-[11px] font-bold text-rose-400 transition"
+                            title="Delete Tourist Place"
+                          >
+                            <Trash2 size={12} />
+                            <span>Delete</span>
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
             </div>
           )}
 
@@ -1417,13 +1607,27 @@ export default function AdminPage() {
                       </p>
                     </div>
 
-                    <Link
-                      href={`/destinations/${selectedDistrict.popularKey || selectedDistrict.id}`}
-                      className="inline-flex items-center gap-1.5 rounded-xl border border-slate-700 bg-slate-800 px-3.5 py-2 text-xs font-semibold text-slate-300 hover:text-white transition shrink-0"
-                    >
-                      <span>Public Guide</span>
-                      <ExternalLinkIcon size={13} />
-                    </Link>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        onClick={() => {
+                          setNewPlaceDistrict(selectedDistrict.district);
+                          setShowAddPlaceModal(true);
+                        }}
+                        className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 px-3.5 py-2 text-xs font-bold text-white shadow-md shadow-blue-500/20 transition shrink-0"
+                      >
+                        <Plus size={14} />
+                        <span>+ Add Place</span>
+                      </button>
+
+                      <Link
+                        href={`/destinations/${selectedDistrict.popularKey || selectedDistrict.id}`}
+                        target="_blank"
+                        className="inline-flex items-center gap-1.5 rounded-xl border border-slate-700 bg-slate-800 px-3.5 py-2 text-xs font-semibold text-slate-300 hover:text-white transition shrink-0"
+                      >
+                        <span>Public Guide</span>
+                        <ExternalLinkIcon size={13} />
+                      </Link>
+                    </div>
                   </div>
 
                   {/* List of Tourist Places */}
@@ -1461,13 +1665,27 @@ export default function AdminPage() {
                             </p>
                           </div>
 
-                          <button
-                            onClick={() => setInspectPlace(place)}
-                            className="flex items-center gap-1.5 rounded-lg bg-[#3B71FE] hover:bg-blue-600 px-3 py-1.5 text-xs font-bold text-white transition shrink-0"
-                          >
-                            <EyeIcon size={13} />
-                            <span>Inspect 28 Fields</span>
-                          </button>
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <button
+                              onClick={() => setInspectPlace(place)}
+                              className="flex items-center gap-1.5 rounded-lg bg-[#3B71FE] hover:bg-blue-600 px-3 py-1.5 text-xs font-bold text-white transition"
+                            >
+                              <EyeIcon size={13} />
+                              <span>Inspect 28 Fields</span>
+                            </button>
+
+                            <button
+                              onClick={() => {
+                                if (confirm(`Remove tourist place "${place.name}" from ${selectedDistrict.district}?`)) {
+                                  handleDeletePlace(place.name, selectedDistrict.district);
+                                }
+                              }}
+                              className="flex items-center gap-1 rounded-lg bg-rose-500/10 hover:bg-rose-600 hover:text-white border border-rose-500/30 p-1.5 text-rose-400 transition"
+                              title="Delete Tourist Place"
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                          </div>
                         </div>
 
                         {/* Quick Metadata tags */}
@@ -2597,68 +2815,151 @@ export default function AdminPage() {
               </button>
             </div>
 
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                if (!newPlaceName.trim()) return;
-                showToast(`Tourist place "${newPlaceName}" catalogued in ${newPlaceDistrict}!`);
-                setShowAddPlaceModal(false);
-                setNewPlaceName('');
-                setNewPlaceSpeciality('');
-              }}
-              className="mt-5 space-y-4 text-xs"
-            >
-              <div>
-                <label className="block font-semibold text-slate-300 mb-1">Place Name</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Bangus Valley"
-                  value={newPlaceName}
-                  onChange={(e) => setNewPlaceName(e.target.value)}
-                  className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3.5 py-2.5 text-white focus:border-blue-500 focus:outline-none"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
+            <form onSubmit={handleSaveNewPlace} className="mt-5 space-y-4 text-xs max-h-[75vh] overflow-y-auto pr-1">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
-                  <label className="block font-semibold text-slate-300 mb-1">District</label>
+                  <label className="block font-bold text-slate-300 mb-1">Place Name *</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Aru Valley Lavender Field"
+                    value={newPlaceName}
+                    onChange={(e) => setNewPlaceName(e.target.value)}
+                    className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3.5 py-2 text-white focus:border-blue-500 focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-300 mb-1">Target District (All 20 Districts) *</label>
                   <select
                     value={newPlaceDistrict}
                     onChange={(e) => setNewPlaceDistrict(e.target.value)}
-                    className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3.5 py-2.5 text-white focus:border-blue-500 focus:outline-none"
+                    className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3.5 py-2 text-white focus:border-blue-500 focus:outline-none"
                   >
-                    {JK_ALL_DISTRICTS.map((d) => (
+                    {allDistricts.map((d) => (
                       <option key={d.id} value={d.district}>
-                        {d.district}
+                        {d.district} ({d.touristPlaces?.length || 0} places)
                       </option>
                     ))}
                   </select>
                 </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
-                  <label className="block font-semibold text-slate-300 mb-1">Category</label>
+                  <label className="block font-bold text-slate-300 mb-1">Category *</label>
                   <select
                     value={newPlaceCategory}
-                    onChange={(e) => setNewPlaceCategory(e.target.value)}
-                    className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3.5 py-2.5 text-white focus:border-blue-500 focus:outline-none"
+                    onChange={(e) => setNewPlaceCategory(e.target.value as any)}
+                    className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3.5 py-2 text-white focus:border-blue-500 focus:outline-none"
                   >
-                    <option value="Scenic Valley">Scenic Valley</option>
-                    <option value="Alpine Lake">Alpine Lake</option>
-                    <option value="Historical Heritage">Historical Heritage</option>
-                    <option value="Spiritual & Pilgrimage">Spiritual & Pilgrimage</option>
-                    <option value="Adventure & Trekking">Adventure & Trekking</option>
+                    <option value="Must-Visit">Must-Visit</option>
+                    <option value="Scenic View">Scenic View</option>
+                    <option value="Lake & Nature">Lake & Nature</option>
+                    <option value="Spiritual">Spiritual</option>
+                    <option value="Adventure">Adventure</option>
+                    <option value="Heritage">Heritage</option>
+                    <option value="Offbeat & Camping">Offbeat & Camping</option>
+                    <option value="Family & Leisure">Family & Leisure</option>
                   </select>
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-300 mb-1">Speciality / Tagline *</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Alpine Meadows & Trout Angling Haven"
+                    value={newPlaceSpeciality}
+                    onChange={(e) => setNewPlaceSpeciality(e.target.value)}
+                    className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3.5 py-2 text-white focus:border-blue-500 focus:outline-none"
+                  />
                 </div>
               </div>
 
               <div>
-                <label className="block font-semibold text-slate-300 mb-1">Speciality / Key Highlights</label>
+                <label className="block font-bold text-slate-300 mb-1">Cover Image URL (Live Photo Preview)</label>
+                <input
+                  type="url"
+                  placeholder="https://images.unsplash.com/..."
+                  value={newPlaceImage}
+                  onChange={(e) => setNewPlaceImage(e.target.value)}
+                  className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3.5 py-2 text-white focus:border-blue-500 focus:outline-none"
+                />
+                {newPlaceImage && (
+                  <div className="mt-2 h-24 w-full rounded-xl overflow-hidden border border-slate-800 bg-slate-950 relative">
+                    <img
+                      src={newPlaceImage}
+                      alt="Tourist spot preview"
+                      className="h-full w-full object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1598091383021-15ddea10925d?auto=format&fit=crop&w=1200&q=80';
+                      }}
+                    />
+                    <span className="absolute bottom-1.5 right-2 rounded bg-black/70 px-2 py-0.5 text-[9px] text-white">
+                      Live Image Preview
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                <div>
+                  <label className="block font-bold text-slate-300 mb-1">Best Season / Time to Visit</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. April to October, Winter for Snow"
+                    value={newPlaceBestTime}
+                    onChange={(e) => setNewPlaceBestTime(e.target.value)}
+                    className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3.5 py-2 text-white focus:border-blue-500 focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-300 mb-1">Activities & Things to Do</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Trekking, Photography, Horse Riding"
+                    value={newPlaceActivities}
+                    onChange={(e) => setNewPlaceActivities(e.target.value)}
+                    className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3.5 py-2 text-white focus:border-blue-500 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                <div>
+                  <label className="block font-bold text-slate-300 mb-1">Tehsil / Sub-district</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Pahalgam Tehsil"
+                    value={newPlaceTehsil}
+                    onChange={(e) => setNewPlaceTehsil(e.target.value)}
+                    className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3.5 py-2 text-white focus:border-blue-500 focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-300 mb-1">PIN Code</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. 192126"
+                    value={newPlacePinCode}
+                    onChange={(e) => setNewPlacePinCode(e.target.value)}
+                    className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3.5 py-2 text-white focus:border-blue-500 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-300 mb-1">Comprehensive Description *</label>
                 <textarea
                   rows={3}
-                  placeholder="Scenic meadow, pine forest, trekking route..."
-                  value={newPlaceSpeciality}
-                  onChange={(e) => setNewPlaceSpeciality(e.target.value)}
-                  className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3.5 py-2.5 text-white focus:border-blue-500 focus:outline-none"
+                  required
+                  placeholder="Detailed geographic wonders, history, access roads, and unique attractions..."
+                  value={newPlaceDescription}
+                  onChange={(e) => setNewPlaceDescription(e.target.value)}
+                  className="w-full rounded-xl border border-slate-700 bg-slate-800 p-3 text-white focus:border-blue-500 focus:outline-none leading-relaxed"
                 />
               </div>
 
@@ -2672,9 +2973,9 @@ export default function AdminPage() {
                 </button>
                 <button
                   type="submit"
-                  className="rounded-xl bg-blue-600 px-5 py-2 text-xs font-bold text-white hover:bg-blue-500 transition shadow-md shadow-blue-600/20"
+                  className="rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 px-5 py-2 text-xs font-bold text-white shadow-lg shadow-blue-600/30 transition transform hover:-translate-y-0.5"
                 >
-                  Save Place
+                  Save Tourist Place
                 </button>
               </div>
             </form>
