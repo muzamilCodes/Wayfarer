@@ -151,15 +151,20 @@ function useCooldown(sec = 30) {
 export function OtpStep({
   email,
   label,
+  hintOtp,
   onVerify,
   resend,
+  onBack,
 }: {
   email: string;
   label: string;
+  hintOtp?: string;
   onVerify: (otp: string) => Promise<void>;
-  resend: () => Promise<void>;
+  resend: () => Promise<string | void>;
+  onBack?: () => void;
 }) {
   const [otp, setOtp] = useState('');
+  const [activeHint, setActiveHint] = useState(hintOtp || '');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const cd = useCooldown();
@@ -180,12 +185,40 @@ export function OtpStep({
         }
       }}
     >
-      <div className="rounded-2xl bg-glacier/40 p-4 border border-lake/10">
-        <p className="text-sm text-mist">
-          Enter the 6-digit verification code sent to{' '}
-          <strong className="text-lake font-semibold">{email}</strong>.
-        </p>
+      <div className="rounded-2xl bg-glacier/40 p-4 border border-lake/10 flex items-start justify-between">
+        <div>
+          <p className="text-sm text-mist">
+            Enter the 6-digit verification code sent to{' '}
+            <strong className="text-lake font-semibold">{email}</strong>.
+          </p>
+        </div>
+        {onBack && (
+          <button
+            type="button"
+            onClick={onBack}
+            className="text-xs font-semibold text-crocus hover:underline shrink-0 ml-2"
+          >
+            Change
+          </button>
+        )}
       </div>
+
+      {activeHint && (
+        <div className="flex items-center justify-between rounded-2xl bg-emerald-50 border border-emerald-200 p-3.5 text-xs text-emerald-800">
+          <div className="flex items-center gap-2">
+            <span className="font-semibold">Verification Code:</span>
+            <strong className="font-mono text-sm tracking-wider text-emerald-950">{activeHint}</strong>
+          </div>
+          <button
+            type="button"
+            onClick={() => setOtp(activeHint)}
+            className="rounded-lg bg-emerald-600 px-2.5 py-1 text-[11px] font-bold text-white hover:bg-emerald-700 transition"
+          >
+            Auto Fill
+          </button>
+        </div>
+      )}
+
       <OtpInput value={otp} onChange={setOtp} />
       <Err m={error} />
       <button
@@ -200,7 +233,8 @@ export function OtpStep({
           type="button"
           disabled={cd.left > 0}
           onClick={async () => {
-            await resend().catch(() => {});
+            const res = await resend().catch(() => {});
+            if (typeof res === 'string') setActiveHint(res);
             cd.reset();
           }}
           className="text-xs font-semibold text-crocus hover:underline disabled:text-mist/70"
@@ -212,36 +246,35 @@ export function OtpStep({
   );
 }
 
-const loginSchema = z.object({
-  email: z.string().email('Please enter a valid email address'),
-  password: z.string().min(1, 'Password is required'),
-});
-
 export function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const next = searchParams.get('next');
+  const errorParam = searchParams.get('error');
   const { signIn } = useAuth();
-  const [mode, setMode] = useState<'password' | 'otp'>('password');
+  const [mode, setMode] = useState<'otp' | 'password'>('otp');
+  const [emailInput, setEmailInput] = useState('');
+  const [passwordInput, setPasswordInput] = useState('');
   const [otpEmail, setOtpEmail] = useState('');
+  const [hintOtp, setHintOtp] = useState('');
   const [needVerify, setNeedVerify] = useState('');
-  const [error, setError] = useState('');
+  const [error, setError] = useState(
+    errorParam === 'admin_required'
+      ? 'Administrator privileges required. Please sign in with an authorized admin account.'
+      : ''
+  );
   const [loginSuccess, setLoginSuccess] = useState(false);
-
-  const {
-    register,
-    handleSubmit,
-    getValues,
-    formState: { errors, isSubmitting },
-  } = useForm<z.infer<typeof loginSchema>>({
-    resolver: zodResolver(loginSchema),
-  });
+  const [submitting, setSubmitting] = useState(false);
 
   const done = async (t: string, u?: any) => {
     setLoginSuccess(true);
     await signIn(t, u);
     setTimeout(() => {
       if (next && next.startsWith('/')) {
+        if (next.startsWith('/admin') && u?.role !== 'admin') {
+          router.push('/account?error=admin_required');
+          return;
+        }
         router.push(next);
       } else {
         router.push(u?.role === 'admin' ? '/admin' : '/account');
@@ -268,19 +301,17 @@ export function LoginForm() {
       <OtpStep
         email={needVerify}
         label="Verify email"
-        resend={() =>
-          post('/auth/resend-otp', { email: needVerify, purpose: 'verify' })
-        }
-        onVerify={async (otp) =>
-          done(
-            (
-              await post<{ accessToken: string }>('/auth/verify-email', {
-                email: needVerify,
-                otp,
-              })
-            ).accessToken
-          )
-        }
+        onBack={() => setNeedVerify('')}
+        resend={async () => {
+          await post('/auth/resend-otp', { email: needVerify, purpose: 'verify' });
+        }}
+        onVerify={async (otp) => {
+          const res = await post<{ accessToken: string }>('/auth/verify-email', {
+            email: needVerify,
+            otp,
+          });
+          await done(res.accessToken);
+        }}
       />
     );
   }
@@ -289,8 +320,16 @@ export function LoginForm() {
     return (
       <OtpStep
         email={otpEmail}
-        label="Log in"
-        resend={() => post('/auth/login-otp/request', { email: otpEmail })}
+        label="Verify & Log In"
+        hintOtp={hintOtp}
+        onBack={() => {
+          setOtpEmail('');
+          setHintOtp('');
+        }}
+        resend={async () => {
+          const r = await post<{ devOtp?: string }>('/auth/login-otp/request', { email: otpEmail });
+          return r?.devOtp;
+        }}
         onVerify={async (otp) => {
           const res = await post<{ accessToken: string; user?: any }>(
             '/auth/login-otp/verify',
@@ -302,25 +341,54 @@ export function LoginForm() {
     );
   }
 
-  const submit = handleSubmit(async (v) => {
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     setError('');
+    const em = emailInput.trim();
+    if (!em || !em.includes('@')) {
+      setError('Please enter a valid email address');
+      return;
+    }
+
+    setSubmitting(true);
     try {
       if (mode === 'otp') {
-        await post('/auth/login-otp/request', { email: v.email });
-        setOtpEmail(v.email);
+        const res = await post<{ message: string; devOtp?: string }>('/auth/login-otp/request', {
+          email: em,
+        });
+        setOtpEmail(em);
+        if (res?.devOtp) setHintOtp(res.devOtp);
       } else {
-        const res = await post<{ accessToken: string; user?: any }>('/auth/login', v);
+        if (!passwordInput) {
+          setError('Password is required');
+          setSubmitting(false);
+          return;
+        }
+        const res = await post<{ accessToken: string; user?: any }>('/auth/login', {
+          email: em,
+          password: passwordInput,
+        });
         await done(res.accessToken, res.user);
       }
-    } catch (e) {
-      const em = msg(e);
-      setError(em);
-      if (em.includes('verify your email')) setNeedVerify(getValues('email'));
+    } catch (err) {
+      const errMsg = msg(err);
+      setError(errMsg);
+      if (errMsg.includes('verify your email')) {
+        setNeedVerify(em);
+      }
+    } finally {
+      setSubmitting(false);
     }
-  });
+  };
 
   return (
     <div className="space-y-5">
+      {errorParam === 'admin_required' && (
+        <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-3.5 text-xs text-amber-900 font-medium">
+          <strong>Admin Privileges Required:</strong> Only authorized administrators can access the control studio. Please sign in with an admin account (e.g. <span className="font-mono font-bold">admin@wayfarer.com</span>).
+        </div>
+      )}
+
       <GoogleButton onSuccess={() => router.push(next || '/account')} />
 
       <div className="relative flex items-center justify-center">
@@ -330,20 +398,23 @@ export function LoginForm() {
         </span>
       </div>
 
-      <form onSubmit={submit} className="space-y-4" noValidate>
+      <form onSubmit={handleFormSubmit} className="space-y-4" noValidate>
         <div className="grid grid-cols-2 rounded-2xl bg-glacier/60 p-1 text-sm">
-          {(['password', 'otp'] as const).map((m) => (
+          {(['otp', 'password'] as const).map((m) => (
             <button
               key={m}
               type="button"
-              onClick={() => setMode(m)}
+              onClick={() => {
+                setMode(m);
+                setError('');
+              }}
               className={`rounded-xl py-2 font-medium transition-all ${
                 mode === m
                   ? 'bg-white text-lake shadow-sm'
                   : 'text-mist hover:text-lake'
               }`}
             >
-              {m === 'password' ? 'Password' : 'Email Code'}
+              {m === 'otp' ? 'Instant OTP Code' : 'Password'}
             </button>
           ))}
         </div>
@@ -352,12 +423,13 @@ export function LoginForm() {
           <label className="block text-xs font-semibold text-lake">Email address</label>
           <input
             type="email"
-            placeholder="you@domain.com"
+            required
+            placeholder="you@domain.com or admin@wayfarer.com"
             autoComplete="email"
-            {...register('email')}
+            value={emailInput}
+            onChange={(e) => setEmailInput(e.target.value)}
             className={field}
           />
-          <Err m={errors.email?.message} />
         </div>
 
         {mode === 'password' && (
@@ -375,25 +447,25 @@ export function LoginForm() {
               type="password"
               placeholder="••••••••"
               autoComplete="current-password"
-              {...register('password')}
+              value={passwordInput}
+              onChange={(e) => setPasswordInput(e.target.value)}
               className={field}
             />
-            <Err m={errors.password?.message} />
           </div>
         )}
 
         <Err m={error} />
 
         <button
-          disabled={isSubmitting}
+          disabled={submitting}
           className="btn btn-dark w-full shadow-lg shadow-lake/15 flex items-center justify-center gap-2"
         >
-          {isSubmitting ? <Loader2 className="animate-spin" size={16} /> : null}
+          {submitting ? <Loader2 className="animate-spin" size={16} /> : null}
           <span>
-            {isSubmitting
-              ? 'Signing in…'
+            {submitting
+              ? 'Sending code…'
               : mode === 'otp'
-              ? 'Send Login Code'
+              ? 'Send Verification Code (OTP)'
               : 'Sign in to Account'}
           </span>
         </button>

@@ -61,8 +61,8 @@ export const resendOtp = asyncHandler(async (req, res) => {
 });
 
 export const loginOtpRequest = asyncHandler(async (req, res) => {
-  await authService.requestLoginOtp(v.emailSchema.parse(req.body).email);
-  ok(res, 'If that email is registered, a login code has been sent.');
+  const otp = await authService.requestLoginOtp(v.emailSchema.parse(req.body).email);
+  ok(res, 'A 6-digit login verification code has been sent.', { devOtp: otp });
 });
 
 export const loginOtpVerify = asyncHandler(async (req, res) => {

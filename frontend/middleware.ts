@@ -27,8 +27,20 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  // 2. Admin dashboard handles its own live authentication & sandbox demo modes on the client
-  // so visitors and testers are not blocked by a redirect wall.
+  // 2. Strict Admin RBAC check: only allowed if authenticated and role is admin
+  if (requiresAdmin(pathname)) {
+    if (!isAuthenticated) {
+      const nextUrl = encodeURIComponent(pathname + search);
+      const loginUrl = new URL(`/login?next=${nextUrl}&error=admin_required`, request.url);
+      return NextResponse.redirect(loginUrl);
+    }
+
+    if (!isAdmin) {
+      // Forbidden: authenticated user is not an admin
+      const forbiddenUrl = new URL('/account?error=admin_required', request.url);
+      return NextResponse.redirect(forbiddenUrl);
+    }
+  }
 
 
   return NextResponse.next();

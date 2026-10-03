@@ -60,6 +60,7 @@ export function requiresAuth(pathname: string): boolean {
   }
 
   return (
+    pathname.startsWith(ADMIN_PREFIX) ||
     AUTH_REQUIRED_ROUTES.some((route) => pathname === route || pathname.startsWith(`${route}/`))
   );
 }

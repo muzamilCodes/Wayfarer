@@ -140,16 +140,16 @@ export default function AdminPage() {
   // Navigation state
   const [activeTab, setActiveTab] = useState<AdminTab>('overview');
 
-  // Mode state: If user is logged in as admin, default to live mode; otherwise Demo Sandbox Mode
-  const isActualAdmin = user?.role === 'admin';
-  const [sandboxMode, setSandboxMode] = useState<boolean>(!isActualAdmin);
-
-  // Sync sandboxMode when auth state resolves
+  // Enforce strict Admin authentication
   useEffect(() => {
-    if (isActualAdmin) {
-      setSandboxMode(false);
+    if (!loading) {
+      if (!user) {
+        router.replace('/login?next=%2Fadmin&error=admin_required');
+      } else if (user.role !== 'admin') {
+        router.replace('/account?error=admin_required');
+      }
     }
-  }, [isActualAdmin]);
+  }, [user, loading, router]);
 
   // Toast feedback state
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -573,6 +573,48 @@ export default function AdminPage() {
     showToast('User verification flag toggled.');
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#0B132B] flex flex-col items-center justify-center p-6 text-center text-slate-100 font-sans">
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#3B71FE] border-t-transparent mb-4" />
+        <p className="text-sm font-semibold text-slate-300">
+          Verifying administrator clearance…
+        </p>
+      </div>
+    );
+  }
+
+  if (!user || user.role !== 'admin') {
+    return (
+      <div className="min-h-screen bg-[#0B132B] flex items-center justify-center p-6 text-center text-slate-100 font-sans">
+        <div className="max-w-md w-full rounded-3xl border border-rose-500/30 bg-slate-900/95 p-8 shadow-2xl backdrop-blur-xl">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-500/20 text-rose-400 mb-4">
+            <ShieldAlert size={32} />
+          </div>
+          <h2 className="text-xl font-black text-white">Administrator Access Required</h2>
+          <p className="mt-2 text-xs text-slate-400 leading-relaxed">
+            Wayfarer Control Center is restricted to verified administrators. Your current account ({user?.email || 'Guest'}) does not have administrator clearance.
+          </p>
+
+          <div className="mt-6 flex flex-col gap-2.5">
+            <Link
+              href="/login?next=%2Fadmin&error=admin_required"
+              className="rounded-xl bg-[#3B71FE] hover:bg-blue-600 py-3 text-xs font-bold text-white transition shadow-lg shadow-blue-500/20"
+            >
+              Sign in with Admin Account (OTP)
+            </Link>
+            <Link
+              href="/"
+              className="rounded-xl border border-slate-700 bg-slate-800 py-2.5 text-xs font-semibold text-slate-300 hover:text-white transition"
+            >
+              Return to Homepage
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#0B132B] text-slate-100 font-sans selection:bg-[#3B71FE] selection:text-white">
       {/* Toast Notification */}
@@ -591,34 +633,26 @@ export default function AdminPage() {
             <span className="font-bold uppercase tracking-wider text-slate-400">
               Wayfarer Studio Control Center
             </span>
-            <span className="rounded bg-blue-500/20 px-2 py-0.5 font-mono text-[11px] font-semibold text-blue-400">
-              v2.5 Enterprise
+            <span className="rounded bg-emerald-500/20 px-2 py-0.5 font-mono text-[11px] font-semibold text-emerald-300">
+              Admin: {user.email}
             </span>
-            {sandboxMode ? (
-              <span className="rounded-full bg-amber-500/20 border border-amber-500/40 px-2.5 py-0.5 text-[11px] font-semibold text-amber-300 flex items-center gap-1">
-                <SlidersIcon size={11} /> Sandbox Demo Mode Active
-              </span>
-            ) : (
-              <span className="rounded-full bg-emerald-500/20 border border-emerald-500/40 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-300 flex items-center gap-1">
-                <ShieldCheck size={11} /> Live Backend Connected
-              </span>
-            )}
+            <span className="rounded-full bg-blue-500/20 border border-blue-500/40 px-2.5 py-0.5 text-[11px] font-semibold text-blue-300 flex items-center gap-1">
+              <span>✦ Simulated Data Mode (Safe Sandbox — Real Database Untouched)</span>
+            </span>
           </div>
 
           <div className="flex items-center gap-3">
             <button
               onClick={() => {
-                setSandboxMode(!sandboxMode);
-                showToast(
-                  !sandboxMode
-                    ? 'Switched to Demo Sandbox mode.'
-                    : 'Switched to Live MongoDB sync mode.'
-                );
+                setTours(SEED_PACKAGES);
+                setHotels(SEED_HOTELS.map((h, i) => ({ ...h, isAvailable: i !== 1 })));
+                setVehicles(SEED_VEHICLES.map((v, i) => ({ ...v, plateNumber: `JK-01-${1040 + i}`, status: i === 0 ? 'Available' : i === 1 ? 'On Trip' : 'Available' })));
+                showToast('Simulated data reset to defaults.');
               }}
               className="flex items-center gap-1.5 rounded-lg border border-slate-700 bg-slate-800/80 px-3 py-1 font-medium text-slate-300 hover:bg-slate-700 transition"
             >
               <RefreshCw size={12} />
-              <span>{sandboxMode ? 'Switch to Live Sync' : 'Switch to Sandbox'}</span>
+              <span>Reset Mock Data</span>
             </button>
 
             <Link
@@ -938,7 +972,7 @@ export default function AdminPage() {
                     <div className="flex items-center justify-between text-xs">
                       <span className="text-slate-400">Admin Privileges</span>
                       <span className="font-mono text-purple-400">
-                        {isActualAdmin ? 'Root Admin (Live)' : 'Sandbox Admin'}
+                        Admin Clearance Verified
                       </span>
                     </div>
                     <div className="flex items-center justify-between text-xs">
