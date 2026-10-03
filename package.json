@@ -4,8 +4,8 @@
   "private": true,
   "description": "Wayfarer - Jammu & Kashmir Travel Platform",
   "scripts": {
-    "postinstall": "npm --prefix backend install && npm --prefix backend run build",
-    "build": "npm --prefix backend install && npm --prefix backend run build",
+    "postinstall": "npm --prefix backend install",
+    "build": "npm --prefix backend install",
     "start": "npm --prefix backend start",
     "backend:dev": "npm --prefix backend run dev",
     "frontend:dev": "npm --prefix frontend run dev"
