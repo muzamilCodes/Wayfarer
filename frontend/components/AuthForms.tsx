@@ -492,6 +492,7 @@ export function RegisterForm() {
   const next = searchParams.get('next');
   const { signIn } = useAuth();
   const [email, setEmail] = useState('');
+  const [hintOtp, setHintOtp] = useState('');
   const [error, setError] = useState('');
 
   const {
@@ -507,16 +508,23 @@ export function RegisterForm() {
       <OtpStep
         email={email}
         label="Verify and continue"
-        resend={() =>
-          post('/auth/resend-otp', { email, purpose: 'verify' })
-        }
+        hintOtp={hintOtp}
+        onBack={() => setEmail('')}
+        resend={async () => {
+          const res = await post<{ devOtp?: string }>('/auth/resend-otp', { email, purpose: 'verify' });
+          return res?.devOtp;
+        }}
         onVerify={async (otp) => {
           const d = await post<{ accessToken: string; user?: any }>(
             '/auth/verify-email',
             { email, otp }
           );
           await signIn(d.accessToken, d.user);
-          router.push(next || '/account');
+          if (next && next.startsWith('/')) {
+            router.push(next);
+          } else {
+            router.push(d.user?.role === 'admin' ? '/admin' : '/account');
+          }
         }}
       />
     );
@@ -540,12 +548,13 @@ export function RegisterForm() {
         onSubmit={handleSubmit(async (v) => {
           setError('');
           try {
-            await post('/auth/register', {
+            const res = await post<{ devOtp?: string }>('/auth/register', {
               name: v.name,
               email: v.email,
               password: v.password,
             });
             setEmail(v.email);
+            if (res?.devOtp) setHintOtp(res.devOtp);
           } catch (e) {
             setError(msg(e));
           }
