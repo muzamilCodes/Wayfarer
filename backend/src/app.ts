@@ -12,6 +12,8 @@ export const app = express();
 app.set('trust proxy', 1);
 const allowedOrigins = [
   env.CLIENT_URL,
+  env.FRONTEND_URL,
+  'https://sportify-kashmir1.vercel.app',
   'http://localhost:3000',
   'http://localhost:3001',
   'http://localhost:3002',
@@ -28,6 +30,7 @@ app.use(
       if (!origin) return callback(null, true);
       if (
         allowedOrigins.includes(origin) ||
+        /\.vercel\.app$/.test(origin) ||
         /^http:\/\/localhost:\d+$/.test(origin) ||
         /^http:\/\/127\.0\.0\.1:\d+$/.test(origin)
       ) {
@@ -42,6 +45,25 @@ app.use(express.json({ limit: '100kb' }));
 app.use(cookieParser());
 app.use(hpp());
 app.use('/api', apiLimiter, routes);
+app.get('/', (_req, res) =>
+  res.json({
+    name: 'Wayfarer Jammu & Kashmir API',
+    version: '1.0.0',
+    status: 'online',
+    health: '/health',
+    endpoints: {
+      auth: '/api/auth',
+      destinations: '/api/destinations',
+      packages: '/api/packages',
+      hotels: '/api/hotels',
+      activities: '/api/activities',
+      blogs: '/api/blogs',
+      bookings: '/api/bookings',
+      admin: '/api/admin',
+    },
+    message: 'Welcome to Wayfarer - The Himalayan Haven API.',
+  })
+);
 app.get('/health', (_q, s) => s.json({ ok: true }));
 app.use(notFound);
 app.use(errorHandler);
