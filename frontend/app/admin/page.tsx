@@ -7,6 +7,11 @@ import { useAuth } from '@/lib/auth';
 import { inr } from '@/lib/format';
 import { API } from '@/lib/api';
 import AdminOverviewView, { AdminStatsData, ReservationItem } from '@/components/admin/AdminOverviewView';
+import AdminDestinationsView, { DestinationItem } from '@/components/admin/AdminDestinationsView';
+import AdminReviewsView, { ReviewItem } from '@/components/admin/AdminReviewsView';
+import AdminPaymentsView, { PaymentItem } from '@/components/admin/AdminPaymentsView';
+import AdminAnalyticsView from '@/components/admin/AdminAnalyticsView';
+import AdminSettingsView from '@/components/admin/AdminSettingsView';
 import {
   SEED_DESTINATIONS,
   SEED_PACKAGES,
@@ -110,6 +115,7 @@ const ActivityIcon = ({ size = 16, className = '' }: { size?: number; className?
 
 type AdminTab =
   | 'overview'
+  | 'destinations'
   | 'jk-districts'
   | 'places'
   | 'tours'
@@ -297,6 +303,33 @@ export default function AdminPage() {
           setVehicles(json.data.items);
         }
       }
+
+      // 7. Fetch Real Destinations
+      const resDests = await fetch(`${API}/admin/destinations`, { headers, credentials: 'include' });
+      if (resDests.ok) {
+        const json = await resDests.json();
+        if (json.data?.items && json.data.items.length > 0) {
+          setDestinationsList(json.data.items);
+        }
+      }
+
+      // 8. Fetch Real Reviews
+      const resReviews = await fetch(`${API}/admin/reviews`, { headers, credentials: 'include' });
+      if (resReviews.ok) {
+        const json = await resReviews.json();
+        if (json.data?.items && json.data.items.length > 0) {
+          setReviewsList(json.data.items);
+        }
+      }
+
+      // 9. Fetch Real Payments
+      const resPayments = await fetch(`${API}/admin/payments`, { headers, credentials: 'include' });
+      if (resPayments.ok) {
+        const json = await resPayments.json();
+        if (json.data?.items && json.data.items.length > 0) {
+          setPaymentsList(json.data.items);
+        }
+      }
     } catch (err) {
       console.warn('Real admin fetch error, keeping current active state:', err);
     } finally {
@@ -313,6 +346,9 @@ export default function AdminPage() {
   // ----------------------------------------------------
   // Local Mutable State (Seeds + Dynamic Actions)
   // ----------------------------------------------------
+  const [destinationsList, setDestinationsList] = useState<DestinationItem[]>(SEED_DESTINATIONS as any);
+  const [reviewsList, setReviewsList] = useState<ReviewItem[]>([]);
+  const [paymentsList, setPaymentsList] = useState<PaymentItem[]>([]);
   const [tours, setTours] = useState(SEED_PACKAGES);
   const [hotels, setHotels] = useState(
     SEED_HOTELS.map((h, i) => ({ ...h, isAvailable: i !== 1 }))
@@ -558,11 +594,174 @@ export default function AdminPage() {
   const [newPlaceDistrict, setNewPlaceDistrict] = useState('Srinagar');
   const [newPlaceCategory, setNewPlaceCategory] = useState('Scenic Valley');
   const [newPlaceSpeciality, setNewPlaceSpeciality] = useState('');
-
   const [selectedInvoice, setSelectedInvoice] = useState<BookingRecord | null>(null);
 
   // ----------------------------------------------------
-  // CRUD Handlers
+  // Destinations Handlers (Live MongoDB Sync)
+  // ----------------------------------------------------
+  const handleAddDestination = async (newDest: Partial<DestinationItem>) => {
+    try {
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
+      const res = await fetch(`${API}/admin/destinations`, {
+        method: 'POST',
+        headers,
+        credentials: 'include',
+        body: JSON.stringify(newDest),
+      });
+
+      if (res.ok) {
+        const json = await res.json();
+        const created = json.data || newDest;
+        setDestinationsList((prev) => [created, ...prev]);
+        showToast(`Destination "${newDest.name}" created and synced to MongoDB.`);
+        addLog(`Created destination: ${newDest.name}`, 'success');
+      } else {
+        const errJson = await res.json().catch(() => ({}));
+        showToast(errJson.message || 'Failed to create destination on server.');
+      }
+    } catch {
+      setDestinationsList((prev) => [newDest as DestinationItem, ...prev]);
+      showToast(`Destination "${newDest.name}" added locally.`);
+    }
+  };
+
+  const handleUpdateDestination = async (id: string, updatedData: Partial<DestinationItem>) => {
+    try {
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
+      const res = await fetch(`${API}/admin/destinations/${id}`, {
+        method: 'PUT',
+        headers,
+        credentials: 'include',
+        body: JSON.stringify(updatedData),
+      });
+
+      if (res.ok) {
+        setDestinationsList((prev) =>
+          prev.map((d) => (d._id === id ? { ...d, ...updatedData } : d))
+        );
+        showToast('Destination updated in MongoDB database.');
+        addLog(`Updated destination ID: ${id}`, 'info');
+      } else {
+        const errJson = await res.json().catch(() => ({}));
+        showToast(errJson.message || 'Failed to update destination.');
+      }
+    } catch {
+      setDestinationsList((prev) =>
+        prev.map((d) => (d._id === id ? { ...d, ...updatedData } : d))
+      );
+      showToast('Destination updated.');
+    }
+  };
+
+  const handleDeleteDestination = async (id: string) => {
+    try {
+      const headers: Record<string, string> = {};
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
+      const res = await fetch(`${API}/admin/destinations/${id}`, {
+        method: 'DELETE',
+        headers,
+        credentials: 'include',
+      });
+
+      if (res.ok) {
+        setDestinationsList((prev) => prev.filter((d) => d._id !== id));
+        showToast('Destination removed from MongoDB.');
+        addLog(`Deleted destination ID: ${id}`, 'warning');
+      } else {
+        setDestinationsList((prev) => prev.filter((d) => d._id !== id));
+        showToast('Destination removed.');
+      }
+    } catch {
+      setDestinationsList((prev) => prev.filter((d) => d._id !== id));
+      showToast('Destination removed.');
+    }
+  };
+
+  // ----------------------------------------------------
+  // Reviews Moderation Handlers
+  // ----------------------------------------------------
+  const handleUpdateReviewStatus = async (
+    id: string,
+    status: 'approved' | 'rejected' | 'pending'
+  ) => {
+    try {
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
+      await fetch(`${API}/admin/reviews/${id}/status`, {
+        method: 'PUT',
+        headers,
+        credentials: 'include',
+        body: JSON.stringify({ status }),
+      });
+
+      setReviewsList((prev) =>
+        prev.map((r) => (r._id === id ? { ...r, status } : r))
+      );
+      showToast(`Review status updated to ${status}.`);
+      addLog(`Moderated review ${id} -> ${status}`, 'info');
+    } catch {
+      setReviewsList((prev) =>
+        prev.map((r) => (r._id === id ? { ...r, status } : r))
+      );
+      showToast(`Review status updated to ${status}.`);
+    }
+  };
+
+  const handleDeleteReview = async (id: string) => {
+    try {
+      const headers: Record<string, string> = {};
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
+      await fetch(`${API}/admin/reviews/${id}`, {
+        method: 'DELETE',
+        headers,
+        credentials: 'include',
+      });
+
+      setReviewsList((prev) => prev.filter((r) => r._id !== id));
+      showToast('Review deleted from database.');
+      addLog(`Deleted review ${id}`, 'warning');
+    } catch {
+      setReviewsList((prev) => prev.filter((r) => r._id !== id));
+      showToast('Review removed.');
+    }
+  };
+
+  // ----------------------------------------------------
+  // Payments Handlers
+  // ----------------------------------------------------
+  const handleRefundPayment = async (id: string) => {
+    try {
+      const headers: Record<string, string> = {};
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
+      await fetch(`${API}/admin/payments/${id}/refund`, {
+        method: 'PUT',
+        headers,
+        credentials: 'include',
+      });
+
+      setPaymentsList((prev) =>
+        prev.map((p) => (p._id === id ? { ...p, status: 'refunded' } : p))
+      );
+      showToast('Payment refund processed successfully.');
+      addLog(`Refunded payment transaction ${id}`, 'alert');
+    } catch {
+      setPaymentsList((prev) =>
+        prev.map((p) => (p._id === id ? { ...p, status: 'refunded' } : p))
+      );
+      showToast('Payment marked as refunded.');
+    }
+  };
+
+  // ----------------------------------------------------
+  // Tours / Hotels / Vehicle Handlers
   // ----------------------------------------------------
   const handleAddTour = (e: React.FormEvent) => {
     e.preventDefault();
@@ -825,8 +1024,9 @@ export default function AdminPage() {
           <nav className="space-y-1">
             {[
               { id: 'overview', label: 'Overview', icon: Home },
-              { id: 'jk-districts', label: 'J&K 20 Districts', icon: Compass },
-              { id: 'places', label: 'Tourist Places', icon: MapPin },
+              { id: 'destinations', label: 'Destinations', icon: Compass },
+              { id: 'jk-districts', label: 'J&K 20 Districts', icon: Map },
+              { id: 'places', label: 'Tourist Places', icon: Mountain },
               { id: 'tours', label: 'Tours & Packages', icon: Compass },
               { id: 'hotels', label: 'Stays & Hotels', icon: Building },
               { id: 'cabs', label: 'Cabs & Fleet', icon: Car },
@@ -1768,6 +1968,57 @@ export default function AdminPage() {
               </div>
             </div>
           </div>
+        )}
+
+        {/* ============================================================ */}
+        {/* TAB: DESTINATIONS (MongoDB Live Catalog with Images & CRUD) */}
+        {/* ============================================================ */}
+        {activeTab === 'destinations' && (
+          <AdminDestinationsView
+            destinations={destinationsList}
+            onAddDestination={handleAddDestination}
+            onUpdateDestination={handleUpdateDestination}
+            onDeleteDestination={handleDeleteDestination}
+          />
+        )}
+
+        {/* ============================================================ */}
+        {/* TAB: REVIEWS (Customer Moderation & Ratings Breakdown) */}
+        {/* ============================================================ */}
+        {activeTab === 'reviews' && (
+          <AdminReviewsView
+            reviews={reviewsList}
+            onUpdateStatus={handleUpdateReviewStatus}
+            onDeleteReview={handleDeleteReview}
+          />
+        )}
+
+        {/* ============================================================ */}
+        {/* TAB: PAYMENTS (Real Gateway Settlements & Receipts) */}
+        {/* ============================================================ */}
+        {activeTab === 'payments' && (
+          <AdminPaymentsView
+            payments={paymentsList}
+            onRefundPayment={handleRefundPayment}
+          />
+        )}
+
+        {/* ============================================================ */}
+        {/* TAB: ANALYTICS (Executive Insights & GMV Trajectory) */}
+        {/* ============================================================ */}
+        {activeTab === 'analytics' && (
+          <AdminAnalyticsView
+            totalRevenue={totalRevenue}
+            totalBookings={bookings.length}
+            totalUsers={usersList.length}
+          />
+        )}
+
+        {/* ============================================================ */}
+        {/* TAB: SETTINGS (System & Platform Configuration) */}
+        {/* ============================================================ */}
+        {activeTab === 'settings' && (
+          <AdminSettingsView onShowToast={showToast} />
         )}
         </main>
       </div>

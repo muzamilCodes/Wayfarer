@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateUserRole = exports.listUsers = exports.updateBookingStatus = exports.listBookings = exports.deleteVehicle = exports.updateVehicle = exports.createVehicle = exports.listVehicles = exports.deleteHotel = exports.updateHotel = exports.createHotel = exports.listHotels = exports.deleteDestination = exports.updateDestination = exports.createDestination = exports.listDestinations = exports.deleteTour = exports.updateTour = exports.createTour = exports.listTours = exports.getStats = void 0;
+exports.refundPayment = exports.listPayments = exports.deleteReview = exports.updateReviewStatus = exports.listReviews = exports.updateUserRole = exports.listUsers = exports.updateBookingStatus = exports.listBookings = exports.deleteVehicle = exports.updateVehicle = exports.createVehicle = exports.listVehicles = exports.deleteHotel = exports.updateHotel = exports.createHotel = exports.listHotels = exports.deleteDestination = exports.updateDestination = exports.createDestination = exports.listDestinations = exports.deleteTour = exports.updateTour = exports.createTour = exports.listTours = exports.getStats = void 0;
 const asyncHandler_1 = require("../utils/asyncHandler");
 const response_1 = require("../utils/response");
 const Destination_1 = require("../models/Destination");
@@ -10,6 +10,8 @@ const Vehicle_1 = require("../models/Vehicle");
 const Booking_1 = require("../models/Booking");
 const User_1 = require("../models/User");
 const Enquiry_1 = require("../models/Enquiry");
+const Payment_1 = require("../models/Payment");
+const Review_1 = require("../models/Review");
 exports.getStats = (0, asyncHandler_1.asyncHandler)(async (_req, res) => {
     const [destinations, packages, hotels, vehicles, bookings, users, enquiries, revenueAgg, recentBookings, recentUsers,] = await Promise.all([
         Destination_1.Destination.countDocuments(),
@@ -133,4 +135,35 @@ exports.listUsers = (0, asyncHandler_1.asyncHandler)(async (_req, res) => {
 exports.updateUserRole = (0, asyncHandler_1.asyncHandler)(async (req, res) => {
     const user = await User_1.User.findByIdAndUpdate(req.params.id, { role: req.body.role }, { new: true }).select('-passwordHash');
     (0, response_1.ok)(res, 'User role updated', user);
+});
+// Reviews Moderation
+exports.listReviews = (0, asyncHandler_1.asyncHandler)(async (_req, res) => {
+    const items = await Review_1.Review.find()
+        .populate('user', 'name email')
+        .populate('package', 'title slug')
+        .sort({ createdAt: -1 });
+    (0, response_1.ok)(res, 'Reviews list', { items });
+});
+exports.updateReviewStatus = (0, asyncHandler_1.asyncHandler)(async (req, res) => {
+    const review = await Review_1.Review.findByIdAndUpdate(req.params.id, { status: req.body.status }, { new: true });
+    (0, response_1.ok)(res, 'Review status updated', review);
+});
+exports.deleteReview = (0, asyncHandler_1.asyncHandler)(async (req, res) => {
+    await Review_1.Review.findByIdAndDelete(req.params.id);
+    (0, response_1.ok)(res, 'Review deleted');
+});
+// Payments
+exports.listPayments = (0, asyncHandler_1.asyncHandler)(async (_req, res) => {
+    const items = await Payment_1.Payment.find()
+        .populate('user', 'name email')
+        .populate({
+        path: 'booking',
+        select: 'bookingId total status travelDate items',
+    })
+        .sort({ createdAt: -1 });
+    (0, response_1.ok)(res, 'Payments list', { items });
+});
+exports.refundPayment = (0, asyncHandler_1.asyncHandler)(async (req, res) => {
+    const payment = await Payment_1.Payment.findByIdAndUpdate(req.params.id, { status: 'refunded', refundId: `ref_${Date.now()}` }, { new: true });
+    (0, response_1.ok)(res, 'Payment marked as refunded', payment);
 });

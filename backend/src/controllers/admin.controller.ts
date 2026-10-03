@@ -7,6 +7,8 @@ import { Vehicle } from '../models/Vehicle';
 import { Booking } from '../models/Booking';
 import { User } from '../models/User';
 import { Enquiry } from '../models/Enquiry';
+import { Payment } from '../models/Payment';
+import { Review } from '../models/Review';
 
 export const getStats = asyncHandler(async (_req, res) => {
   const [
@@ -165,3 +167,44 @@ export const updateUserRole = asyncHandler(async (req, res) => {
   const user = await User.findByIdAndUpdate(req.params.id, { role: req.body.role }, { new: true }).select('-passwordHash');
   ok(res, 'User role updated', user);
 });
+
+// Reviews Moderation
+export const listReviews = asyncHandler(async (_req, res) => {
+  const items = await Review.find()
+    .populate('user', 'name email')
+    .populate('package', 'title slug')
+    .sort({ createdAt: -1 });
+  ok(res, 'Reviews list', { items });
+});
+
+export const updateReviewStatus = asyncHandler(async (req, res) => {
+  const review = await Review.findByIdAndUpdate(req.params.id, { status: req.body.status }, { new: true });
+  ok(res, 'Review status updated', review);
+});
+
+export const deleteReview = asyncHandler(async (req, res) => {
+  await Review.findByIdAndDelete(req.params.id);
+  ok(res, 'Review deleted');
+});
+
+// Payments
+export const listPayments = asyncHandler(async (_req, res) => {
+  const items = await Payment.find()
+    .populate('user', 'name email')
+    .populate({
+      path: 'booking',
+      select: 'bookingId total status travelDate items',
+    })
+    .sort({ createdAt: -1 });
+  ok(res, 'Payments list', { items });
+});
+
+export const refundPayment = asyncHandler(async (req, res) => {
+  const payment = await Payment.findByIdAndUpdate(
+    req.params.id,
+    { status: 'refunded', refundId: `ref_${Date.now()}` },
+    { new: true }
+  );
+  ok(res, 'Payment marked as refunded', payment);
+});
+

@@ -101,7 +101,11 @@ r.delete('/admin/vehicles/:id', adminAuth, admin.deleteVehicle);
 // Admin Bookings
 r.get('/admin/bookings', adminAuth, admin.listBookings);
 r.put('/admin/bookings/:id', adminAuth, admin.updateBookingStatus);
-// Admin Users
-r.get('/admin/users', adminAuth, admin.listUsers);
-r.put('/admin/users/:id/role', adminAuth, admin.updateUserRole);
+// Admin Reviews
+r.get('/admin/reviews', adminAuth, admin.listReviews);
+r.put('/admin/reviews/:id/status', adminAuth, admin.updateReviewStatus);
+r.delete('/admin/reviews/:id', adminAuth, admin.deleteReview);
+// Admin Payments
+r.get('/admin/payments', adminAuth, admin.listPayments);
+r.put('/admin/payments/:id/refund', adminAuth, admin.refundPayment);
 exports.default = r;

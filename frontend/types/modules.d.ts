@@ -78,6 +78,11 @@ declare module 'lucide-react' {
   export const Activity: Icon;
   export const Layers: Icon;
   export const MoreVertical: Icon;
+  export const Edit3: Icon;
+  export const Save: Icon;
+  export const Download: Icon;
+  export const DollarSign: Icon;
+  export const Eye: Icon;
 
   const icons: { [key: string]: Icon };
   export default icons;
