@@ -1,7 +1,20 @@
+import nodemailer from 'nodemailer';
 import { env } from '../config/env';
 
+// Primary Transporter: Google Gmail SMTP with App Password
+const gmailTransporter =
+  env.GMAIL_USER && env.GMAIL_APP_PASSWORD
+    ? nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: env.GMAIL_USER,
+          pass: env.GMAIL_APP_PASSWORD.replace(/\s+/g, ''),
+        },
+      })
+    : null;
+
 /**
- * Sends transactional emails via Brevo (Sendinblue) REST API.
+ * Sends transactional emails via Gmail SMTP (Google App Password) with Brevo fallback.
  * Includes a responsive, beautifully styled HTML template for OTP codes and account alerts.
  */
 export async function sendEmail(
@@ -12,16 +25,13 @@ export async function sendEmail(
 ) {
   console.log(`[email:dispatch] to=${to} subject="${subject}"`);
 
-  if (!env.BREVO_API_KEY) {
-    console.warn('[email] BREVO_API_KEY is not configured. Email logged to console only.');
-    return;
-  }
-
   // Detect 6-digit OTP code in text for dedicated badge highlight
   const otpMatch = text.match(/\b\d{6}\b/);
   const otpCode = otpMatch ? otpMatch[0] : null;
 
-  const defaultHtml = `
+  const htmlContent =
+    customHtml ||
+    `
     <!DOCTYPE html>
     <html>
       <head>
@@ -70,34 +80,57 @@ export async function sendEmail(
     </html>
   `;
 
-  try {
-    const res = await fetch('https://api.brevo.com/v3/smtp/email', {
-      method: 'POST',
-      headers: {
-        'api-key': env.BREVO_API_KEY,
-        'Content-Type': 'application/json',
-        accept: 'application/json',
-      },
-      body: JSON.stringify({
-        sender: {
-          name: env.EMAIL_SENDER_NAME,
-          email: env.EMAIL_SENDER_EMAIL,
-        },
-        to: [{ email: to }],
-        subject: subject,
-        textContent: text,
-        htmlContent: customHtml || defaultHtml,
-      }),
-    });
-
-    if (!res.ok) {
-      const errJson = await res.json().catch(() => ({}));
-      console.error('[email:error] Brevo API rejected email:', res.status, errJson);
-    } else {
-      const data = await res.json().catch(() => ({}));
-      console.log(`[email:success] Real email delivered to ${to} (MessageId: ${(data as any).messageId})`);
+  // 1. Try sending via Gmail SMTP (Google App Password)
+  if (gmailTransporter) {
+    try {
+      const info = await gmailTransporter.sendMail({
+        from: `"${env.EMAIL_SENDER_NAME}" <${env.GMAIL_USER}>`,
+        to,
+        subject,
+        text,
+        html: htmlContent,
+      });
+      console.log(`[email:gmail-smtp:success] Delivered to ${to} (MessageId: ${info.messageId})`);
+      return;
+    } catch (err) {
+      console.warn('[email:gmail-smtp:error] Gmail SMTP failed, attempting Brevo fallback:', (err as Error).message);
     }
-  } catch (err) {
-    console.error('[email:exception] Failed to send email via Brevo:', (err as Error).message);
   }
+
+  // 2. Fallback to Brevo REST API
+  if (env.BREVO_API_KEY) {
+    try {
+      const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+        method: 'POST',
+        headers: {
+          'api-key': env.BREVO_API_KEY,
+          'Content-Type': 'application/json',
+          accept: 'application/json',
+        },
+        body: JSON.stringify({
+          sender: {
+            name: env.EMAIL_SENDER_NAME,
+            email: env.EMAIL_SENDER_EMAIL,
+          },
+          to: [{ email: to }],
+          subject,
+          textContent: text,
+          htmlContent,
+        }),
+      });
+
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}));
+        console.error('[email:brevo:error] Brevo API rejected email:', res.status, errJson);
+      } else {
+        const data = await res.json().catch(() => ({}));
+        console.log(`[email:brevo:success] Delivered via Brevo to ${to} (MessageId: ${(data as any).messageId})`);
+        return;
+      }
+    } catch (err) {
+      console.error('[email:brevo:exception] Brevo fallback failed:', (err as Error).message);
+    }
+  }
+
+  console.warn('[email] No active email provider delivered the message. Logged to console only.');
 }

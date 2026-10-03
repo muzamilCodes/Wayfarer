@@ -12,6 +12,8 @@ const schema = z.object({
   BREVO_SMTP_KEY: z.string().optional(),
   EMAIL_SENDER_EMAIL: z.string().default('warmuzamil113@gmail.com'),
   EMAIL_SENDER_NAME: z.string().default('Wayfarer J&K Travel'),
+  GMAIL_USER: z.string().optional(),
+  GMAIL_APP_PASSWORD: z.string().optional(),
 });
 
 const parsed = schema.safeParse(process.env);
