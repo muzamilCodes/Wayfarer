@@ -12,6 +12,7 @@ const links: [string, string][] = [
   ['Hotels', '/hotels'],
   ['Cabs', '/cabs'],
   ['Blog', '/blog'],
+  ['Admin', '/admin'],
 ];
 
 export default function Navbar() {
@@ -77,7 +78,15 @@ export default function Navbar() {
         </nav>
 
         {/* Right side */}
-        <div className="hidden items-center gap-5 lg:flex">
+        <div className="hidden items-center gap-4 lg:flex">
+          <Link
+            href="/admin"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border border-slate-200 bg-slate-50 text-slate-700 hover:bg-blue-50 hover:text-[#3B71FE] hover:border-blue-200 transition"
+          >
+            <ShieldCheck size={14} className="text-[#3B71FE]" />
+            <span>Admin Studio</span>
+          </Link>
+
           {loading ? (
             <div className="h-8 w-16 animate-pulse rounded-full bg-gray-100" />
           ) : user ? (
