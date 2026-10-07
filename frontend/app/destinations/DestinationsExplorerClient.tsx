@@ -188,6 +188,17 @@ export default function DestinationsExplorerClient({
             <p className="mt-3 sm:mt-4 text-sm sm:text-base md:text-lg text-white/85 leading-relaxed max-w-xl font-normal drop-shadow-sm">
               Discover amazing places, unforgettable experiences and the best deals – all in one place.
             </p>
+            <div className="mt-4 sm:mt-5 flex flex-wrap items-center gap-3">
+              <a
+                href="/Jammu_and_Kashmir_Trending_Destinations_Links_Guide.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/15 hover:bg-white/25 text-white text-xs sm:text-sm font-medium backdrop-blur-md border border-white/25 transition-all duration-200 shadow-sm hover:scale-[1.02]"
+              >
+                <span className="flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span>📥 Download Complete 248 Places Travel Guide (PDF)</span>
+              </a>
+            </div>
           </motion.div>
         </div>
 

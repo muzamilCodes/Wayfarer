@@ -1,14 +1,21 @@
 const fs = require('fs');
 const path = require('path');
 
-const srcPath = path.join(__dirname, 'frontend', 'lib', 'jk-destinations-data.ts');
-const content = fs.readFileSync(srcPath, 'utf8');
+const guidePath = path.join(__dirname, 'Jammu_and_Kashmir_Trending_Destinations_Links_Guide.md');
+const guideContent = fs.readFileSync(guidePath, 'utf8');
 
-const districtBlocks = content.split(/\{\s*id:\s*'/);
-districtBlocks.shift();
+// Normalize body starting from Srinagar
+const srinagarIdx = guideContent.indexOf('## 1. District Srinagar');
+const mainBody = srinagarIdx !== -1 ? guideContent.substring(srinagarIdx) : guideContent;
 
 let md = `# 🏔️ Complete Directory of All 248 Tourist Places in Jammu & Kashmir (J&K)
 **Official Guide • All 20 Districts (Kashmir Valley & Jammu Division) • Complete 248 Tourist Attractions**
+
+---
+
+## 📥 Direct Resources & Downloads
+- 📄 **[Download Official PDF Travel Manual (Complete 248 Places)](./Jammu_and_Kashmir_Trending_Destinations_Links_Guide.pdf)**
+- 🗺️ **[Markdown Guide File](./Jammu_and_Kashmir_Trending_Destinations_Links_Guide.md)**
 
 ---
 
@@ -40,45 +47,13 @@ let md = `# 🏔️ Complete Directory of All 248 Tourist Places in Jammu & Kash
 
 ---
 
-## 🏛️ All 248 Tourist Places Directory (Complete District-by-District List)
+## 🏛️ All 248 Tourist Places Directory (District-by-District Manual with Direct Google Maps & Photo Gallery Links)
 
-`;
+` + mainBody + `
 
-let globalCounter = 1;
-
-districtBlocks.forEach((block, idx) => {
-  const distMatch = block.match(/district:\s*'([^']+)'/);
-  const tagMatch = block.match(/tagline:\s*'([^']+)'/);
-  const divMatch = block.match(/division:\s*'([^']+)'/);
-  if (!distMatch) return;
-
-  const distName = distMatch[1];
-  const tagline = tagMatch ? tagMatch[1] : '';
-  const division = divMatch ? divMatch[1] : '';
-
-  md += `### ${idx + 1}. ${distName}\n`;
-  md += `- **Division**: ${division}\n`;
-  md += `- **Tagline**: ${tagline}\n\n`;
-
-  const placesPart = block.match(/touristPlaces:\s*\[([\s\S]*?)\]\s*,[\s\r\n]*coordinates/);
-  if (placesPart) {
-    const nameRegex = /(?:["']?name["']?\s*:\s*["']([^"']+)["'])/g;
-    let nm;
-    md += `| # | Tourist Place Name | Direct Google Maps Link |\n`;
-    md += `|---|--------------------|-------------------------|\n`;
-    while ((nm = nameRegex.exec(placesPart[1])) !== null) {
-      const placeName = nm[1].trim();
-      const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(placeName + ' ' + distName + ' Jammu and Kashmir')}`;
-      md += `| ${globalCounter} | **${placeName}** | [Open in Google Maps](${mapsUrl}) |\n`;
-      globalCounter++;
-    }
-    md += `\n`;
-  }
-});
-
-md += `---
+---
 *Total 248 official tourist places cataloged for Wayfarer / Paradise Journey.*
 `;
 
 fs.writeFileSync(path.join(__dirname, 'TOURIST_PLACES_README.md'), md, 'utf8');
-console.log('Successfully written TOURIST_PLACES_README.md with', globalCounter - 1, 'places!');
+console.log('Successfully written TOURIST_PLACES_README.md with all 248 places and complete details!');

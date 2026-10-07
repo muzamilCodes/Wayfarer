@@ -4,12 +4,12 @@ A full-stack, creative-frontend travel platform featuring real-time 3D animation
 
 ---
 
-## 🏔️ Complete Directory of All Tourist Places (J&K)
-👉 **[Read the Full Tourist Places Guide & Directory (All 20 Districts & 140+ Spots)](TOURIST_PLACES_README.md)**
-- **Top 10 Trending Destinations**: Live Maps & Highlights
-- **Kashmir Valley**: Srinagar, Gulmarg, Pahalgam, Sonamarg, Doodhpathri, Gurez, Lolab, Aharbal, Pulwama, Shopian
-- **Jammu Division**: Vaishno Devi (Katra), Patnitop, Bhaderwah, Kishtwar, Jammu, Basohli, Samba, Ramban, Rajouri, Poonch
-- **Actions**: Direct Google Maps links, Photo Galleries, Live Embeds for every tourist place.
+## 🏔️ Complete Directory of All 248 Tourist Places (J&K)
+👉 **[Read the Full Tourist Places Guide & Directory (All 20 Districts & 248 Spots)](TOURIST_PLACES_README.md)**  
+📄 **[Download Official Complete Travel Resource Manual (PDF)](Jammu_and_Kashmir_Trending_Destinations_Links_Guide.pdf)**  
+🗺️ **[Markdown Travel Resource Guide](Jammu_and_Kashmir_Trending_Destinations_Links_Guide.md)**
+- **All 20 J&K Districts**: Srinagar, Anantnag (Pahalgam), Baramulla (Gulmarg), Ganderbal (Sonamarg), Budgam, Kupwara, Kulgam, Pulwama, Shopian, Bandipora, Jammu, Reasi, Udhampur, Kathua, Samba, Doda, Kishtwar, Ramban, Rajouri, Poonch.
+- **Includes**: Overview, Best Time to Visit, Direct Google Maps Links & Google Photo Galleries for all 248 locations!
 
 ---
 
