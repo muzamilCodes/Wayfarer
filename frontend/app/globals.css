@@ -51,4 +51,25 @@
   perspective: 1000px;
 }
 
+/* Infinite right-to-left marquee loop */
+@keyframes marquee-scroll {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.animate-marquee-loop {
+  display: flex;
+  width: max-content;
+  animation: marquee-scroll 45s linear infinite;
+  will-change: transform;
+}
+
+.animate-marquee-loop:hover {
+  animation-play-state: paused;
+}
+
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }

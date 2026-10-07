@@ -28,6 +28,14 @@ export const metadata: Metadata = {
   description:
     'Curated Kashmir, Ladakh and Himalayan tour packages with local guides, hotels and cabs.',
   openGraph: { type: 'website', siteName: 'Paradise Journey' },
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/icon.svg', type: 'image/svg+xml' },
+    ],
+    shortcut: '/favicon.ico',
+    apple: '/icon.svg',
+  },
 };
 
 export default function RootLayout({
@@ -37,6 +45,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${display.variable} ${body.variable}`}>
+      <head>
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+        <link rel="apple-touch-icon" href="/icon.svg" />
+      </head>
       <body className="relative overflow-x-hidden min-h-screen bg-snow font-body text-ink antialiased">
         <SmoothScroll>
           <Providers>

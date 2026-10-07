@@ -376,7 +376,7 @@ export default async function DestinationPage({ params }: Props) {
   return (
     <>
       <section className="relative h-[50vh] min-h-[320px] overflow-hidden bg-lake text-snow">
-        <Cover img={d.images[0]} name={d.name} />
+        <Cover img={d.images?.[0]} name={d.name} />
         <div className="absolute inset-0 bg-gradient-to-t from-deep/85 to-transparent" />
         <div className="container-x absolute inset-x-0 bottom-0 pb-10">
           <p className="text-sm text-glacier">{d.region}, {d.country}</p>

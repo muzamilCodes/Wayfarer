@@ -17,7 +17,7 @@ export default function PackageCard({ p }: { p: TourPackage }) {
       >
         <div className="relative aspect-[16/10] overflow-hidden">
           <div className="absolute inset-0 transition-transform duration-700 ease-out group-hover:scale-110">
-            <Cover img={p.images[0]} name={p.title} />
+            <Cover img={p.images?.[0]} name={p.title} />
           </div>
           {p.discountPercent > 0 && (
             <span className="absolute left-3.5 top-3.5 rounded-full bg-saffron px-3 py-1 text-xs font-bold text-deep shadow-md">

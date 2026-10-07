@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36" width="36" height="36">
+  <defs>
+    <linearGradient id="pj-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0F2B48" />
+      <stop offset="50%" stop-color="#1E3A8A" />
+      <stop offset="100%" stop-color="#2563EB" />
+    </linearGradient>
+    <linearGradient id="pj-sun" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F59E0B" />
+      <stop offset="100%" stop-color="#EF4444" />
+    </linearGradient>
+  </defs>
+  <rect width="36" height="36" rx="9" fill="url(#pj-bg)" />
+  <!-- Golden Himalayan Sun -->
+  <circle cx="25" cy="11" r="4.5" fill="url(#pj-sun)" />
+  <!-- Snow-capped Mountain Peaks -->
+  <path d="M5 29 L14 13 L21 23 L25 18 L31 29 Z" fill="#FFFFFF" fill-opacity="0.98" />
+  <!-- Left Peak Shadow Detail -->
+  <path d="M14 13 L14 29 L21 23 Z" fill="#93C5FD" fill-opacity="0.75" />
+  <!-- Dynamic Flight / Wayfarer Arc -->
+  <path d="M8 12 Q 18 7, 27 14" stroke="#FDE047" stroke-width="1.8" stroke-linecap="round" fill="none" />
+</svg>

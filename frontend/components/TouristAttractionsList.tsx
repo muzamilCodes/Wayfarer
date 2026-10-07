@@ -42,12 +42,14 @@ export default function TouristAttractionsList({
   places,
 }: TouristAttractionsListProps) {
   const [selectedPlace, setSelectedPlace] = useState<TouristPlace | null>(null);
+  const [selectedMapPlace, setSelectedMapPlace] = useState<TouristPlace | null>(null);
+  const [selectedGalleryPlace, setSelectedGalleryPlace] = useState<TouristPlace | null>(null);
   const [activeTab, setActiveTab] = useState<'all' | string>('all');
   const [copied, setCopied] = useState(false);
 
   // Lock body scroll when modal is open
   useEffect(() => {
-    if (selectedPlace) {
+    if (selectedPlace || selectedMapPlace || selectedGalleryPlace) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'unset';
@@ -55,12 +57,16 @@ export default function TouristAttractionsList({
     return () => {
       document.body.style.overflow = 'unset';
     };
-  }, [selectedPlace]);
+  }, [selectedPlace, selectedMapPlace, selectedGalleryPlace]);
 
   // Handle escape key
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setSelectedPlace(null);
+      if (e.key === 'Escape') {
+        setSelectedPlace(null);
+        setSelectedMapPlace(null);
+        setSelectedGalleryPlace(null);
+      }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
@@ -187,23 +193,54 @@ export default function TouristAttractionsList({
                 )}
               </div>
 
-              {/* Action Ribbon: Click to View Details & Google Maps */}
-              <div className="mt-3.5 pt-2.5 border-t border-slate-100 flex items-center justify-between gap-2">
-                <a
-                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.name + ' ' + (place.tehsil || districtName) + ' Jammu and Kashmir')}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={(e) => e.stopPropagation()}
-                  title="Open in Google Maps"
-                  className="inline-flex items-center gap-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-[#3B71FE] px-2.5 py-1 text-[11px] font-bold border border-blue-200/70 transition-colors"
-                >
-                  <MapPin size={11} className="shrink-0" />
-                  <span>Google Maps</span>
-                  <ExternalLink size={10} className="opacity-70" />
-                </a>
+              {/* Action Ribbon: Google Maps, Photos, Map View & Explore */}
+              <div className="mt-3.5 pt-2.5 border-t border-slate-100 flex flex-wrap items-center justify-between gap-1.5">
+                <div className="flex items-center gap-1">
+                  {/* 1. Open in Google Maps */}
+                  <a
+                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.name + ' ' + (place.tehsil || districtName) + ' Jammu and Kashmir')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    title="Open in Google Maps"
+                    className="inline-flex items-center gap-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-[#3B71FE] px-2 py-1 text-[11px] font-bold border border-blue-200/70 transition-colors"
+                  >
+                    <MapPin size={11} className="shrink-0" />
+                    <span>Google Maps</span>
+                    <ExternalLink size={9} className="opacity-70" />
+                  </a>
 
-                <span className="inline-flex items-center gap-1 text-xs font-bold text-[#3B71FE] group-hover:translate-x-1 transition-transform">
-                  Explore <ArrowRight size={13} />
+                  {/* 2. View Photo Gallery */}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedGalleryPlace(place);
+                    }}
+                    title="View Photo Gallery"
+                    className="inline-flex items-center gap-1 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-900 px-2 py-1 text-[11px] font-bold border border-amber-200/70 transition-colors"
+                  >
+                    <Camera size={11} className="text-amber-600 shrink-0" />
+                    <span>Photos</span>
+                  </button>
+
+                  {/* 3. Live Map View */}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedMapPlace(place);
+                    }}
+                    title="Live Map View"
+                    className="inline-flex items-center gap-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 px-2 py-1 text-[11px] font-bold border border-slate-200/70 transition-colors"
+                  >
+                    <Compass size={11} className="text-rose-500 shrink-0" />
+                    <span>Map View</span>
+                  </button>
+                </div>
+
+                <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#3B71FE] group-hover:translate-x-1 transition-transform">
+                  Explore <ArrowRight size={12} />
                 </span>
               </div>
             </div>
@@ -643,6 +680,209 @@ export default function TouristAttractionsList({
                     className="rounded-xl bg-slate-900 text-white px-5 py-2.5 text-xs font-bold hover:bg-slate-800 transition-colors shadow-sm"
                   >
                     Close Record
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* ── GOOGLE MAP MODAL FOR INDIVIDUAL ATTRACTION ── */}
+      <AnimatePresence>
+        {selectedMapPlace && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSelectedMapPlace(null)}
+              className="fixed inset-0 bg-slate-950/80 backdrop-blur-md transition-opacity"
+            />
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              transition={{ duration: 0.25 }}
+              className="relative w-full max-w-4xl max-h-[92vh] flex flex-col rounded-3xl bg-slate-950 text-white shadow-2xl border border-slate-800 z-10 overflow-hidden font-body"
+            >
+              {/* Header */}
+              <div className="p-4 sm:p-5 border-b border-slate-800 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/20 text-[#3B71FE] border border-blue-500/30">
+                    <MapPin size={20} />
+                  </div>
+                  <div>
+                    <h3 className="font-extrabold text-base sm:text-lg text-white">
+                      Google Maps: {selectedMapPlace.name}
+                    </h3>
+                    <p className="text-xs text-slate-400">
+                      {selectedMapPlace.tehsil || districtName}, {selectedMapPlace.district || districtName} • {selectedMapPlace.category}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <a
+                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selectedMapPlace.name + ' ' + (selectedMapPlace.tehsil || districtName) + ' Jammu and Kashmir')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 rounded-xl bg-[#3B71FE] hover:bg-blue-600 text-white px-3.5 py-2 text-xs font-bold transition shadow-md shadow-blue-500/25"
+                  >
+                    <ExternalLink size={13} />
+                    <span>Open in Maps App</span>
+                  </a>
+                  <button
+                    onClick={() => setSelectedMapPlace(null)}
+                    aria-label="Close Map"
+                    className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Live Google Maps Iframe */}
+              <div className="relative flex-1 min-h-[380px] sm:min-h-[440px] w-full bg-slate-900">
+                <iframe
+                  title={`Google Map - ${selectedMapPlace.name}`}
+                  src={`https://maps.google.com/maps?q=${encodeURIComponent(selectedMapPlace.name + ' ' + (selectedMapPlace.tehsil || districtName) + ' Jammu and Kashmir')}&t=&z=13&ie=UTF8&iwloc=&output=embed`}
+                  width="100%"
+                  height="100%"
+                  style={{ border: 0, minHeight: '380px' }}
+                  allowFullScreen={false}
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  className="w-full h-full"
+                />
+              </div>
+
+              {/* Footer */}
+              <div className="p-4 bg-slate-900 border-t border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-slate-300">
+                <div>
+                  <span className="font-bold text-white">How to Reach: </span>
+                  <span>{selectedMapPlace.howToReach || `${districtName} road connectivity available`}</span>
+                </div>
+                <div className="flex items-center gap-2.5">
+                  <button
+                    onClick={() => {
+                      const p = selectedMapPlace;
+                      setSelectedMapPlace(null);
+                      setSelectedPlace(p);
+                    }}
+                    className="text-amber-400 hover:underline font-semibold"
+                  >
+                    View Full Details
+                  </button>
+                  <button
+                    onClick={() => setSelectedMapPlace(null)}
+                    className="rounded-lg bg-white/10 hover:bg-white/20 px-3 py-1.5 text-white font-medium"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* ── PHOTO GALLERY MODAL FOR INDIVIDUAL ATTRACTION ── */}
+      <AnimatePresence>
+        {selectedGalleryPlace && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSelectedGalleryPlace(null)}
+              className="fixed inset-0 bg-slate-950/90 backdrop-blur-md transition-opacity"
+            />
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              transition={{ duration: 0.25 }}
+              className="relative w-full max-w-3xl max-h-[92vh] flex flex-col rounded-3xl bg-slate-950 text-white shadow-2xl border border-slate-800 z-10 overflow-hidden font-body"
+            >
+              {/* Header */}
+              <div className="p-4 sm:p-5 border-b border-slate-800 flex items-center justify-between gap-4">
+                <div>
+                  <h3 className="font-extrabold text-base sm:text-xl text-white">
+                    {selectedGalleryPlace.name}
+                  </h3>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    {selectedGalleryPlace.tehsil || districtName}, {selectedGalleryPlace.district || districtName} • {selectedGalleryPlace.category}
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <a
+                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selectedGalleryPlace.name + ' ' + (selectedGalleryPlace.tehsil || districtName) + ' Jammu and Kashmir')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 text-xs font-bold transition shadow-sm"
+                  >
+                    <MapPin size={13} />
+                    <span>Open in Maps</span>
+                  </a>
+
+                  <button
+                    onClick={() => setSelectedGalleryPlace(null)}
+                    aria-label="Close Photos"
+                    className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Photo View */}
+              <div className="relative flex-1 min-h-[300px] sm:min-h-[420px] max-h-[60vh] bg-black flex items-center justify-center overflow-hidden">
+                {selectedGalleryPlace.image ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={selectedGalleryPlace.image}
+                    alt={selectedGalleryPlace.name}
+                    className="max-h-[58vh] w-auto max-w-full object-contain mx-auto"
+                  />
+                ) : (
+                  <div className="text-center p-8">
+                    <Building size={48} className="mx-auto text-slate-600 mb-2" />
+                    <p className="text-slate-400 text-sm">{selectedGalleryPlace.name}</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Details & Action Footer */}
+              <div className="p-4 sm:p-5 bg-slate-900 border-t border-slate-800 space-y-2">
+                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                  {selectedGalleryPlace.speciality || selectedGalleryPlace.description}
+                </p>
+
+                <div className="pt-2 flex items-center justify-between">
+                  <button
+                    onClick={() => {
+                      const p = selectedGalleryPlace;
+                      setSelectedGalleryPlace(null);
+                      setSelectedMapPlace(p);
+                    }}
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-[#3B71FE] hover:underline"
+                  >
+                    <Compass size={13} /> View on Map
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      const p = selectedGalleryPlace;
+                      setSelectedGalleryPlace(null);
+                      setSelectedPlace(p);
+                    }}
+                    className="rounded-xl bg-[#FF5B00] hover:bg-[#E04F00] text-white px-4 py-2 text-xs font-bold transition shadow-md"
+                  >
+                    Explore Full Record &rarr;
                   </button>
                 </div>
               </div>

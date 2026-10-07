@@ -7,7 +7,6 @@ import { useAuth } from '@/lib/auth';
 
 const links: [string, string][] = [
   ['Home', '/'],
-  ['Top 10 Places', '/top-10'],
   ['Destinations', '/destinations'],
   ['Tours', '/tours'],
   ['Hotels', '/hotels'],
@@ -33,26 +32,37 @@ export default function Navbar() {
   const handleLogout = async () => { setMenuOpen(false); await signOut(); router.push('/'); };
 
   return (
-    <header className="sticky top-0 z-50 bg-white border-b border-gray-100 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
-      <div className="container-x flex h-[64px] items-center justify-between">
+    <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-[0_1px_4px_rgba(0,0,0,0.04)]">
+      <div className="container-x flex h-[66px] items-center justify-between gap-3 lg:gap-6">
 
-        {/* Logo - Paradise Journey */}
-        <Link href="/" className="group flex items-center gap-2.5 font-sans text-xl font-extrabold text-gray-900 tracking-tight">
-          <svg className="w-7 h-7 text-[#3B71FE] transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
-          </svg>
-          <span className="text-[21px] font-extrabold text-gray-900 tracking-tight">Paradise Journey</span>
+        {/* Brand Logo - Paradise Journey */}
+        <Link href="/" className="group flex items-center gap-2.5 sm:gap-3 shrink-0">
+          <div className="relative flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#0F2B48] via-[#1E3A8A] to-[#2563EB] shadow-md transition-transform group-hover:scale-105">
+            <svg viewBox="0 0 36 36" fill="none" className="w-6 h-6 sm:w-7 sm:h-7">
+              <circle cx="25" cy="11" r="4.5" fill="#F59E0B" />
+              <path d="M5 29 L14 13 L21 23 L25 18 L31 29 Z" fill="#FFFFFF" fillOpacity="0.98" />
+              <path d="M14 13 L14 29 L21 23 Z" fill="#93C5FD" fillOpacity="0.75" />
+              <path d="M8 12 Q 18 7, 27 14" stroke="#FDE047" strokeWidth="1.8" strokeLinecap="round" />
+            </svg>
+          </div>
+          <div className="flex flex-col shrink-0">
+            <span className="text-[17px] sm:text-[19px] font-black tracking-tight text-gray-900 group-hover:text-[#3B71FE] transition-colors leading-none whitespace-nowrap">
+              Paradise Journey
+            </span>
+            <span className="text-[9px] uppercase tracking-[0.14em] font-extrabold text-[#FF5B00] mt-1 whitespace-nowrap">
+              Kashmir &bull; Ladakh &bull; J&amp;K
+            </span>
+          </div>
         </Link>
 
         {/* Desktop Nav */}
-        <nav className="hidden items-center gap-6 lg:flex" aria-label="Main">
+        <nav className="hidden items-center gap-3.5 xl:gap-6 lg:flex shrink-0" aria-label="Main">
           {[
             ['Home', '/'],
-            ['Top 10 Places', '/top-10'],
             ['Destinations', '/destinations'],
             ['Tours', '/tours'],
             ['Hotels', '/hotels'],
-            ['Flights', '/tours'],
+            ['Cabs', '/cabs'],
             ['Blog', '/blog'],
           ].map(([label, href]) => {
             const active = pathname === href || (href !== '/' && pathname.startsWith(href));
@@ -60,7 +70,7 @@ export default function Navbar() {
               <Link
                 key={label}
                 href={href}
-                className={`relative py-5 text-[14px] transition-colors ${
+                className={`relative py-5 text-[13px] xl:text-[14px] transition-colors whitespace-nowrap ${
                   active
                     ? 'font-bold text-[#3B71FE]'
                     : 'font-medium text-gray-700 hover:text-gray-950'
@@ -73,20 +83,17 @@ export default function Navbar() {
               </Link>
             );
           })}
-          <div className="flex items-center gap-1 text-[14px] font-medium text-gray-700 hover:text-gray-950 cursor-pointer">
-            <span>Pages</span>
-            <ChevronDown size={14} className="text-gray-500" />
-          </div>
         </nav>
 
         {/* Right side */}
-        <div className="hidden items-center gap-4 lg:flex">
+        <div className="hidden items-center gap-2.5 xl:gap-3.5 lg:flex shrink-0">
           <Link
             href="/admin"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border border-slate-200 bg-slate-50 text-slate-700 hover:bg-blue-50 hover:text-[#3B71FE] hover:border-blue-200 transition"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-bold border border-slate-200 bg-slate-50 text-slate-700 hover:bg-blue-50 hover:text-[#3B71FE] hover:border-blue-200 transition whitespace-nowrap"
           >
             <ShieldCheck size={14} className="text-[#3B71FE]" />
-            <span>Admin Studio</span>
+            <span className="hidden xl:inline">Admin Studio</span>
+            <span className="xl:hidden">Admin</span>
           </Link>
 
           {loading ? (

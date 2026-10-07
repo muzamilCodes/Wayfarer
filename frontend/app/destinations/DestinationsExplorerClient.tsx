@@ -10,7 +10,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { JK_ALL_DISTRICTS } from '@/lib/jk-destinations-data';
 import JKDestinationCard from '@/components/JKDestinationCard';
-import JKTop10Section from '@/components/JKTop10Section';
+import MostPopularLoop from '@/components/MostPopularLoop';
 
 export default function DestinationsExplorerClient({
   initialQuery = '',
@@ -19,7 +19,6 @@ export default function DestinationsExplorerClient({
   initialQuery?: string;
   initialRegion?: string;
 }) {
-  const [mainTab, setMainTab] = useState<'top10' | 'all'>('top10');
   const [searchTerm, setSearchTerm] = useState(initialQuery);
   const [selectedDivision, setSelectedDivision] = useState<string>(initialRegion);
   const [selectedDistricts, setSelectedDistricts] = useState<string[]>([]);
@@ -214,7 +213,6 @@ export default function DestinationsExplorerClient({
                     onChange={e => {
                       setSearchTerm(e.target.value);
                       setCurrentPage(1);
-                      if (e.target.value.trim()) setMainTab('all');
                     }}
                     placeholder="Where are you going?"
                     className="w-full text-[13px] md:text-[14px] font-normal text-gray-700 placeholder:text-gray-400 focus:outline-none bg-transparent"
@@ -229,7 +227,7 @@ export default function DestinationsExplorerClient({
                   <div className="text-[10px] md:text-[11px] font-bold text-gray-900 tracking-tight">Region</div>
                   <select
                     value={selectedDivision}
-                    onChange={e => { setSelectedDivision(e.target.value); setCurrentPage(1); if (e.target.value !== 'All') setMainTab('all'); }}
+                    onChange={e => { setSelectedDivision(e.target.value); setCurrentPage(1); }}
                     className="w-full text-[13px] md:text-[14px] font-normal text-gray-700 focus:outline-none bg-transparent cursor-pointer"
                   >
                     <option value="All">All Regions</option>
@@ -248,7 +246,7 @@ export default function DestinationsExplorerClient({
                   <div className="text-[10px] md:text-[11px] font-bold text-gray-900 tracking-tight">Travel Type</div>
                   <select
                     value={selectedTravelType}
-                    onChange={e => { setSelectedTravelType(e.target.value); setCurrentPage(1); if (e.target.value !== 'All') setMainTab('all'); }}
+                    onChange={e => { setSelectedTravelType(e.target.value); setCurrentPage(1); }}
                     className="w-full text-[13px] md:text-[14px] font-normal text-gray-700 focus:outline-none bg-transparent cursor-pointer"
                   >
                     <option value="All">All Types</option>
@@ -285,7 +283,7 @@ export default function DestinationsExplorerClient({
               <div className="p-2 md:p-1 shrink-0 flex items-center justify-center">
                 <button
                   type="button"
-                  onClick={() => { setCurrentPage(1); setMainTab('all'); }}
+                  onClick={() => setCurrentPage(1)}
                   className="w-full md:w-auto flex items-center justify-center gap-2 rounded-xl md:rounded-full bg-[#FF5B00] hover:bg-[#E04F00] text-white h-[48px] px-8 font-bold text-[14px] shadow-lg shadow-orange-500/25 transition-all hover:shadow-orange-500/40 active:scale-95 cursor-pointer"
                 >
                   <Search size={18} />
@@ -304,71 +302,11 @@ export default function DestinationsExplorerClient({
       {/* ═══════════ MAIN CONTENT ═══════════ */}
       <div className="container-x py-4 sm:py-8">
 
-        {/* ═══════════ MAIN VIEW TAB SWITCHER ═══════════ */}
-        <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white p-3 rounded-2xl border border-gray-200/90 shadow-sm">
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setMainTab('top10')}
-              className={`inline-flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-extrabold transition-all ${
-                mainTab === 'top10'
-                  ? 'bg-gradient-to-r from-[#0B1B3D] to-[#102A56] text-white shadow-md'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              <span className="flex h-2.5 w-2.5 rounded-full bg-[#FF5B00] animate-pulse" />
-              <span>⭐ Top 10 Trending Destinations</span>
-              <span className="rounded-full bg-amber-400 text-slate-950 text-[10px] font-black px-2 py-0.5">
-                Live Maps
-              </span>
-            </button>
+        {/* ═══════════ MOST POPULAR DESTINATIONS LOOP (CONTINUOUS RIGHT-TO-LEFT MARQUEE) ═══════════ */}
+        <MostPopularLoop />
 
-            <button
-              type="button"
-              onClick={() => setMainTab('all')}
-              className={`inline-flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-extrabold transition-all ${
-                mainTab === 'all'
-                  ? 'bg-[#3B71FE] text-white shadow-md'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              <Compass size={15} />
-              <span>All 20 J&amp;K Districts ({JK_ALL_DISTRICTS.length})</span>
-            </button>
-          </div>
-
-          <div className="hidden sm:flex items-center gap-2 text-xs text-gray-500 font-medium pr-2">
-            <span>Direct Google Maps Links &bull; Photo Galleries &bull; Official Guide</span>
-          </div>
-        </div>
-
-        {mainTab === 'top10' ? (
-          <div>
-            <JKTop10Section />
-
-            {/* Bottom Invitation to browse all 20 districts */}
-            <div className="mt-12 rounded-3xl bg-white border border-gray-200 p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-5 shadow-sm">
-              <div className="flex items-center gap-4">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-[#3B71FE]">
-                  <Compass size={24} />
-                </div>
-                <div>
-                  <h4 className="font-bold text-slate-900 text-base">Want to explore all 20 districts and remote valleys of J&amp;K?</h4>
-                  <p className="text-xs sm:text-sm text-slate-500 mt-0.5">Browse Kishtwar, Kupwara, Poonch, Rajouri, Kathua, Samba, and all official tourist circuits.</p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setMainTab('all')}
-                className="shrink-0 inline-flex items-center gap-2 rounded-xl bg-[#3B71FE] hover:bg-blue-600 text-white px-5 py-2.5 text-xs font-bold transition shadow-md shadow-blue-500/20"
-              >
-                <span>Browse All 20 Districts</span>
-                <ChevronRight size={14} />
-              </button>
-            </div>
-          </div>
-        ) : (
-          <div>
+        {/* ═══════════ ALL 20 J&K DISTRICTS EXPLORER ═══════════ */}
+        <div>
             {/* Mobile Filter & Count Bar */}
             <div className="lg:hidden flex items-center justify-between gap-3 mb-5 bg-white p-3.5 rounded-2xl border border-gray-200/80 shadow-sm">
               <div>
@@ -820,7 +758,6 @@ export default function DestinationsExplorerClient({
           </main>
         </div>
       </div>
-    )}
       </div>
     </div>
   );

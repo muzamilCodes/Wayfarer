@@ -14,7 +14,7 @@ export default function DestinationCard({ d }: { d: Destination }) {
         className="group relative block aspect-[4/5] overflow-hidden rounded-3xl bg-lake shadow-md transition-shadow hover:shadow-xl"
       >
         <div className="absolute inset-0 transition-transform duration-700 ease-out group-hover:scale-110">
-          <Cover img={d.images[0]} name={d.name} />
+          <Cover img={d.images?.[0]} name={d.name} />
         </div>
         <div className="absolute inset-0 bg-gradient-to-t from-deep/95 via-deep/30 to-transparent" />
 

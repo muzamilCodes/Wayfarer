@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Star, Heart, ArrowRight } from 'lucide-react';
+import { Star, Heart, ArrowRight, MapPin, ExternalLink } from 'lucide-react';
 import { JKDistrictDestination } from '@/lib/jk-destinations-data';
 
 interface JKDestinationCardProps {
@@ -81,9 +81,21 @@ export default function JKDestinationCard({
               <span className="font-bold text-gray-900">{district.rating.toFixed(1)}</span>
               <span className="text-gray-400">({district.reviewsCount.toLocaleString()} reviews)</span>
             </div>
-            <span className="inline-flex items-center gap-1 text-[13px] font-semibold text-[#E85D04] group-hover:gap-2 transition-all">
-              Explore <ArrowRight size={14} />
-            </span>
+            <div className="flex items-center gap-2.5">
+              <a
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(district.district + ' Jammu and Kashmir')}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                title="Open in Google Maps"
+                className="inline-flex items-center gap-1 rounded-md bg-blue-50 hover:bg-blue-100 text-[#3B71FE] px-2.5 py-1 text-[11px] font-bold border border-blue-200/70 transition"
+              >
+                <MapPin size={11} /> Google Maps
+              </a>
+              <span className="inline-flex items-center gap-1 text-[13px] font-semibold text-[#E85D04] group-hover:gap-2 transition-all">
+                Explore <ArrowRight size={14} />
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -167,12 +179,25 @@ export default function JKDestinationCard({
             <Star size={14} className="fill-amber-400 text-amber-400" />
             <span className="text-[13px] font-bold text-gray-900">{district.rating.toFixed(1)}</span>
             <span className="text-[12px] text-gray-400 font-normal">
-              ({district.reviewsCount.toLocaleString()} reviews)
+              ({district.reviewsCount.toLocaleString()})
             </span>
           </div>
-          <span className="inline-flex items-center gap-1 text-[12.5px] font-semibold text-[#3B71FE] group-hover:gap-1.5 transition-all">
-            Explore <ArrowRight size={13} />
-          </span>
+
+          <div className="flex items-center gap-2">
+            <a
+              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(district.district + ' Jammu and Kashmir')}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              title="Open in Google Maps"
+              className="inline-flex items-center gap-1 rounded-md bg-blue-50 hover:bg-blue-100 text-[#3B71FE] px-2 py-0.5 text-[11px] font-bold border border-blue-200/60 transition"
+            >
+              <MapPin size={11} /> Maps
+            </a>
+            <span className="inline-flex items-center gap-1 text-[12.5px] font-semibold text-[#3B71FE] group-hover:gap-1.5 transition-all">
+              Explore <ArrowRight size={13} />
+            </span>
+          </div>
         </div>
       </div>
     </motion.div>

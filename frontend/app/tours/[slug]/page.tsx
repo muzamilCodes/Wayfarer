@@ -40,7 +40,7 @@ export default async function TourPage({ params }: Props) {
       </nav>
       <h1 className="mt-3 text-4xl font-bold text-lake md:text-5xl">{p.title}</h1>
       <p className="mt-2 text-mist">{p.durationDays} days · from {p.pickupLocation ?? p.destination.name}</p>
-      <div className="relative mt-6 aspect-[21/9] overflow-hidden rounded-3xl bg-lake"><Cover img={p.images[0]} name={p.title} /></div>
+      <div className="relative mt-6 aspect-[21/9] overflow-hidden rounded-3xl bg-lake"><Cover img={p.images?.[0]} name={p.title} /></div>
 
       <div className="mt-10 grid gap-10 lg:grid-cols-[2fr_1fr]">
         <div className="space-y-12">
