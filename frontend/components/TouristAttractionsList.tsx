@@ -17,6 +17,7 @@ import {
   Mountain,
   Camera,
   CheckCircle,
+  ExternalLink,
 } from 'lucide-react';
 import { TouristPlace } from '@/lib/jk-destinations-data';
 
@@ -186,12 +187,21 @@ export default function TouristAttractionsList({
                 )}
               </div>
 
-              {/* Action Ribbon: Click to View Details */}
-              <div className="mt-3.5 pt-2.5 border-t border-slate-100 flex items-center justify-between">
-                <span className="text-[11px] font-semibold text-slate-500 flex items-center gap-1">
-                  <Sparkles size={12} className="text-amber-500" />
-                  Full Master Record
-                </span>
+              {/* Action Ribbon: Click to View Details & Google Maps */}
+              <div className="mt-3.5 pt-2.5 border-t border-slate-100 flex items-center justify-between gap-2">
+                <a
+                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.name + ' ' + (place.tehsil || districtName) + ' Jammu and Kashmir')}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  title="Open in Google Maps"
+                  className="inline-flex items-center gap-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-[#3B71FE] px-2.5 py-1 text-[11px] font-bold border border-blue-200/70 transition-colors"
+                >
+                  <MapPin size={11} className="shrink-0" />
+                  <span>Google Maps</span>
+                  <ExternalLink size={10} className="opacity-70" />
+                </a>
+
                 <span className="inline-flex items-center gap-1 text-xs font-bold text-[#3B71FE] group-hover:translate-x-1 transition-transform">
                   Explore <ArrowRight size={13} />
                 </span>
@@ -268,7 +278,7 @@ export default function TouristAttractionsList({
                     {selectedPlace.name}
                   </h2>
 
-                  <div className="mt-2 flex flex-wrap items-center gap-4 text-xs sm:text-sm text-slate-200">
+                  <div className="mt-2.5 flex flex-wrap items-center gap-3 text-xs sm:text-sm text-slate-200">
                     <span className="flex items-center gap-1.5">
                       <MapPin size={14} className="text-rose-400 shrink-0" />
                       {selectedPlace.tehsil || districtName}, {selectedPlace.district || districtName}
@@ -278,6 +288,18 @@ export default function TouristAttractionsList({
                         PIN: {selectedPlace.pinCode}
                       </span>
                     )}
+
+                    {/* Direct Google Maps Action Link */}
+                    <a
+                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selectedPlace.name + ' ' + (selectedPlace.tehsil || districtName) + ' Jammu and Kashmir')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 rounded-lg bg-[#3B71FE] hover:bg-blue-600 text-white font-bold px-3 py-1 text-xs shadow-md transition ml-auto"
+                    >
+                      <MapPin size={12} />
+                      <span>Open in Google Maps</span>
+                      <ExternalLink size={11} className="opacity-80" />
+                    </a>
                   </div>
                 </div>
               </div>
@@ -522,6 +544,35 @@ export default function TouristAttractionsList({
                       </div>
                     )}
                   </div>
+
+                  {/* Embedded Interactive Google Map for this attraction */}
+                  <div className="mt-4 rounded-2xl border border-slate-200 overflow-hidden bg-slate-950 shadow-sm">
+                    <div className="bg-slate-900 p-3 flex items-center justify-between text-white text-xs border-b border-slate-800">
+                      <span className="font-bold flex items-center gap-1.5">
+                        <MapPin size={13} className="text-rose-400" />
+                        Live Google Map Location: {selectedPlace.name}
+                      </span>
+                      <a
+                        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selectedPlace.name + ' ' + (selectedPlace.tehsil || districtName) + ' Jammu and Kashmir')}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-blue-400 hover:text-blue-300 font-bold"
+                      >
+                        <span>Open in Google Maps App</span>
+                        <ExternalLink size={11} />
+                      </a>
+                    </div>
+                    <iframe
+                      title={`Google Map - ${selectedPlace.name}`}
+                      src={`https://maps.google.com/maps?q=${encodeURIComponent(selectedPlace.name + ' ' + (selectedPlace.tehsil || districtName) + ' Jammu and Kashmir')}&t=&z=13&ie=UTF8&iwloc=&output=embed`}
+                      width="100%"
+                      height="240"
+                      style={{ border: 0 }}
+                      allowFullScreen={false}
+                      loading="lazy"
+                      className="w-full"
+                    />
+                  </div>
                 </div>
 
                 {/* 8. Nearby Tourist Places */}
@@ -565,14 +616,28 @@ export default function TouristAttractionsList({
                 )}
 
                 {/* Modal Action Footer */}
-                <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
-                  <button
-                    onClick={() => handleShare(selectedPlace)}
-                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 transition-colors"
-                  >
-                    {copied ? <Check size={14} className="text-emerald-600" /> : <Sparkles size={14} />}
-                    {copied ? 'Link Copied!' : 'Share Attraction'}
-                  </button>
+                <div className="pt-4 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <a
+                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selectedPlace.name + ' ' + (selectedPlace.tehsil || districtName) + ' Jammu and Kashmir')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-[#3B71FE] border border-blue-200 px-3.5 py-2 text-xs font-bold transition-all"
+                    >
+                      <MapPin size={13} />
+                      <span>Open in Google Maps</span>
+                      <ExternalLink size={11} className="opacity-70" />
+                    </a>
+
+                    <button
+                      onClick={() => handleShare(selectedPlace)}
+                      className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 transition-colors"
+                    >
+                      {copied ? <Check size={14} className="text-emerald-600" /> : <Sparkles size={14} />}
+                      {copied ? 'Link Copied!' : 'Share Attraction'}
+                    </button>
+                  </div>
+
                   <button
                     onClick={() => setSelectedPlace(null)}
                     className="rounded-xl bg-slate-900 text-white px-5 py-2.5 text-xs font-bold hover:bg-slate-800 transition-colors shadow-sm"

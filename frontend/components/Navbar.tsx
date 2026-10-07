@@ -7,6 +7,7 @@ import { useAuth } from '@/lib/auth';
 
 const links: [string, string][] = [
   ['Home', '/'],
+  ['Top 10 Places', '/top-10'],
   ['Destinations', '/destinations'],
   ['Tours', '/tours'],
   ['Hotels', '/hotels'],
@@ -47,6 +48,7 @@ export default function Navbar() {
         <nav className="hidden items-center gap-6 lg:flex" aria-label="Main">
           {[
             ['Home', '/'],
+            ['Top 10 Places', '/top-10'],
             ['Destinations', '/destinations'],
             ['Tours', '/tours'],
             ['Hotels', '/hotels'],
