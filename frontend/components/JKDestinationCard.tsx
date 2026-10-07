@@ -7,6 +7,31 @@ import { motion } from 'framer-motion';
 import { Star, Heart, ArrowRight, MapPin, ExternalLink } from 'lucide-react';
 import { JKDistrictDestination } from '@/lib/jk-destinations-data';
 
+export const POPULAR_NAME_MAP: Record<string, { displayTitle: string; subtitle: string; region: string }> = {
+  'Srinagar': { displayTitle: 'Srinagar', subtitle: 'Dal Lake & Mughal Gardens', region: 'Kashmir' },
+  'Baramulla': { displayTitle: 'Gulmarg (Baramulla)', subtitle: 'Meadows of Gulmarg & World Highest Gondola', region: 'Kashmir' },
+  'Anantnag': { displayTitle: 'Pahalgam (Anantnag)', subtitle: 'Valleys of Betaab & Lidder River', region: 'Kashmir' },
+  'Ganderbal': { displayTitle: 'Sonamarg (Ganderbal)', subtitle: 'Meadows of Gold & Thajiwas Glacier', region: 'Kashmir' },
+  'Bandipora': { displayTitle: 'Gurez Valley (Bandipora)', subtitle: 'Habba Khatoon Peak & Wular Lake', region: 'Kashmir' },
+  'Budgam': { displayTitle: 'Doodhpathri & Yusmarg', subtitle: 'Valley of Milk & Alpine Meadows', region: 'Kashmir' },
+  'Reasi': { displayTitle: 'Vaishno Devi - Katra (Reasi)', subtitle: 'Holy Trikuta Cave Shrine & Chenab Bridge', region: 'Jammu' },
+  'Udhampur': { displayTitle: 'Patnitop (Udhampur)', subtitle: 'Dense Pine Forests & Skyview Gondola', region: 'Jammu' },
+  'Doda': { displayTitle: 'Bhaderwah (Doda)', subtitle: 'Mini Kashmir & Jai Valley', region: 'Jammu' },
+  'Leh': { displayTitle: 'Leh Ladakh', subtitle: 'High Mountain Passes & Monasteries', region: 'Ladakh' },
+  'Kargil': { displayTitle: 'Kargil & Zanskar', subtitle: 'Suru Valley & Drass Snow Gateway', region: 'Ladakh' },
+  'Kupwara': { displayTitle: 'Lolab & Bangus Valley', subtitle: 'Untouched Pine Valleys & Fresh Springs', region: 'Kashmir' },
+  'Pulwama': { displayTitle: 'Pulwama (Saffron Valley)', subtitle: 'Saffron Fields of Pampore & Shikargah', region: 'Kashmir' },
+  'Shopian': { displayTitle: 'Shopian (Peer Ki Gali)', subtitle: 'Apple Bowl of Kashmir & Mughal Road', region: 'Kashmir' },
+  'Kulgam': { displayTitle: 'Aharbal Waterfalls (Kulgam)', subtitle: 'Niagara of Kashmir & Alpine Lakes', region: 'Kashmir' },
+  'Jammu': { displayTitle: 'Jammu (City of Temples)', subtitle: 'Historic Raghunath Temple & Bahu Fort', region: 'Jammu' },
+  'Kathua': { displayTitle: 'Basohli & Ranjit Sagar', subtitle: 'Basohli Miniature Art & Water Sports', region: 'Jammu' },
+  'Poonch': { displayTitle: 'Poonch (Seven Lakes)', subtitle: 'Noor-i-Chhamb Waterfalls & Mughal Road', region: 'Jammu' },
+  'Rajouri': { displayTitle: 'Rajouri (Lakes & Forts)', subtitle: 'Mangla Devi & Pristine Panj Pir', region: 'Jammu' },
+  'Kishtwar': { displayTitle: 'Kishtwar (Saffron & High Peaks)', subtitle: 'Chowgan Ground & Saffron Valleys', region: 'Jammu' },
+  'Ramban': { displayTitle: 'Ramban & Sanasar', subtitle: 'Sanasar Lake & Pir Panjal Ridge', region: 'Jammu' },
+  'Samba': { displayTitle: 'Samba & Purmandal', subtitle: 'Chhota Kashi & Historic Forts', region: 'Jammu' },
+};
+
 interface JKDestinationCardProps {
   district: JKDistrictDestination;
   onExplore?: (district: JKDistrictDestination) => void;
@@ -24,6 +49,11 @@ export default function JKDestinationCard({
 }: JKDestinationCardProps) {
   const router = useRouter();
   const [fav, setFav] = useState(isFavorite);
+  const info = POPULAR_NAME_MAP[district.district] || {
+    displayTitle: `${district.district}`,
+    subtitle: district.tagline,
+    region: district.division.includes('Jammu') ? 'Jammu' : 'Kashmir',
+  };
 
   const handleHeartClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -55,8 +85,11 @@ export default function JKDestinationCard({
         <div className="flex flex-1 flex-col justify-between p-5">
           <div>
             <div className="flex items-start justify-between gap-2">
-              <h3 className="text-base font-bold text-gray-900 group-hover:text-[#3B71FE] transition-colors">{district.district}</h3>
-              <span className="text-xs text-gray-400 shrink-0 pt-0.5">{district.listingsCount} Listings</span>
+              <div>
+                <h3 className="text-base font-bold text-gray-900 group-hover:text-[#0B6B52] transition-colors">{info.displayTitle}</h3>
+                <p className="text-xs font-semibold text-emerald-800 mt-0.5">{info.subtitle}</p>
+              </div>
+              <span className="text-xs text-gray-400 shrink-0 pt-0.5">{district.touristPlaces.length} Spots</span>
             </div>
             <p className="mt-1.5 text-[13px] text-gray-500 line-clamp-2 leading-relaxed">{district.shortDescription}</p>
             <div className="mt-2 flex flex-wrap gap-1 items-center">
@@ -115,7 +148,7 @@ export default function JKDestinationCard({
       <div className="relative aspect-[16/11] w-full overflow-hidden bg-gray-100">
         <Image
           src={district.image}
-          alt={district.district}
+          alt={info.displayTitle}
           fill
           className="object-cover transition-transform duration-700 ease-out group-hover:scale-108"
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -130,10 +163,17 @@ export default function JKDestinationCard({
           <Heart
             size={16}
             className={`transition-colors ${
-              fav ? 'fill-red-500 text-red-500' : 'text-[#3B71FE] hover:fill-[#3B71FE]/20'
+              fav ? 'fill-red-500 text-red-500' : 'text-gray-500 hover:text-red-500'
             }`}
           />
         </button>
+
+        {/* Region Badge on Image */}
+        <div className="absolute bottom-3 right-3 z-10">
+          <span className="inline-flex items-center gap-1 rounded-full bg-[#0B6B52]/90 backdrop-blur-md text-white px-2.5 py-0.5 text-[10px] font-bold shadow-sm">
+            {info.region} &rarr;
+          </span>
+        </div>
       </div>
 
       {/* Content */}
@@ -141,11 +181,16 @@ export default function JKDestinationCard({
         <div>
           {/* Row 1: Title (left) & Listings count (right) */}
           <div className="flex items-start justify-between gap-2">
-            <h3 className="font-bold text-[15px] sm:text-[16px] text-gray-900 leading-snug group-hover:text-[#3B71FE] transition-colors">
-              {district.district}, J&amp;K
-            </h3>
-            <span className="text-[12px] text-gray-400 font-medium shrink-0 pt-0.5 whitespace-nowrap">
-              {district.listingsCount} Listings
+            <div>
+              <h3 className="font-bold text-[15px] sm:text-[16px] text-gray-900 leading-snug group-hover:text-[#0B6B52] transition-colors">
+                {info.displayTitle}
+              </h3>
+              <p className="text-[11.5px] font-semibold text-emerald-800 mt-0.5">
+                {info.subtitle}
+              </p>
+            </div>
+            <span className="text-[11px] text-gray-400 font-medium shrink-0 pt-0.5 whitespace-nowrap">
+              {district.touristPlaces.length} Spots
             </span>
           </div>
 

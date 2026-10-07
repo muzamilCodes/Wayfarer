@@ -4,6 +4,7 @@ import './globals.css';
 import Providers from './providers';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import MobileBottomNav from '@/components/MobileBottomNav';
 import { SITE } from '@/lib/api';
 import SmoothScroll from '@/components/3d/SmoothScroll';
 import ScrollProgressBar from '@/components/3d/ScrollProgress';
@@ -65,8 +66,9 @@ export default function RootLayout({
             {/* Main Application Layout */}
             <div className="relative z-10 flex min-h-screen flex-col">
               <Navbar />
-              <main className="flex-1">{children}</main>
+              <main className="flex-1 pb-16 md:pb-0">{children}</main>
               <Footer />
+              <MobileBottomNav />
             </div>
           </Providers>
         </SmoothScroll>

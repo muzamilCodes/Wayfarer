@@ -5,11 +5,11 @@ import Link from 'next/link';
 import {
   Search, MapPin, Calendar, Clock, Sliders, Grid, List,
   ChevronDown, ChevronUp, RotateCcw, ChevronLeft, ChevronRight,
-  Star, Compass, Mountain
+  Star, Compass, Mountain, ArrowLeft, Heart, Users
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { JK_ALL_DISTRICTS } from '@/lib/jk-destinations-data';
-import JKDestinationCard from '@/components/JKDestinationCard';
+import JKDestinationCard, { POPULAR_NAME_MAP } from '@/components/JKDestinationCard';
 import MostPopularLoop from '@/components/MostPopularLoop';
 
 export default function DestinationsExplorerClient({
@@ -49,16 +49,39 @@ export default function DestinationsExplorerClient({
 
   const filtered = useMemo(() => {
     return JK_ALL_DISTRICTS.filter(d => {
+      const info = POPULAR_NAME_MAP[d.district];
+      const famousTitle = info?.displayTitle || '';
+      const famousSubtitle = info?.subtitle || '';
+
       if (searchTerm) {
         const q = searchTerm.toLowerCase();
-        if (![d.district, d.tagline, d.shortDescription].some(s => s.toLowerCase().includes(q)) &&
+        if (![d.district, d.tagline, d.shortDescription, famousTitle, famousSubtitle].some(s => s.toLowerCase().includes(q)) &&
             !d.touristPlaces.some(p => p.name.toLowerCase().includes(q) || p.description.toLowerCase().includes(q)))
           return false;
       }
-      if (selectedDivision !== 'All' && d.division !== selectedDivision) return false;
+      if (selectedDivision !== 'All') {
+        if (selectedDivision === 'Kashmir') {
+          if (!d.division.includes('Kashmir')) return false;
+        } else if (selectedDivision === 'Jammu') {
+          if (!d.division.includes('Jammu') && !d.division.includes('Chenab') && !d.division.includes('Pir Panjal')) return false;
+        } else if (selectedDivision === 'Ladakh') {
+          if (!d.division.includes('Ladakh') && d.id !== 'leh' && d.id !== 'kargil') return false;
+        } else if (d.division !== selectedDivision) {
+          return false;
+        }
+      }
       if (selectedDistricts.length > 0 && !selectedDistricts.includes(d.district)) return false;
-      if (selectedTravelType !== 'All' && !d.travelTypes.some(t => t.toLowerCase() === selectedTravelType.toLowerCase())) return false;
-      if (selectedDuration !== 'Any' && d.durationCategory !== selectedDuration) return false;
+      if (selectedTravelType !== 'All') {
+        const q = selectedTravelType.toLowerCase();
+        if (!d.travelTypes.some(t => t.toLowerCase().includes(q))) return false;
+      }
+      if (selectedDuration !== 'Any' && selectedDuration !== 'All') {
+        if (selectedDuration === '8+' || selectedDuration === '8-14') {
+          if (d.durationCategory !== '8-14' && d.durationCategory !== '15+') return false;
+        } else if (d.durationCategory !== selectedDuration) {
+          return false;
+        }
+      }
       if (selectedRating > 0 && d.rating < selectedRating) return false;
       if (d.startingPrice > maxBudget) return false;
       return true;
@@ -151,153 +174,147 @@ export default function DestinationsExplorerClient({
   return (
     <div className="min-h-screen bg-[#F5F5F5]">
 
-      {/* ═══════════ HERO BANNER ═══════════ */}
-      <div className="relative bg-[#0A192F]">
-        {/* Background image container with strict overflow-hidden */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-1000 scale-105"
-            style={{
-              backgroundImage: `url('https://images.unsplash.com/photo-1598091383021-15ddea10925d?auto=format&fit=crop&w=2400&q=90')`,
-            }}
-          />
-          {/* Cinematic gradient overlay for maximum readability */}
-          <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/55 to-black/30" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
-        </div>
-
-        <div className="container-x relative z-10 pt-8 sm:pt-12 md:pt-16 pb-16 sm:pb-24 md:pb-28">
-          {/* Breadcrumb */}
-          <nav className="flex items-center gap-1.5 text-xs sm:text-[13px] font-medium text-white/70">
-            <Link href="/" className="hover:text-white transition-colors">Home</Link>
-            <span className="text-white/40">›</span>
-            <span className="text-white font-semibold">Destinations</span>
-          </nav>
-
-          {/* Heading & Subtitle */}
-          <motion.div
-            initial={{ opacity: 0, y: 18 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="mt-4 sm:mt-6 max-w-3xl"
-          >
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[54px] font-extrabold text-white leading-[1.12] tracking-tight drop-shadow-sm">
-              Explore Beautiful Places<br />
-              <span className="text-white">in Jammu &amp; Kashmir</span>
+      {/* ═══════════ MOCKUP SCREEN 2: DESTINATIONS HEADER & HERO ═══════════ */}
+      <div className="relative bg-[#091E2C] text-white pt-5 pb-6 sm:pb-8 shadow-md">
+        <div className="container-x">
+          {/* Top Bar: Back arrow to Home + "Destinations" Title (Exact Mockup 2 Header) */}
+          <div className="flex items-center gap-3 mb-4">
+            <Link
+              href="/"
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition active:scale-95"
+              aria-label="Back to Home"
+            >
+              <ArrowLeft size={18} />
+            </Link>
+            <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+              Destinations
             </h1>
-            <p className="mt-3 sm:mt-4 text-sm sm:text-base md:text-lg text-white/85 leading-relaxed max-w-xl font-normal drop-shadow-sm">
-              Discover amazing places, unforgettable experiences and the best deals – all in one place.
-            </p>
-          </motion.div>
-        </div>
+          </div>
 
-        {/* ═══════════ FLOATING SEARCH BAR ═══════════ */}
-        <div className="container-x relative z-30 pb-4 md:pb-0 md:-mb-14">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="rounded-2xl md:rounded-full bg-white shadow-[0_14px_50px_rgba(0,0,0,0.18)] border border-gray-100 p-2 sm:p-2.5"
-          >
-            {/* Desktop: Horizontal Pill | Mobile: Clean Grid / Stack */}
-            <div className="flex flex-col md:flex-row items-stretch md:items-center divide-y md:divide-y-0 md:divide-x divide-gray-100">
+          {/* Search Input Bar (Mockup 2: Search destinations...) */}
+          <div className="relative max-w-xl">
+            <Search size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setCurrentPage(1);
+              }}
+              placeholder="Search destinations (e.g. Gulmarg, Srinagar, Pahalgam)..."
+              className="w-full rounded-xl bg-white pl-10 pr-4 py-2.5 text-xs sm:text-sm text-gray-900 placeholder:text-gray-400 font-medium shadow-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            />
+            {searchTerm && (
+              <button
+                type="button"
+                onClick={() => setSearchTerm('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs font-bold"
+              >
+                Clear
+              </button>
+            )}
+          </div>
 
-              {/* Destination */}
-              <div className="flex-1 flex items-center gap-3 px-4 py-3 md:py-2.5">
-                <MapPin size={22} className="text-[#3B71FE] shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <div className="text-[10px] md:text-[11px] font-bold text-gray-900 tracking-tight">Destination</div>
-                  <input
-                    type="text"
-                    value={searchTerm}
-                    onChange={e => {
-                      setSearchTerm(e.target.value);
+          {/* Region Pills (Mockup 2: All, Kashmir, Jammu, Ladakh) */}
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            {[
+              { label: 'All', value: 'All' },
+              { label: 'Kashmir', value: 'Kashmir' },
+              { label: 'Jammu', value: 'Jammu' },
+              { label: 'Ladakh', value: 'Ladakh' },
+            ].map((r) => {
+              const active = selectedDivision === r.value;
+              return (
+                <button
+                  key={r.value}
+                  type="button"
+                  onClick={() => {
+                    setSelectedDivision(r.value);
+                    setCurrentPage(1);
+                  }}
+                  className={`px-4 py-1.5 rounded-full text-xs font-bold transition ${
+                    active
+                      ? 'bg-[#0B6B52] text-white shadow-md'
+                      : 'bg-white/15 text-white/90 hover:bg-white/25 border border-white/10'
+                  }`}
+                >
+                  {r.label}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Travel Type Grid Buttons (Mockup 2: Family, Adventure, Honeymoon, Nature) */}
+          <div className="mt-4">
+            <span className="block text-[11px] font-bold text-gray-300 uppercase tracking-wider mb-2">
+              Travel Type
+            </span>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 max-w-xl">
+              {[
+                { label: 'Family', value: 'Family', icon: Users },
+                { label: 'Adventure', value: 'Adventure', icon: Mountain },
+                { label: 'Honeymoon', value: 'Honeymoon', icon: Heart },
+                { label: 'Nature', value: 'Nature', icon: Compass },
+              ].map((t) => {
+                const Icon = t.icon;
+                const active = selectedTravelType === t.value;
+                return (
+                  <button
+                    key={t.value}
+                    type="button"
+                    onClick={() => {
+                      setSelectedTravelType(active ? 'All' : t.value);
                       setCurrentPage(1);
                     }}
-                    placeholder="Where are you going?"
-                    className="w-full text-[13px] md:text-[14px] font-normal text-gray-700 placeholder:text-gray-400 focus:outline-none bg-transparent"
-                  />
-                </div>
-              </div>
-
-              {/* Region */}
-              <div className="flex-1 flex items-center gap-3 px-4 py-3 md:py-2.5">
-                <Compass size={22} className="text-[#3B71FE] shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <div className="text-[10px] md:text-[11px] font-bold text-gray-900 tracking-tight">Region</div>
-                  <select
-                    value={selectedDivision}
-                    onChange={e => { setSelectedDivision(e.target.value); setCurrentPage(1); }}
-                    className="w-full text-[13px] md:text-[14px] font-normal text-gray-700 focus:outline-none bg-transparent cursor-pointer"
+                    className={`flex items-center justify-center gap-2 py-2 px-3 rounded-xl border text-xs font-bold transition ${
+                      active
+                        ? 'bg-[#0B6B52] border-emerald-400 text-white shadow-md'
+                        : 'bg-white/10 hover:bg-white/20 border-white/15 text-white'
+                    }`}
                   >
-                    <option value="All">All Regions</option>
-                    <option value="Kashmir Valley">Kashmir Valley</option>
-                    <option value="Jammu Division">Jammu Division</option>
-                    <option value="Chenab Valley">Chenab Valley</option>
-                    <option value="Pir Panjal">Pir Panjal</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Travel Type */}
-              <div className="flex-1 flex items-center gap-3 px-4 py-3 md:py-2.5">
-                <Mountain size={22} className="text-[#3B71FE] shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <div className="text-[10px] md:text-[11px] font-bold text-gray-900 tracking-tight">Travel Type</div>
-                  <select
-                    value={selectedTravelType}
-                    onChange={e => { setSelectedTravelType(e.target.value); setCurrentPage(1); }}
-                    className="w-full text-[13px] md:text-[14px] font-normal text-gray-700 focus:outline-none bg-transparent cursor-pointer"
-                  >
-                    <option value="All">All Types</option>
-                    <option value="Nature & Alpine Lakes">Nature &amp; Lakes</option>
-                    <option value="Snow & Winter Sports">Snow &amp; Winter</option>
-                    <option value="Adventure & High Passes">Adventure</option>
-                    <option value="Honeymoon & Romance">Honeymoon</option>
-                    <option value="Family & Leisure">Family</option>
-                    <option value="Sacred Pilgrimage & Temples">Pilgrimage</option>
-                    <option value="Offbeat & Camping">Offbeat</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Duration */}
-              <div className="flex-1 flex items-center gap-3 px-4 py-3 md:py-2.5">
-                <Clock size={22} className="text-[#3B71FE] shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <div className="text-[10px] md:text-[11px] font-bold text-gray-900 tracking-tight">Duration</div>
-                  <select
-                    value={selectedDuration}
-                    onChange={e => { setSelectedDuration(e.target.value); setCurrentPage(1); }}
-                    className="w-full text-[13px] md:text-[14px] font-normal text-gray-700 focus:outline-none bg-transparent cursor-pointer"
-                  >
-                    <option value="Any">Any Duration</option>
-                    <option value="1-3">1 - 3 Days</option>
-                    <option value="4-7">4 - 7 Days</option>
-                    <option value="8-14">8 - 14 Days</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Search Button */}
-              <div className="p-2 md:p-1 shrink-0 flex items-center justify-center">
-                <button
-                  type="button"
-                  onClick={() => setCurrentPage(1)}
-                  className="w-full md:w-auto flex items-center justify-center gap-2 rounded-xl md:rounded-full bg-[#FF5B00] hover:bg-[#E04F00] text-white h-[48px] px-8 font-bold text-[14px] shadow-lg shadow-orange-500/25 transition-all hover:shadow-orange-500/40 active:scale-95 cursor-pointer"
-                >
-                  <Search size={18} />
-                  <span>Search</span>
-                </button>
-              </div>
-
+                    <Icon size={14} className={active ? 'text-emerald-200' : 'text-gray-300'} />
+                    <span>{t.label}</span>
+                  </button>
+                );
+              })}
             </div>
-          </motion.div>
+          </div>
+
+          {/* Duration Pills (Mockup 2: All, 1-3 Days, 4-7 Days, 8+ Days) */}
+          <div className="mt-4">
+            <span className="block text-[11px] font-bold text-gray-300 uppercase tracking-wider mb-1.5">
+              Duration
+            </span>
+            <div className="flex flex-wrap items-center gap-2">
+              {[
+                { label: 'All', value: 'Any' },
+                { label: '1-3 Days', value: '1-3' },
+                { label: '4-7 Days', value: '4-7' },
+                { label: '8+ Days', value: '8-14' },
+              ].map((d) => {
+                const active = selectedDuration === d.value;
+                return (
+                  <button
+                    key={d.label}
+                    type="button"
+                    onClick={() => {
+                      setSelectedDuration(d.value);
+                      setCurrentPage(1);
+                    }}
+                    className={`px-3.5 py-1 rounded-lg text-xs font-semibold transition ${
+                      active
+                        ? 'bg-[#0B6B52] text-white shadow-md'
+                        : 'bg-white/15 text-white/90 hover:bg-white/25 border border-white/10'
+                    }`}
+                  >
+                    {d.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </div>
       </div>
-
-      {/* Responsive Spacer so content never collides */}
-      <div className="h-6 sm:h-10 md:h-20" />
 
       {/* ═══════════ MAIN CONTENT ═══════════ */}
       <div className="container-x py-4 sm:py-8">
